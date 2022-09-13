@@ -21,7 +21,7 @@
             <div class="flex flex-col w-full h-full">
                 <TabsIndex :class="[(state.leftbar.open) ? '' : 'ml-16']" />
 
-                <TermsView :class="[(state.leftbar.open) ? '' : 'ml-16']" />
+                <!--<TermsView :class="[(state.leftbar.open) ? '' : 'ml-16']" />-->
             </div>
         </div>
 

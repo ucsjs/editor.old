@@ -6,7 +6,7 @@ export default {
                 case "Float": return "#953A1B";
                 case "String": return "#166534";
                 case "Any": return "#C98904";
-                case "HTTPRequest": return "#9603c6";
+                case "JSON": return "#9603c6";
                 default: return "white";
             }
         },

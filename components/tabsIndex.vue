@@ -38,7 +38,7 @@
                     ></div>
                 </div> 
                 
-                <div v-else class="w-full h-full">
+                <div v-else class="flex w-full h-full">
                     <blueprint-editor :tab="tab" @changeState="(contents) => changeBlueprint(key, contents)" />
                 </div> 
             </div>

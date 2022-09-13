@@ -2,6 +2,16 @@
     <div class="relative w-full h-full">
         <div class="bg-neutral-900 z-50 flex justify-between flex-row-reverse p-2 h-12 select-none">
             <div class="flex">
+                <button class="text-white bg-blue-800 hover:bg-blue-900 px-2 py-1 flex align-middle" @click="resertPosition">
+                    <div>
+                        {{ $t("Reset") }}
+                    </div>
+                    
+                    <div class="ml-2">
+                        <font-awesome-icon icon="fa-solid fa-play"/>
+                    </div>                    
+                </button>
+
                 <button class="text-white bg-red-800 hover:bg-red-900 px-2 py-1 flex align-middle">
                     <div>
                         {{ $t("Run") }}
@@ -15,7 +25,7 @@
         </div>
 
         <div 
-            class="grid-background select-none overflow-hidden absolute left-0 right-0 bottom-12 top-12" 
+            class="grid-background select-none overflow-scroll absolute left-0 right-0 bottom-36 top-12" 
             @mousemove="handleDrag" 
             @mouseup="handleDragEnd" 
             @scroll="refreshLines"
@@ -23,9 +33,10 @@
         >
             <div class="w-4 h-4 absolute" :style="{ top: `${mouseHandler.top}px`, left: `${mouseHandler.left}px`}" ref="mousePointer"></div>
 
-            <div class="grid-contents">
+            <div class="grid-contents block" style="width: 5000px; height: 5000px" ref="contents"  @mousedown.left="move">
                 <div 
-                    class="w-full relative block h-full" 
+                    ref="contentsTransform"
+                    class="relative block h-screen w-screen" 
                     :style="{transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`}"
                     @contextmenu.prevent="contextmenu" 
                     @mousedown.left="closeContextmenu"
@@ -34,13 +45,13 @@
                         v-for="(item, keyItem) in items" 
                         :key="keyItem"
                         :style="{ top: `${item.position.top}px`, left: `${item.position.left}px`}"
-                        class="min-w-[200px] rounded-xl absolute border-black border-2 shadow-black shadow-md bg-neutral-900 bg-opacity-80 hover:border-green-400 z-40"
+                        class="rounded-xl absolute border-black border-2 shadow-black shadow-md bg-neutral-900 bg-opacity-80 hover:border-green-400 z-40"
                         @mousedown.left="closeContextmenu"
                     >
                         <div 
                             :class="['p-2 rounded-t-xl border-b border-black text-gray-50 font-bold cursor-move flex justify-between']"
                             :style="{backgroundColor: (item.metadata.headerColor) ? item.metadata.headerColor : headerColor(item.metadata.type)}"
-                            @mousedown.left="handleDragStart(keyItem, $event)"
+                            @mousedown.left.stop="handleDragStart(keyItem, $event)"
                             @dragstart="handleDragStart(keyItem, $event)"
                             @drop="handleDragEnd"
                             @mouseup="handleDragEnd"
@@ -67,31 +78,35 @@
                             </div>
 
                             <div class="content-end items-end text-right ml-4">
-                                <div class="text-right w-full items-end" v-for="(output, key) in item.outputs" :key="key">
-                                    <div class="flex flex-row-reverse">                                    
-                                        <div :style="{color: getColorByType(output?.type)}" :title="`Type: ${output?.type}`" :id="`${output.id}-${keyItem}`" ref="inputs">
+                                <div class="text-right w-full items-end h-6" v-for="(output, key) in item.outputs" :key="key">
+                                    <div class="flex flex-row-reverse" :id="`${output.id}-${keyItem}`" ref="inputs">                               
+                                        <div :style="{color: getColorByType(output?.type)}" :title="`Type: ${output?.type}`" >
                                             <font-awesome-icon                         
                                                 icon="fa-solid fa-square"   
-                                                @dragstart="createLine($event, item, output, keyItem)" 
-                                                @mousedown="createLine($event, item, output, keyItem)"
-                                                @mouseenter="onPointer($event, item, output, keyItem)"
+                                                @dragstart="createLine($event, item, output, keyItem, `${output.id}-${keyItem}`)" 
+                                                @mousedown="createLine($event, item, output, keyItem, `${output.id}-${keyItem}`)"
+                                                @mouseenter="onPointer($event, item, output, keyItem, `${output.id}-${keyItem}`)"
                                                 @mouseleave="onPointerLeave"
                                             />
                                         </div>
 
                                         <div>
                                             <span class="px-2">{{ output.name }}</span>
-                                        </div>
+                                        </div>  
                                     </div>
                                 </div>  
                                 
                                 <div class="text-right" v-for="(publicVar, key) in item.publicVars" :key="key">
-                                    <div v-if="publicVar.type == 'object' && publicVar.default && publicVar.default.multi" class="">
-                                        <div class=" w-full items-end"> 
-                                            <div v-for="(item, key) in publicVar.value" :key="key" class="flex flex-row-reverse"> 
-                                                <div :style="{color: getColorByType('Any')}" ref="inputs">
+                                    <div  v-if="publicVar.type == 'object' && publicVar.default && publicVar.default.multi">
+                                        <div class="w-full items-end"> 
+                                            <div v-for="(item, key) in publicVar.value" :key="key" class="flex flex-row-reverse h-6"> 
+                                                <div :style="{color: getColorByType('Any')}" :id="`${publicVar.id}-${keyItem}-${key}`" ref="inputs">
                                                     <font-awesome-icon                         
                                                         icon="fa-solid fa-square"
+                                                        @dragstart="createLine($event, item, publicVar, keyItem, `${publicVar.id}-${keyItem}-${key}`)" 
+                                                        @mousedown="createLine($event, item, publicVar, keyItem, `${publicVar.id}-${keyItem}-${key}`)"
+                                                        @mouseenter="onPointer($event, item, publicVar, keyItem, `${publicVar.id}-${keyItem}-${key}`)"
+                                                        @mouseleave="onPointerLeave"
                                                     />
                                                 </div>
 
@@ -114,6 +129,8 @@
                         :line="line" 
                         :offset="linesOffset"
                         :scale="scale" 
+                        :scrollOffset="scrollOffset"
+                        :transformPosition="position"
                         ref="lines" 
                         @clickLine="clickLine"
                     ></blueprint-line-connector>
@@ -123,6 +140,8 @@
                         :line="tmpLine" 
                         :offset="linesOffset" 
                         :scale="scale"
+                        :scrollOffset="scrollOffset"
+                        :transformPosition="position"
                         ref="tmpLine"
                     ></blueprint-line-connector>
                 </div>
@@ -130,7 +149,7 @@
 
             <blueprint-navbar ref="navbar" @addComponent="addComponent" @onPointer="onPointer" />
 
-            <div class="absolute h-11 bg-black/50 bottom-3 right-3 rounded-md flex">
+            <div class="fixed h-11 bg-black/50 bottom-16 right-6 rounded-md flex">
                 <Tooltip :tooltipText="$t('Zoom in')" position="top" class="flex" @click="scaleIn">
                     <button class="text-white px-3">
                         <font-awesome-icon icon="fa-solid fa-magnifying-glass-plus" />
@@ -160,8 +179,7 @@
 }
 
 .grid-contents{
-    display: flex;
-    position: relative;
+    display: block;
     overflow: hidden;
     touch-action: none;
     outline: 0;
@@ -243,7 +261,10 @@ export default{
             lineSelected: -1,
             ro: null,
             position: { x: 0, y: 0 },
+            scrollOffset: { x: 0, y: 0 },
             scale: 1,
+            moveStartPosition: null,
+            moveEvent: false,
         }
     },
 
@@ -255,10 +276,19 @@ export default{
                 this[key] = metadata[key];
         }   
 
+        //Resize
         this.ro = new ResizeObserver(() => this.refreshLines());
         this.ro.observe(this.$refs.editor);
         this.linesOffset = this.$refs.editor.getBoundingClientRect();
-                
+
+        //Scroll
+        this.scrollOffset = { x: this.$refs.editor.scrollLeft, y: this.$refs.editor.scrollTop };
+        this.$refs.editor.addEventListener('scroll', (event) => {
+            console.log({ x: this.$refs.editor.scrollLeft, y: this.$refs.editor.scrollTop })
+            this.scrollOffset = { x: this.$refs.editor.scrollLeft, y: this.$refs.editor.scrollTop };
+        });
+
+        //Load blueprints                
         await this.loadBlueprints();
         const cacheBlueprints = localStorage.getItem(`blueprint-${this.tab.name.replace(/\./, "-")}`);
 
@@ -270,12 +300,18 @@ export default{
 
                 for(const blueprint of this.blueprits){
                     if((blueprint.namespace === item.namespace)){
-                        this.items[key] = { ...item, ...blueprint };
+                        this.items[key] = { ...blueprint, ...item };
                     }
                 }
             }
-            
+
             this.connections = cacheParse.connections;
+
+            if(cacheParse.scale)
+                this.scale = cacheParse.scale;
+
+            if(cacheParse.position)
+                this.position = cacheParse.position;
         }
 
         const useHotkey = await import('vue3-hotkey').then(m => m?.default);
@@ -345,14 +381,14 @@ export default{
 
                 if(this.$refs.inputs){
                     for(let item of this.$refs.inputs){
-                        if(item.getAttribute("id") === connection.from.input)
+                        if(item.getAttribute("id") == connection.from.input)
                             input = item;
                         
-                        if(item.getAttribute("id") === connection.to.input)
+                        if(item.getAttribute("id") == connection.to.input)
                             output = item;
                     }
-                }                
-
+                }       
+                
                 if(input && output){
                     this.lines.push({ from: input, to: output, connectionKey: key });
                 }                    
@@ -380,7 +416,14 @@ export default{
                 
                 this.bluepritsCategories[item.metadata.type].push(item);
             }
-        },          
+        },     
+        
+        move(event){
+            console.log("move")
+            const { clientX, clientY } = event;
+            this.moveStartPosition = { clientX, clientY };
+            this.moveEvent = true;
+        },
 
         handleDragStart(key, event){
             this.dragElement = event.target;
@@ -391,6 +434,7 @@ export default{
         handleDrag(event){
             const { clientX, clientY } = event;
             const editorOffset = this.$refs.editor.getBoundingClientRect();
+            const contentsTransformOffset = this.$refs.contentsTransform.getBoundingClientRect();
             
             this.mouseHandler.top = clientY - editorOffset.top - 10;
             this.mouseHandler.left = clientX - editorOffset.left - 10;                
@@ -400,6 +444,11 @@ export default{
                 this.items[this.dragIndex].position.top = (clientY - editorOffset.top) - (element.height / 2);
                 this.items[this.dragIndex].position.left =  (clientX - editorOffset.left) - (element.width / 2);
                 this.refreshLines();                
+            }
+
+            if(this.moveEvent){
+                const { clientX, clientY } = event;
+                this.position = { x: clientX - (contentsTransformOffset.width / 2), y: clientY - (contentsTransformOffset.height / 2) };
             }
 
             if(this.tmpLine !== null && this.tmpLine != undefined)
@@ -414,10 +463,10 @@ export default{
                 this.tmpLine = null;
 
                 if(this.tmpComponentHover){
-                    if(this.tmpComponentHover.input.id !== this.createLineElem.input.id){
+                    if(this.createLineElem.id !== this.tmpComponentHover.id){
                         this.connections.push({
-                            from: { component: this.createLineElem.item.namespace, input: `${this.createLineElem.input.id}-${this.createLineElem.key}` },
-                            to: { component: this.tmpComponentHover.item.namespace, input: `${this.tmpComponentHover.input.id}-${this.tmpComponentHover.key}` }
+                            from: { component: this.createLineElem.item.namespace, input: this.createLineElem.id },
+                            to: { component: this.tmpComponentHover.item.namespace, input: this.tmpComponentHover.id }
                         });
 
                         this.createLines(); 
@@ -431,13 +480,16 @@ export default{
                 }                              
             }
 
+            if(this.moveEvent)
+                this.moveEvent = false;
+
             this.saveState(true);
         },
 
-        createLine(event, item, input, key){
+        createLine(event, item, input, key, id){
             if(!this.oncreateLine){
                 this.onCreateLine = true;
-                this.createLineElem = { el: event.target, item, input, key };
+                this.createLineElem = { el: event.target, item, input, id, key };
                 this.tmpLine = { from: event.target, to: this.$refs.mousePointer };
             }
         },
@@ -473,8 +525,8 @@ export default{
             this.saveState(true);
         },
 
-        onPointer(event, item, input, key){
-            this.tmpComponentHover = { el: event.target, item, input, key };
+        onPointer(event, item, input, key, id){
+            this.tmpComponentHover = { el: event.target, item, input, key, id };
         },
 
         onPointerLeave(){
@@ -515,17 +567,25 @@ export default{
         scaleResert(){
             this.scale = 1;
             this.$forceUpdate();
+            this.saveState();
         },  
 
         scaleIn(){
             this.scale += 0.1;
             this.$forceUpdate();
+            this.saveState();
         },  
 
         scaleOut(){
             this.scale -= 0.1;
             this.$forceUpdate();
+            this.saveState();
         }, 
+
+        resertPosition(){
+            this.position = { x: 0, y: 0 };
+            this.scale = 1;
+        },
 
         changeDefault(value, input, type){
             switch(type){
@@ -544,7 +604,9 @@ export default{
         saveState(emit = false){
             localStorage.setItem(`blueprint-${this.tab.name.replace(/\./, "-")}`, JSON.stringify({
                 items: this.items,
-                connections: this.connections
+                connections: this.connections,
+                scale: this.scale,
+                position: this.position
             }));
 
             if(emit)

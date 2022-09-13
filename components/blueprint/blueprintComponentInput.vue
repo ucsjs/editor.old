@@ -1,11 +1,11 @@
 <template>
-    <div class="flex flex-row py-1">
+    <div class="flex flex-row py-1 h-8">
         <div v-if="isInput" :style="{color: getColorByType(input?.type)}" :title="`Type: ${input?.type}`">
             <font-awesome-icon 
-                :id="`input-${input.id}`"
-                :ref="`input-${input.id}`"
+                :id="`${input.id}-${keyItem}`"
+                :ref="`${input.id}-${keyItem}`"
                 icon="fa-solid fa-circle"                
-                @mouseenter="onPointer($event, item, input, keyItem)"
+                @mouseenter="onPointer($event, item, input, keyItem, `${input.id}-${keyItem}`)"
                 @mouseleave="onPointerLeave"
             />
         </div>
@@ -26,6 +26,17 @@
         </div>
         <input v-else-if="input.type == 'String' || input.type == 'string'" class="max-w-[80px] bg-neutral-800 border border-black text-white px-1 ml-2" type="text" :value="input.value || input.default" @keyup="$emit('changeDefault', $event.target.value, input)" />
         <input v-else-if="input.type == 'number' || input.type == 'Number' || input.type == 'Int'" class="max-w-[80px] bg-neutral-800 border border-black text-white px-1 ml-2" type="number" :value="input.value || input.default" @keyup="$emit('changeDefault', $event.target.value, input, 'number')" />
+        <div v-else-if="input.type == 'boolean' || input.type == 'Boolean' || input.type == 'Bool'" class="text-white px-1">
+            <Switch 
+                v-model="input.value" 
+                class="group relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer items-center justify-center rounded-full border-black focus:outline-none"
+            >
+                <span class="sr-only">Use setting</span>
+                <span aria-hidden="true" class="pointer-events-none absolute h-full w-full rounded-md" />
+                <span aria-hidden="true" :class="[input.value ? 'bg-indigo-600' : 'bg-neutral-700', 'pointer-events-none absolute mx-auto h-4 w-9 rounded-full transition-colors duration-200 ease-in-out']" />
+                <span aria-hidden="true" :class="[input.value ? 'translate-x-5' : 'translate-x-0', 'pointer-events-none absolute left-0 inline-block h-5 w-5 transform rounded-full border border-black bg-neutral shadow ring-0 transition-transform duration-200 ease-in-out']" />
+            </Switch>
+        </div>
         <div v-else-if="input.type == 'object' || input.type == 'Object'">
             <div class="flex flex-row">
                 <div v-if="input.default?.multi">
@@ -41,7 +52,7 @@
                         :fields="input.default" 
                         :values="input.value"
                         @save="(value) => { 
-                            $emit('changeDefault', value, input, 'number')
+                            $emit('changeDefault', value, input, 'object')
                             input.value = value; 
                             input.openEdit = false; 
                         }"
@@ -57,9 +68,14 @@
 
 <script>
 import globalMixin from "@/mixins/globalMixin";
+import { Switch } from '@headlessui/vue'
 
 export default {
     mixins: [globalMixin],
+
+    components: {
+        Switch
+    },
 
     props: {
         item: {
@@ -83,8 +99,8 @@ export default {
         }
     },
     methods: {
-        onPointer(event, item, input, key) {
-            this.$emit('onPointer', event, item, input, key);
+        onPointer(event, item, input, key, id) {
+            this.$emit('onPointer', event, item, input, key, id);
         },
 
         onPointerLeave() {
