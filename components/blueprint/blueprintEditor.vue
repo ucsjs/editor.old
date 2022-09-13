@@ -39,14 +39,14 @@
                     >
                         <div 
                             :class="['p-2 rounded-t-xl border-b border-black text-gray-50 font-bold cursor-move flex justify-between']"
-                            :style="{backgroundColor: headerColor(item.metadata.type)}"
+                            :style="{backgroundColor: (item.metadata.headerColor) ? item.metadata.headerColor : headerColor(item.metadata.type)}"
                             @mousedown.left="handleDragStart(keyItem, $event)"
                             @dragstart="handleDragStart(keyItem, $event)"
                             @drop="handleDragEnd"
                             @mouseup="handleDragEnd"
                         >
                             <div class="mr-2">
-                                <font-awesome-icon :icon="headerIcon(item.metadata.type)"/>
+                                <font-awesome-icon :icon="(item.metadata.headerIcon) ? item.metadata.headerIcon : headerIcon(item.metadata.type)"/>
                             </div>
 
                             <span>{{ item.metadata.namespace }}</span>    
@@ -56,7 +56,7 @@
                             </div>
                         </div>
                         <div class="p-2 flex text-white font-medium">
-                            <div class="w-1/2 content-start items-start">
+                            <div class="content-start items-start">
                                 <div class="flex" v-for="(input, key) in item.inputs" :key="key" :id="`${input.id}-${keyItem}`" ref="inputs">
                                     <blueprint-component-input :keyItem="keyItem" :input="input" :item="item" :isInput="true" @onPointer="onPointer" @onPointerLeave="onPointerLeave"></blueprint-component-input>
                                 </div>
@@ -66,7 +66,7 @@
                                 </div>
                             </div>
 
-                            <div class="w-1/2 content-end items-end text-right">
+                            <div class="content-end items-end text-right ml-4">
                                 <div class="text-right w-full items-end" v-for="(output, key) in item.outputs" :key="key">
                                     <div class="flex flex-row-reverse">                                    
                                         <div :style="{color: getColorByType(output?.type)}" :title="`Type: ${output?.type}`" :id="`${output.id}-${keyItem}`" ref="inputs">
@@ -83,7 +83,25 @@
                                             <span class="px-2">{{ output.name }}</span>
                                         </div>
                                     </div>
-                                </div>                                
+                                </div>  
+                                
+                                <div class="text-right" v-for="(publicVar, key) in item.publicVars" :key="key">
+                                    <div v-if="publicVar.type == 'object' && publicVar.default && publicVar.default.multi" class="">
+                                        <div class=" w-full items-end"> 
+                                            <div v-for="(item, key) in publicVar.value" :key="key" class="flex flex-row-reverse"> 
+                                                <div :style="{color: getColorByType('Any')}" ref="inputs">
+                                                    <font-awesome-icon                         
+                                                        icon="fa-solid fa-square"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <span class="px-2">{{ (item.method) ? item.method : 'GET' }} [{{ item.url }}]</span>
+                                                </div>
+                                            </div> 
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>                
                     </div>
@@ -236,22 +254,29 @@ export default{
             for(let key in metadata)
                 this[key] = metadata[key];
         }   
+
+        this.ro = new ResizeObserver(() => this.refreshLines());
+        this.ro.observe(this.$refs.editor);
+        this.linesOffset = this.$refs.editor.getBoundingClientRect();
                 
-        this.loadBlueprints();
+        await this.loadBlueprints();
         const cacheBlueprints = localStorage.getItem(`blueprint-${this.tab.name.replace(/\./, "-")}`);
 
         if(cacheBlueprints){
             const cacheParse = JSON.parse(cacheBlueprints);
-            this.items = cacheParse.items;
+        
+            for(const key in cacheParse.items){
+                const item = cacheParse.items[key];
+
+                for(const blueprint of this.blueprits){
+                    if((blueprint.namespace === item.namespace)){
+                        this.items[key] = { ...item, ...blueprint };
+                    }
+                }
+            }
+            
             this.connections = cacheParse.connections;
         }
-
-        this.ro = new ResizeObserver(() => {
-            this.refreshLines();
-        });
-
-        this.ro.observe(this.$refs.editor);
-        this.linesOffset = this.$refs.editor.getBoundingClientRect();
 
         const useHotkey = await import('vue3-hotkey').then(m => m?.default);
         const _this = this;
@@ -264,7 +289,7 @@ export default{
                     _this.connections.splice(_this.lineSelected, 1);
                     _this.lines.splice(_this.lineSelected, 1);
                     _this.lineSelected = -1;                    
-                    _this.saveState();
+                    _this.saveState(true);
                 }
             }
         }]);
@@ -272,10 +297,12 @@ export default{
         useHotkey(hotkeys.value);
 
         setInterval(() => {
-            this.refreshLines()
+            this.refreshLines();
 
             if(this.$refs.editor)
                 this.linesOffset = this.$refs.editor.getBoundingClientRect();
+
+            this.saveState();
         }, 100);
 
         this.$forceUpdate();
@@ -308,27 +335,31 @@ export default{
         createLines(){
             if(this.lines.length > 0)
                 this.lines = [];
+
+            this.$forceUpdate();
                         
             for(let key in this.connections){
                 const connection = this.connections[key];
                 let input = null;
                 let output = null;
 
-                for(let item of this.$refs.inputs){
-                    if(item.getAttribute("id") === connection.from.input)
-                        input = item;
-                    
-                    if(item.getAttribute("id") === connection.to.input)
-                        output = item;
-                }
+                if(this.$refs.inputs){
+                    for(let item of this.$refs.inputs){
+                        if(item.getAttribute("id") === connection.from.input)
+                            input = item;
+                        
+                        if(item.getAttribute("id") === connection.to.input)
+                            output = item;
+                    }
+                }                
 
                 if(input && output){
                     this.lines.push({ from: input, to: output, connectionKey: key });
-                }
+                }                    
                 else{
-                    //this.connections.splice(key, 1);
-                    this.saveState();
-                }
+                    this.connections.splice(key, 1);
+                    this.lines.splice(key, 1);
+                }   
             }
         },  
 
@@ -336,9 +367,10 @@ export default{
             if(this.tmpLine !== null && this.tmpLine != undefined)
                 this.$refs.tmpLine.draw();
 
-            for(let line of this.$refs.lines){
-                line.draw();
-            }
+            if(this.$refs.lines){
+                for(let line of this.$refs.lines)
+                    line.draw();
+            }            
         },
 
         sortBlueprintsCategories(){
@@ -367,8 +399,7 @@ export default{
                 const element = this.dragElement.getBoundingClientRect();
                 this.items[this.dragIndex].position.top = (clientY - editorOffset.top) - (element.height / 2);
                 this.items[this.dragIndex].position.left =  (clientX - editorOffset.left) - (element.width / 2);
-                this.refreshLines();
-                this.saveState();
+                this.refreshLines();                
             }
 
             if(this.tmpLine !== null && this.tmpLine != undefined)
@@ -389,7 +420,6 @@ export default{
                             to: { component: this.tmpComponentHover.item.namespace, input: `${this.tmpComponentHover.input.id}-${this.tmpComponentHover.key}` }
                         });
 
-                        this.saveState();
                         this.createLines(); 
                     }
                 }
@@ -400,6 +430,8 @@ export default{
                         this.tmpLine = { from: this.createLineElem.el, to: this.$refs.navbar.$el }; 
                 }                              
             }
+
+            this.saveState(true);
         },
 
         createLine(event, item, input, key){
@@ -422,13 +454,23 @@ export default{
                 }
             });
 
-            this.saveState();
+            this.saveState(true);
         },
 
         removeComponent(key){
+            for(let connection of this.connections){
+                const indexInput = parseInt(connection.from.input.split("-")[1]);
+                const indexOutput = parseInt(connection.to.input.split("-")[1]);
+
+                if(key === indexInput || key === indexOutput){
+                    this.connections.splice(key, 1);
+                    this.lines.splice(key, 1);
+                }
+            }
+
             this.items.splice(key, 1);
             this.createLines(); 
-            this.saveState();
+            this.saveState(true);
         },
 
         onPointer(event, item, input, key){
@@ -496,16 +538,17 @@ export default{
             }
 
             input.value = value;            
-            this.saveState();
+            this.saveState(true);
         },
 
-        saveState(){
+        saveState(emit = false){
             localStorage.setItem(`blueprint-${this.tab.name.replace(/\./, "-")}`, JSON.stringify({
                 items: this.items,
                 connections: this.connections
             }));
 
-            this.$emit("changeState", this.getValue());
+            if(emit)
+                this.$emit("changeState", this.getValue());
         }
     }
 }

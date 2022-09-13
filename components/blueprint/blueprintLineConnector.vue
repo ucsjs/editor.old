@@ -109,25 +109,27 @@ export default{
 
     methods: {
         draw(){
-            if(this.line.from && this.line.to && this.line.to.getBoundingClientRect){
+            if(this.line.from && this.line.to && this.line.from.getBoundingClientRect && this.line.to.getBoundingClientRect){
                 const fromPosition = this.line.from.getBoundingClientRect();
                 const toPosition = this.line.to.getBoundingClientRect();
 
-                let fromX = fromPosition.x - (this.offset.x * this.scale);
-                let offsetFromX = fromPosition.width;
-                let fromY = fromPosition.y - (this.offset.y * this.scale);
+                if(fromPosition && toPosition){
+                    let fromX = fromPosition.x - (this.offset.x * this.scale);
+                    let offsetFromX = fromPosition.width;
+                    let fromY = fromPosition.y - (this.offset.y * this.scale);
 
-                let toX = toPosition.x - this.offset.x;
-                let toY = toPosition.y - this.offset.y;
+                    let toX = toPosition.x - this.offset.x;
+                    let toY = toPosition.y - this.offset.y;
 
-                fromY = fromY + 10;
-                toY = toY + 10;
-            
-                const bezierFromX = (fromX + offsetFromX);
-                const bezierToX = toX + 1;
-                const bezierIntensity = Math.min(100, Math.max(Math.abs(bezierFromX - bezierToX) / 2, Math.abs(fromY - toY)));                    
-                this.d = 'M' + bezierFromX + ' ' + (fromY) + ' C' + (fromX + this.startOffset + bezierIntensity) + ' ' + fromY + ' ' + (toX - this.endOffset - bezierIntensity) + ' ' + toY + ' ' + bezierToX + ' ' + toY;
-                this.x = fromX;
+                    fromY = fromY + 10;
+                    toY = toY + 10;
+                
+                    const bezierFromX = (fromX + offsetFromX);
+                    const bezierToX = toX + 1;
+                    const bezierIntensity = Math.min(100, Math.max(Math.abs(bezierFromX - bezierToX) / 2, Math.abs(fromY - toY)));                    
+                    this.d = 'M' + bezierFromX + ' ' + (fromY) + ' C' + (fromX + this.startOffset + bezierIntensity) + ' ' + fromY + ' ' + (toX - this.endOffset - bezierIntensity) + ' ' + toY + ' ' + bezierToX + ' ' + toY;
+                    this.x = fromX;
+                }
             }
         },
 

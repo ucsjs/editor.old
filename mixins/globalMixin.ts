@@ -6,6 +6,7 @@ export default {
                 case "Float": return "#953A1B";
                 case "String": return "#166534";
                 case "Any": return "#C98904";
+                case "HTTPRequest": return "#9603c6";
                 default: return "white";
             }
         },
@@ -17,6 +18,7 @@ export default {
                 case "Math": return "#1F2937";
                 case "Encoding": return "#78350F";
                 case "Converters": return "#831843";
+                case "Network": return "#F29D0D";
                 default: return "linear-gradient(to right top, rgb(55, 65, 81), rgb(17, 24, 39), rgb(0, 0, 0))";
             }
         },

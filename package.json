@@ -1,7 +1,7 @@
 {
   "name": "@ucsjs/editor",
   "version": "0.0.1",
-  "description": "UCS.js: Web reactivity with Websocket, Protobuf and RXJS (@editor)",
+  "description": "UCS.js (@editor)",
   "author": "Andre Ferreira <andrehrf@gmail.com>",
   "license": "MIT",
   "private": false,
