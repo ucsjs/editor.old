@@ -87,15 +87,17 @@ export default {
                         method: "PUT",
                         body: _this.state.currentTab()
                     }).then((res) => {
-                        const file = _this.state.currentTab();
-                        file.change = false;
-                        file.lastModified = res.lastModified;
-                        file.sha256 = res.sha256;
+                        if(res.sha256 && res.lastModified){
+                            const file = _this.state.currentTab();
+                            file.change = false;
+                            file.lastModified = res.lastModified;
+                            file.sha256 = res.sha256;
 
-                        if(_this.$refs?.notifications)
-                            _this.$refs?.notifications.open("File saved");
+                            if(_this.$refs?.notifications)
+                                _this.$refs?.notifications.open("File saved");
 
-                        _this.state.loading = false;
+                            _this.state.loading = false;
+                        }
                     });
                 }
             }]);

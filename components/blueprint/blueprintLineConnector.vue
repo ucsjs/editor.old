@@ -55,7 +55,7 @@ export default{
         scrollOffset: { type: Object },
         startOffset: {
             type: Number,
-            default: 50
+            default: 100
         },
         endOffset: {
             type: Number,

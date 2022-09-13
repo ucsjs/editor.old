@@ -1,10 +1,10 @@
 <template>
-    <div class="fixed bg-black/80 top-0 left-0 right-0 bottom-0 z-50 flex h-full justify-center items-center" style="z-index: 1001;">
+    <div class="fixed bg-black/80 top-0 left-0 right-0 bottom-0 z-50 flex h-full justify-center items-center text-white" style="z-index: 1001;">
         <div class="relative bg-neutral-800 w-2/5 m-auto rounded-lg border border-black">
             <div 
                 class="p-2 rounded-t-xl border-b border-black bg-neutral-900 text-gray-50 font-bold flex justify-between"
             >
-                <span>{{ $t('Edit component') }}</span>    
+                <span>{{ $t('Edit') }}</span>    
                 
                 <div class="mr-2 cursor-pointer" @click.prevent="close">
                     <font-awesome-icon icon="fa-solid fa-xmark"/>
@@ -12,52 +12,57 @@
             </div>
 
             <div class="p-2 h-[300px] overflow-auto">
-                <div v-for="(item, key) in list" :key="key" class="border border-black rounded-md p-2 relative mb-2">
-                    <div 
-                        v-for="(type, field) in fields" 
-                        :key="field" 
-                        v-show="field !== 'multi'"
-                        class="flex flex-row items-center mb-1"
-                    >
-                        <div>
-                            {{ field }}: 
-                        </div>
-
-                        <div>
-                            <div v-if="component.metadata && component.metadata[field]">
-                                <select 
-                                    class="bg-neutral-800 border border-black text-white px-1 ml-2"
-                                    @change="editList(key, field, $event.target.value)"
-                                >
-                                    <option 
-                                        v-for="(option, key) in component.metadata[field]"
-                                        :key="key" 
-                                        :value="option"
-                                        :selected="item[field] == option"
-                                    >{{ option }}</option>
-                                </select>
+                <div v-if="list && list.length > 0">
+                    <div v-for="(item, key) in list" :key="key" class="border border-black rounded-md p-2 relative mb-2">
+                        <div 
+                            v-for="(type, field) in fields" 
+                            :key="field" 
+                            v-show="field !== 'multi'"
+                            class="flex flex-row items-center mb-1"
+                        >
+                            <div>
+                                {{ field }}: 
                             </div>
-                            <input 
-                                v-else-if="type == 'String' || type == 'string'" 
-                                class="max-w-[80px] bg-neutral-800 border border-black text-white px-1 ml-2" 
-                                type="text" 
-                                :value="item[field]"
-                                @keyup="editList(key, field, $event.target.value)" 
-                            />
-                            <input 
-                                v-else-if="type == 'number' || type == 'Number' || type == 'Int'" 
-                                class="max-w-[80px] bg-neutral-800 border border-black text-white px-1 ml-2" 
-                                type="number"
-                                :value="item[field]"
-                                @keyup="editList(key, field, $event.target.value)"  
-                            />
-                        </div>
-                    </div>
 
-                    <button class="absolute right-3 top-2" @click="remove(key)">
-                        <font-awesome-icon icon="fa-solid fa-trash" />
-                    </button>
+                            <div>
+                                <div v-if="component.metadata && component.metadata[field]">
+                                    <select 
+                                        class="bg-neutral-800 border border-black text-white px-1 ml-2"
+                                        @change="editList(key, field, $event.target.value)"
+                                    >
+                                        <option 
+                                            v-for="(option, key) in component.metadata[field]"
+                                            :key="key" 
+                                            :value="option"
+                                            :selected="item[field] == option"
+                                        >{{ option }}</option>
+                                    </select>
+                                </div>
+                                <input 
+                                    v-else-if="type == 'String' || type == 'string'" 
+                                    class="max-w-[80px] bg-neutral-800 border border-black text-white px-1 ml-2" 
+                                    type="text" 
+                                    :value="item[field]"
+                                    @keyup="editList(key, field, $event.target.value)" 
+                                />
+                                <input 
+                                    v-else-if="type == 'number' || type == 'Number' || type == 'Int'" 
+                                    class="max-w-[80px] bg-neutral-800 border border-black text-white px-1 ml-2" 
+                                    type="number"
+                                    :value="item[field]"
+                                    @keyup="editList(key, field, $event.target.value)"  
+                                />
+                            </div>
+                        </div>
+
+                        <button class="absolute right-3 top-2" @click="remove(key)">
+                            <font-awesome-icon icon="fa-solid fa-trash" />
+                        </button>
+                    </div>
                 </div>
+                <div v-else class="relative w-full h-full">                   
+                    <monaco-editor :value="values" @change="changeEditor" />
+                </div>                
             </div>
 
             <div class="flex pb-2 px-2 bg-neutral-900">
@@ -105,12 +110,15 @@ export default{
     data(){
         return {
             list: [],
+            error: null
         }
     },
 
     mounted(){
-        if(this.values)
+        if(Array.isArray(this.values))
             this.list = [ ...this.values ];
+        else
+            this.list = this.values;
     },
 
     methods: {
@@ -127,6 +135,17 @@ export default{
                 this.list[key] = {};
 
             this.list[key][field] = value;
+        },
+
+        changeEditor(contents){
+            try {
+                const object = JSON.parse(contents);
+
+                if((!object.isTrusted))
+                    this.list = object
+            } catch (error) {
+                console.log(error);
+            }   
         },
 
         save(){
