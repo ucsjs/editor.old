@@ -1,5 +1,5 @@
 <template>
-    <div v-if="state.isRoot">
+    <div>
         <div class="fixed w-screen h-screen z-50 mt-14" @click="resetSelected" v-if="selected != -1"></div>
 
         <div :class="[state.darktheme ? 'bg-neutral-800 border-black' : 'bg-neutral-100', 'w-screen border-b flex justify-between p-2 select-none']" @click="resetSelected">

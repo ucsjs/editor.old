@@ -38,11 +38,15 @@
             @scroll="refreshLines"
             ref="editor"
         >
-            <div class="w-4 h-4 absolute" :style="{ top: `${mouseHandler.top}px`, left: `${mouseHandler.left}px`}" ref="mousePointer"></div>
+            <div 
+                class="w-4 h-4 absolute" 
+                :style="{ top: `${mouseHandler.top}px`, left: `${mouseHandler.left}px`}" 
+                ref="mousePointer"
+            ></div>
 
             <div class="grid-contents block" style="width: 5000px; height: 5000px" ref="contents"  @mousedown.left="move">
                 <div                     
-                    class="relative block h-screen w-screen bg-white/50" 
+                    class="relative block h-screen w-screen" 
                     @contextmenu.prevent="contextmenu" 
                     @mousedown.left="closeContextmenu"
                 >
@@ -56,14 +60,14 @@
                         >
                             <div 
                                 :class="['p-2 rounded-t-xl border-b border-black text-gray-50 font-bold cursor-move flex justify-between']"
-                                :style="{backgroundColor: (item.metadata.headerColor) ? item.metadata.headerColor : headerColor(item.metadata.type)}"
+                                :style="{backgroundColor: (item.metadata.headerColor) ? item.metadata.headerColor : headerColor(item.metadata.group)}"
                                 @mousedown.left.stop="handleDragStart(keyItem, $event)"
                                 @dragstart="handleDragStart(keyItem, $event)"
                                 @drop="handleDragEnd"
                                 @mouseup="handleDragEnd"
                             >
                                 <div class="mr-2">
-                                    <font-awesome-icon :icon="(item.metadata.headerIcon) ? item.metadata.headerIcon : headerIcon(item.metadata.type)"/>
+                                    <font-awesome-icon :icon="(item.metadata.headerIcon) ? item.metadata.headerIcon : headerIcon(item.metadata.group)"/>
                                 </div>
 
                                 <span>{{ item.metadata.namespace }}</span>    
@@ -88,6 +92,7 @@
                                             :item="item" 
                                             :isInput="true" 
                                             :collaped="item.collaped"
+                                            @changeDefault="changeDefault" 
                                             @onPointer="onPointer" 
                                             @onPointerLeave="onPointerLeave"
                                             @openObjectEdit="openObjectEdit"
@@ -131,9 +136,9 @@
                                     </div>  
                                     
                                     <div class="text-right" v-for="(publicVar, key) in item.publicVars" :key="key">
-                                        <div  v-if="publicVar.type == 'object' && publicVar.default && publicVar.default.multi">
+                                        <div  v-if="publicVar.type == 'object' && publicVar.default && publicVar.default.createOutputs">
                                             <div class="w-full items-end"> 
-                                                <div v-for="(item, key) in publicVar.value" :key="key" class="flex flex-row-reverse h-6"> 
+                                                <div v-for="(publicVaritem, key) in publicVar.value" :key="key" class="flex flex-row-reverse h-6"> 
                                                     <div :style="{color: getColorByType('Any')}" :id="`${publicVar.id}-${keyItem}-${key}`" ref="inputs">
                                                         <font-awesome-icon                         
                                                             icon="fa-solid fa-square"
@@ -145,7 +150,7 @@
                                                     </div>
 
                                                     <div>
-                                                        <span class="px-2">{{ (item.method) ? item.method : 'GET' }} [{{ item.url }}]</span>
+                                                        <span class="px-2">{{ (publicVaritem.method) ? publicVaritem.method : 'GET' }} [{{ publicVaritem.url }}]</span>
                                                     </div>
                                                 </div> 
                                             </div>
@@ -207,11 +212,13 @@
             <blueprint-object-edit 
                 class="fixed top-0 left-0 w-full h-full z-50"
                 v-if="objectEdit.open"
+                :keyItem="objectEdit.keyItem"
                 :component="objectEdit.item" 
+                :input="objectEdit.input" 
                 :fields="objectEdit.input.default" 
                 :values="objectEdit.input.value"
-                @save="(value) => { 
-                    $emit('changeDefault', value, objectEdit.input, 'object')
+                @save="(value) => {                     
+                    changeDefault(value, objectEdit.input, 'object');
                     objectEdit.input.value = value; 
                     objectEdit.open = false; 
                 }"
@@ -330,6 +337,7 @@ export default{
             scrollOffset: { x: 0, y: 0 },
             scale: 1,
             moveStartPosition: null,
+            dragStartPosition: null,
             moveEvent: false,
             objectEdit: { open: false }
         }
@@ -508,7 +516,17 @@ export default{
         },
 
         handleDragStart(key, event){
+            const { clientX, clientY } = event;
+            const editorOffset = this.$refs.editor.getBoundingClientRect();
             this.dragElement = event.target;
+
+            this.dragStartPosition = { 
+                clientX: clientX + this.scrollOffset.x - editorOffset.x - 10, 
+                clientY: clientY + this.scrollOffset.y - editorOffset.y - 10,
+                positionX: this.items[key].position.left,
+                positionY: this.items[key].position.top
+            }
+
             this.dragIndex = key;
             this.startDrag = true;
         },
@@ -521,10 +539,12 @@ export default{
             this.mouseHandler.top = clientY + this.scrollOffset.y - editorOffset.y - 10;
             this.mouseHandler.left = clientX + this.scrollOffset.x - editorOffset.x - 10;                
             
-            if(this.startDrag){                
-                const element = this.dragElement.getBoundingClientRect();
-                this.items[this.dragIndex].position.top = (clientY + this.scrollOffset.y - this.position.y - editorOffset.y) - (element.height / 2);
-                this.items[this.dragIndex].position.left =  (clientX + this.scrollOffset.x - this.position.x - editorOffset.x) - (element.width / 2);
+            if(this.startDrag){             
+                const { clientX, clientY, positionX, positionY } = this.dragStartPosition;   
+                const diffY = this.mouseHandler.top - clientY;
+                const diffX = this.mouseHandler.left - clientX; 
+                this.items[this.dragIndex].position.top = positionY + diffY;
+                this.items[this.dragIndex].position.left = positionX + diffX;
                 this.refreshLines();                
             }
 
@@ -573,20 +593,23 @@ export default{
         createLine(event, item, input, key, id){
             if(!this.oncreateLine){
                 this.onCreateLine = true;
+                console.log({ el: event.target, item, input, id, key });
                 this.createLineElem = { el: event.target, item, input, id, key };
                 this.tmpLine = { from: event.target, to: this.$refs.mousePointer };
             }
         },
 
-        addComponent(item){
+        addComponent(item, position){
+            const editorOffset = this.$refs.editor.getBoundingClientRect();
+
             if(this.tmpLine)
                 this.tmpLine = null;
             
             this.items.push({ 
                 ...item,
                 position: { 
-                    top: this.mouseHandler.top - 50, 
-                    left: this.mouseHandler.left - 50 
+                    top: this.mouseHandler.top - this.position.y,
+                    left: this.mouseHandler.left - this.position.x 
                 },
                 collaped: false
             });
@@ -689,8 +712,8 @@ export default{
             this.saveState(true);
         },
 
-        openObjectEdit(item, input){
-            this.objectEdit = { item, input, open: true };
+        openObjectEdit(item, input, keyItem){
+            this.objectEdit = { item, input, keyItem, open: true };
         },
 
         saveState(emit = false){

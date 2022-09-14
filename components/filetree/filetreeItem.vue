@@ -58,6 +58,8 @@ export default {
                         method: "GET"
                     });
 
+                    console.log(items);
+
                     if(items)
                         this.items = items;
                 }  

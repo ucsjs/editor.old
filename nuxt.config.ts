@@ -38,7 +38,6 @@ export default defineNuxtConfig({
     },
     runtimeConfig: {
         public: {
-            root: process.env.ROOT_USER,
             api: {
                 baseApi: process.env.WORKSPACE_API
             },

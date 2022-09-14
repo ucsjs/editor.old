@@ -1,5 +1,5 @@
 <template>
-    <div :class="[state.darktheme ? 'bg-neutral-900 border-black' : 'bg-neutral-100', 'h-screen border-r w-full select-none']" v-if="state.isRoot">
+    <div :class="[state.darktheme ? 'bg-neutral-900 border-black' : 'bg-neutral-100', 'h-screen border-r w-full select-none']">
         <filetree-item v-for="(item, key) in items" :key="key" :item="item" @openFile="openFile" />
     </div>
 </template>

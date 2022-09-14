@@ -9,6 +9,7 @@ export const useUserStore = defineStore({
         selectedTab: -1,
         dragging: false,
         loading: false,
+        inSaveProcess: false,
         themes: {
             light: {
                 bgBody: "bg-conic-to-tr from-gray-900 via-gray-100 to-gray-900",
@@ -115,11 +116,11 @@ export const useUserStore = defineStore({
                 state = JSON.parse(state);
 
             for(let key in state){
-                try{
-                    this[key] = state[key];
-                }
+                try{ this[key] = state[key]; }
                 catch(e){}                
             }
+
+            this.inSaveProcess = false;
         },
 
         saveState(){

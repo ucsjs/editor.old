@@ -1,5 +1,5 @@
 <template>
-    <div :class="[state.darktheme ? 'bg-neutral-800 border-black' : 'bg-neutral-200 border-neutral-300', 'h-screen w-16 fixed border-r select-none z-40']" v-if="useUserStore().isRoot">
+    <div :class="[state.darktheme ? 'bg-neutral-800 border-black' : 'bg-neutral-200 border-neutral-300', 'h-screen w-16 fixed border-r select-none z-40']">
         <div v-for="(item, key) in items" :key="key">
             <Tooltip :tooltipText="item.title" position="right">
                 <button 

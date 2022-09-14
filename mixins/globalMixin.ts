@@ -44,6 +44,10 @@ export default {
             }
 
             return (iconExt[ext.replace(".", "")]) ? iconExt[ext.replace(".", "")].icon : "fa-solid fa-code";
+        },
+
+        uppercaseFirstLetter(value) {
+            return (value && value.length > 0) ? value.charAt(0).toUpperCase() + value.slice(1) : value
         }
     }
 }

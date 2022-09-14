@@ -62,15 +62,15 @@ export default{
 
         sortBlueprintsCategories() {
             for(let item of this.blueprits){
-                if(!this.bluepritsCategories[item.metadata.type])
-                    this.bluepritsCategories[item.metadata.type] = [];
+                if(!this.bluepritsCategories[item.metadata.group])
+                    this.bluepritsCategories[item.metadata.group] = [];
                 
-                this.bluepritsCategories[item.metadata.type].push(item);
+                this.bluepritsCategories[item.metadata.group].push(item);
             }
         },
 
         addComponent(item) {
-            this.$emit("addComponent", item);
+            this.$emit("addComponent", item, this.position);
             this.close();
         },
 

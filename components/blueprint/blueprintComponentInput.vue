@@ -10,10 +10,10 @@
             />
         </div>
 
-        <div class="pl-2" v-if="isInput">{{ input.name }}<span v-if="input.default">:</span></div>
+        <div class="pl-2" v-if="isInput">{{ uppercaseFirstLetter(input.name) }}<span v-if="input.default">:</span></div>
 
         <div v-if="!collaped" class="flex">
-            <div class="pl-2" v-if="!isInput">{{ input.name }}<span v-if="input.default">:</span></div>
+            <div class="pl-2" v-if="!isInput">{{ uppercaseFirstLetter(input.name) }}<span v-if="input.default">:</span></div>
 
             <div v-if="item.metadata[input.name]">
                 <select 
@@ -41,11 +41,11 @@
                     <span aria-hidden="true" :class="[input.value ? 'translate-x-5' : 'translate-x-0', 'pointer-events-none absolute left-0 inline-block h-5 w-5 transform rounded-full border border-black bg-neutral shadow ring-0 transition-transform duration-200 ease-in-out']" />
                 </Switch>
             </div>
-            <div v-else-if="input.type == 'object' || input.type == 'Object'">
+            <div v-else-if="input.type == 'object' || input.type == 'Object' || input.type == 'JSON'">
                 <div class="flex flex-row">
                     <div>
                         <Tooltip :tooltipText="$t('Edit')" position="right">
-                            <button class="ml-2 hover:text-neutral-500" @click="$emit('openObjectEdit', item, input)">
+                            <button class="ml-2 hover:text-neutral-500" @click="$emit('openObjectEdit', item, input, keyItem)">
                                 <font-awesome-icon icon="fa-solid fa-edit" />   
                             </button>
                         </Tooltip>
@@ -61,14 +61,12 @@
 
 <script>
 import globalMixin from "@/mixins/globalMixin";
-import { Switch } from '@headlessui/vue'
+import { Switch } from '@headlessui/vue';
 
 export default {
     mixins: [globalMixin],
 
-    components: {
-        Switch
-    },
+    components: { Switch },
 
     props: {
         item: {

@@ -28,23 +28,34 @@
 
             <div v-for="(tab, key) in state.tabs" :key="key" v-show="key === state.selectedTab" class="h-full">
                 <div class="flex w-full h-full" v-if="tab.language != 'blueprint'">
-                    <div 
+                    <monaco-editor 
+                        :value="state.tabs[key]?.content" 
+                        :language="tab.language"  
+                        @changeContents="(contents) => {
+                            state.changeContents(key, contents);
+                        }" 
+                    /> 
+
+                    <!--<div 
                         :id="`editor-${tab.sha256}`" 
                         :index="key" 
-                        :language="tab.language" 
+                        
                         :started="false" 
                         ref="editors" 
                         class="w-full h-full"
-                    ></div>
+                    ></div>-->
                 </div> 
                 
                 <div v-else class="flex w-full h-full">
-                    <blueprint-editor :tab="tab" @changeState="(contents) => changeBlueprint(key, contents)" />
+                    <blueprint-editor 
+                        :tab="tab" 
+                        @changeState="(contents) => changeBlueprint(key, contents)" 
+                    />
                 </div> 
             </div>
         </div>
 
-        <Notifications ref="notifications" :closeTimeout="2000" />
+        <notifications ref="notifications" :closeTimeout="2000" />
     </div>
 </template>
 
@@ -80,25 +91,38 @@ export default {
             const hotkeys = ref([{
                 keys: ["ctrl", "s"],
                 preventDefault: true,
+                stop: true,
                 async handler(keys) {
-                    _this.state.loading = true;
+                    if(!_this.state.inSaveProcess){
+                        _this.state.loading = true;
+                        _this.state.inSaveProcess = true;
 
-                    useApi(`files/save`, {
-                        method: "PUT",
-                        body: _this.state.currentTab()
-                    }).then((res) => {
-                        if(res.sha256 && res.lastModified){
-                            const file = _this.state.currentTab();
-                            file.change = false;
-                            file.lastModified = res.lastModified;
-                            file.sha256 = res.sha256;
+                        if(_this.state.currentTab()){
+                            useApi(`files/save`, {
+                                method: "PUT", 
+                                body: _this.state.currentTab()
+                            }).then((res) => {
+                                if(res.sha256 && res.lastModified){
+                                    const file = _this.state.currentTab();
+                                    file.change = false;
+                                    file.lastModified = res.lastModified;
+                                    file.sha256 = res.sha256;
 
-                            if(_this.$refs?.notifications)
-                                _this.$refs?.notifications.open("File saved");
+                                    if(_this.$refs?.notifications)
+                                        _this.$refs?.notifications.open("File saved");
 
-                            _this.state.loading = false;
+                                    _this.state.loading = false;
+                                }
+
+                                _this.state.inSaveProcess = false;
+                            }).catch(() => {
+                                if(_this.$refs?.notifications)
+                                        _this.$refs?.notifications.open("Error to save file");
+
+                                _this.state.inSaveProcess = false;
+                            });
                         }
-                    });
+                    }   
                 }
             }]);
 
@@ -106,44 +130,7 @@ export default {
         }
     },
 
-    beforeMount(){
-        setTimeout(async() => { await this.updateEdiors() }, 50);
-    },
-
     methods: {
-        async updateEdiors(){
-            if(this.$refs.editors){
-                for(let editor of this.$refs.editors){
-                    if(editor.getAttribute("started") === "false"){
-                        editor.setAttribute("started", "true");
-                        const contents = this.state.tabs[editor.getAttribute("index")]?.content;
-
-                        const loader = await import('@monaco-editor/loader').then(m => m?.default);
-                        const monaco = await loader.init();
-                        
-                        const editorElem = monaco.editor.create(editor, {
-                            theme: this.state.darktheme ? 'vs-dark' : 'vs',
-                            autoClosingQuotes: true,
-                            language: editor.getAttribute("language"),
-                            value: (contents) ? contents : "",
-                            padding: { top: 10 },
-                            automaticLayout: true
-                        });
-
-                        this.editorElements.push(editorElem);
-
-                        window.addEventListener('resize', () => {
-                            editorElem.layout();
-                        });
-
-                        editorElem.getModel().onDidChangeContent((event) => {
-                            this.state.changeContents(parseInt(editor.getAttribute("index")), editorElem.getValue());
-                        });
-                    }
-                }  
-            }
-        },
-
         changeBlueprint(index, contents){
             if(!contents.isTrusted);
                 this.state.changeContents(index, JSON.stringify(contents));
