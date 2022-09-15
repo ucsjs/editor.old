@@ -2,28 +2,44 @@
     <div class="h-full overflow-hidden">
         <div class="h-full">
             <nav :class="[state.darktheme ? 'text-white bg-neutral-800 border-black' : 'text-gray-800 bg-neutral-200 border-neutral-100', 'flex border-b select-none overflow-auto']" aria-label="Tabs">
-                <a 
-                    @click="state.selectTab(key)" 
-                    v-for="(tab, key) in state.tabs" 
-                    :key="key" 
-                    :class="[state.selectedTab === key ? (state.darktheme ? 'bg-neutral-900 border-black' : 'bg-neutral-300') : (state.darktheme ? 'text-gray-500 border-black' : 'text-gray-500') , 'py-1 px-4 font-medium text-sm pointer cursor-pointer select-none flex border-r']" 
-                    :aria-current="tab.current ? 'page' : undefined"
-                    :title="tab.filename"
-                >
-                    <div class="p-2">
-                        <font-awesome-icon :icon="iconFromExt(tab.ext)" class="mr-2" />
-                        
-                        {{ tab.name }}
-                    </div>                     
+                <draggable v-model="state.tabs" class="flex" @end="(event) => state.selectTab(event.newIndex)">
+                    <template 
+                        #item="{ element, index }" 
+                        :list="list" 
+                        :animation="100" 
+                        :group="{ name: 'tabs', pull: 'clone', put: false }"
+                        tag="transition-group" 
+                        v-bind="dragOptions"
+                        @end="$forceUpdate()"
+                    >
+                        <div class="flex">
+                            <a 
+                                @click="state.selectTab(index)" 
+                                :class="[state.selectedTab === index ? (state.darktheme ? 'bg-neutral-900 border-black' : 'bg-neutral-300') : (state.darktheme ? 'text-gray-500 border-black' : 'text-gray-500') , 'py-1 px-4 font-medium text-sm pointer cursor-pointer select-none flex border-r']" 
+                                :aria-current="element.current ? 'page' : undefined"
+                                :title="element.filename"
+                            >
+                                <div class="p-2 flex">
+                                    <div :style="{color: iconFromExt(element.filename).color}">
+                                        <client-only>
+                                            <font-awesome-icon :icon="iconFromExt(element.filename).icon" class="mr-3" v-if="iconFromExt(element.filename)" />
+                                        </client-only>
+                                    </div>
+                                    
+                                    {{ element.name }}
+                                </div>                     
 
-                    <button class="px-2 h-7 mt-1 hover:bg-neutral-700 hover:text-white rounded-lg" @click.stop="closeFile(key)" v-if="!tab.change">
-                        <font-awesome-icon icon="fa-solid fa-xmark" />
-                    </button>
+                                <button class="px-2 h-7 mt-1 hover:bg-neutral-700 hover:text-white rounded-lg" @click.stop="closeFile(key)" v-if="!element.change">
+                                    <font-awesome-icon icon="fa-solid fa-xmark" />
+                                </button>
 
-                    <button class="p-2 h-7" @click.stop="closeFile(key)" v-if="tab.change">
-                        <font-awesome-icon icon="fa-solid fa-circle" />
-                    </button>
-                </a>
+                                <button class="p-2 h-7" @click.stop="closeFile(index)" v-if="element.change">
+                                    <font-awesome-icon icon="fa-solid fa-circle" />
+                                </button>
+                            </a> 
+                        </div>
+                    </template>
+                </draggable>
             </nav>
 
             <div v-for="(tab, key) in state.tabs" :key="key" v-show="key === state.selectedTab" class="h-full">
@@ -73,7 +89,13 @@ export default {
     data(){
         return {
             monaco: null,
-            editorElements: []
+            editorElements: [],
+            dragOptions: {
+                animation: 200,
+                group: "tabs",
+                disabled: false,
+                ghostClass: "ghost"
+            }
         }
     },
 

@@ -30,8 +30,19 @@ export default {
 
     async mounted(){
         if(process.client){
+
             const loader = await import('@monaco-editor/loader').then(m => m?.default);
+            const { listen } = await import('vscode-ws-jsonrpc').then(m => m);
+            /*const {
+                MonacoLanguageClient,
+                CloseAction,
+                ErrorAction,
+                createConnection,
+                MonacoServices,
+            } = await import('monaco-languageclient').then(m => m?.default);*/
+
             const monaco = await loader.init();
+            //MonacoServices.install(monaco);
             let contents = this.value;
 
             if(typeof contents === "object")
@@ -43,7 +54,12 @@ export default {
                 language: this.language,
                 value: contents,
                 padding: { top: 10, left: 10, right: 10 },
-                automaticLayout: true
+                automaticLayout: true,
+                glyphMargin: true,
+                lightbulb: {
+                    enabled: true
+                },
+                minimap: { enabled: false },
             });
 
             editorElem.getModel().onDidChangeContent((event) => {
@@ -57,6 +73,24 @@ export default {
 
             window.addEventListener('resize', () => {
                 editorElem.layout();
+            });
+
+            const webSocket = new WebSocket("ws://localhost:5003");
+
+            listen({
+                webSocket: webSocket,
+                onConnection: (connection) => {
+                    //var languageClient = this.createLanguageClient(connection);
+                    //var disposable = languageClient.start();
+
+                    connection.onClose(function () {
+                        return disposable.dispose();
+                    });
+                    
+                    connection.onError(function (error) {
+                        console.log(error);
+                    });
+                },
             });
 
             this.loading = true;

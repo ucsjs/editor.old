@@ -7,8 +7,10 @@
                     <font-awesome-icon icon="fa-solid fa-angle-right" v-if="!open" />
                 </div>
 
-                <div class="pr-2" v-if="item.isFile">
-                    <font-awesome-icon :icon="iconFromExt(item.ext)" />
+                <div class="pr-2" :style="{color: iconFromExt(item.filename).color}" v-if="item.isFile">
+                    <client-only>
+                        <font-awesome-icon :icon="iconFromExt(item.filename).icon"  v-if="iconFromExt(item.filename)" />
+                    </client-only>
                 </div>
 
                 {{ item.name }}
@@ -57,8 +59,6 @@ export default {
                     const items = await useApi(`files?path=${encodeURIComponent(this.item.path)}`, {
                         method: "GET"
                     });
-
-                    console.log(items);
 
                     if(items)
                         this.items = items;

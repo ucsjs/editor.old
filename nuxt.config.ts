@@ -1,4 +1,6 @@
-import { defineNuxtConfig } from 'nuxt'
+import { defineNuxtConfig } from 'nuxt';
+import * as path from 'path';
+import MonacoWebpackPlugin from "monaco-editor-webpack-plugin";
 
 export default defineNuxtConfig({
     app: {
@@ -54,5 +56,30 @@ export default defineNuxtConfig({
                 loaderOptions: { autoHideBadge: true },
             }
         }        
+    },
+    build: {
+        plugins:[
+            new MonacoWebpackPlugin({
+                languages: ['javascript', 'python', 'java', 'typescript', 'json'],
+                features: ["find"],
+            })
+        ]
+    },
+    alias:{
+        "vscode": "./node_modules/monaco-languageclient/lib/vscode-compatibility"
+    },
+    hooks: {
+        'vite:extend' ({ nuxt, config }) {
+            config.resolve.alias = {
+                ...config.resolve.alias,
+                "vscode": path.resolve(__dirname, "./node_modules/monaco-languageclient/lib/vscode-compatibility")
+            }
+        },
+        "webpack:config"(configs) {
+            configs[0].resolve.alias = {
+                ...configs[0].resolve.alias,
+                "vscode": path.resolve(__dirname, "./node_modules/monaco-languageclient/lib/vscode-compatibility")
+            }
+        }
     }
 })

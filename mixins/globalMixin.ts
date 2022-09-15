@@ -35,15 +35,26 @@ export default {
         },
 
         iconFromExt(ext){
+            let icon = { icon: "fa-solid fa-code", color: "#FFFFFF" };
+
             const iconExt = {    
-                "json": { icon: "fa-solid fa-code", color: "text-green-500" },
-                "ts": { icon: "fa-solid fa-code", color: "text-green-500" },
-                "js": { icon: "fa-brands fa-js", color: "text-green-500" },
-                "vue": { icon: "fa-brands fa-vuejs", color: "text-green-500" },
-                "blueprint": { icon: "fa-solid fa-object-group", color: "text-green-500" }
+                "blueprint.ts": { icon: "fa-solid fa-boxes-stacked", color: "#F29D0D" },
+                ".json": { icon: "fa-solid fa-code", color: "#A0A0A0" },
+                ".ts": { icon: "fa-solid fa-code", color: "#2D79C7" },
+                ".js": { icon: "fa-brands fa-square-js", color: "#F0DB4F" },
+                ".vue": { icon: "fa-brands fa-vuejs", color: "#3FB984" }
             }
 
-            return (iconExt[ext.replace(".", "")]) ? iconExt[ext.replace(".", "")].icon : "fa-solid fa-code";
+            if(ext){
+                for(let key in iconExt){
+                    if(ext.includes(key)){
+                        icon = iconExt[key];
+                        break;
+                    }                
+                }
+            }
+
+            return icon;
         },
 
         uppercaseFirstLetter(value) {
