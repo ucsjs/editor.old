@@ -24,11 +24,23 @@ export default defineNuxtConfig({
         shim: false
     },
     vite: {
+        logLevel: "error",
+        define: {
+            'process.env.DEBUG': 'false',
+        },
         css: {
             preprocessorOptions: {
                 scss: [
                     "~/assets/main.scss"
                 ]
+            }
+        }
+    },
+    vue: {
+        compilerOptions: {
+            //isCustomElement: (tag) => tag.startsWith('font-awesome-icon'),
+            onWarn: (msg) => {
+                console.log("onWarn", msg);
             }
         }
     },
@@ -60,7 +72,12 @@ export default defineNuxtConfig({
     build: {
         plugins:[
             new MonacoWebpackPlugin({
-                languages: ['javascript', 'python', 'java', 'typescript', 'json'],
+                languages: [
+                    'javascript', 'python', 'java', 'typescript', 'json',
+                    'css', 'html', 'markdown', 'php', 'sql', 'xml', 'yaml',
+                    'csharp', 'cpp', 'go', 'rust', 'swift', 'kotlin', 'dart',
+                    'powershell', 'fsharp', 'ruby', 'perl', 'lua',
+                ],
                 features: ["find"],
             })
         ]
@@ -69,7 +86,7 @@ export default defineNuxtConfig({
         "vscode": "./node_modules/monaco-languageclient/lib/vscode-compatibility"
     },
     hooks: {
-        'vite:extend' ({ nuxt, config }) {
+        'vite:extend'({ nuxt, config }) {
             config.resolve.alias = {
                 ...config.resolve.alias,
                 "vscode": path.resolve(__dirname, "./node_modules/monaco-languageclient/lib/vscode-compatibility")

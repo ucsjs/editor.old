@@ -1,5 +1,5 @@
 <template>
-    <div class="relative w-full h-full">
+    <div class="absolute w-full h-full">
         <div class="bg-black/80 absolute w-full bottom-36 top-0 left-0 right-0 z-50 m-auto text-center" v-if="!loading">
             <div class=" align-middle content-between inline-block bg-white p-4 rounded-lg mt-16">
                 <div class="flex">
@@ -25,14 +25,15 @@
                     </div>
                     
                     <div class="ml-2">
-                        <font-awesome-icon icon="fa-solid fa-play"/>
+                        <client-only><font-awesome-icon icon="fa-solid fa-play"/></client-only>
                     </div>                    
                 </button>
             </div>  
         </div>
 
         <div 
-            class="grid-background select-none overflow-scroll absolute left-0 right-0 bottom-36 top-12" 
+            class="grid-background select-none overflow-scroll absolute left-0 right-0 top-12" 
+            style="bottom: 45px;"
             @mousemove="handleDrag" 
             @mouseup="handleDragEnd" 
             @scroll="refreshLines"
@@ -46,7 +47,7 @@
 
             <div class="grid-contents block" style="width: 5000px; height: 5000px" ref="contents"  @mousedown.left="move">
                 <div                     
-                    class="relative block h-screen w-screen" 
+                    class="relative block w-full h-full" 
                     @contextmenu.prevent="contextmenu" 
                     @mousedown.left="closeContextmenu"
                 >
@@ -67,19 +68,25 @@
                                 @mouseup="handleDragEnd"
                             >
                                 <div class="mr-2">
-                                    <font-awesome-icon :icon="(item.metadata.headerIcon) ? item.metadata.headerIcon : headerIcon(item.metadata.group)"/>
+                                    <client-only>
+                                        <font-awesome-icon :icon="(item.metadata.headerIcon) ? item.metadata.headerIcon : headerIcon(item.metadata.group)"/>
+                                    </client-only>
                                 </div>
 
-                                <span>{{ item.metadata.namespace }}</span>    
+                                <span>{{ uppercaseFirstLetter(item.metadata.namespace) }}</span>    
 
                                 <div class="flex" @mousedown.left.stop="" :collaped="item.collaped">
                                     <div class="mr-2 cursor-pointer px-2" @click.stop="item.collaped = !item.collaped">
-                                        <font-awesome-icon icon="fa-solid fa-caret-down" v-if="!item.collaped" />
-                                        <font-awesome-icon icon="fa-solid fa-caret-up" v-if="item.collaped" />
+                                        <client-only>
+                                            <font-awesome-icon icon="fa-solid fa-caret-down" v-if="!item.collaped" />
+                                            <font-awesome-icon icon="fa-solid fa-caret-up" v-if="item.collaped" />
+                                        </client-only>
                                     </div>
                                     
                                     <div class="mr-2 cursor-pointer" @click.stop="removeComponent(keyItem)">
-                                        <font-awesome-icon icon="fa-solid fa-xmark"/>
+                                        <client-only>
+                                            <font-awesome-icon icon="fa-solid fa-xmark"/>
+                                        </client-only>
                                     </div>
                                 </div>
                             </div>
@@ -117,20 +124,22 @@
                                 </div>
 
                                 <div class="content-end items-end text-right ml-4">
-                                    <div class="text-right w-full items-end h-6" v-for="(output, key) in item.outputs" :key="key">
+                                    <div class="text-right w-full items-end h-6 py-1" v-for="(output, key) in item.outputs" :key="key">
                                         <div class="flex flex-row-reverse" :id="`${output.id}-${keyItem}`" ref="inputs">                       
                                             <div :style="{color: (item.metadata[output?.type.replace(/\./, '_')]) ? item.metadata[output?.type.replace(/\./, '_')].color : getColorByType(output?.type)}" :title="`Type: ${output?.type}`" >
-                                                <font-awesome-icon                         
-                                                    icon="fa-solid fa-square"   
-                                                    @dragstart="createLine($event, item, output, keyItem, `${output.id}-${keyItem}`)" 
-                                                    @mousedown="createLine($event, item, output, keyItem, `${output.id}-${keyItem}`)"
-                                                    @mouseenter="onPointer($event, item, output, keyItem, `${output.id}-${keyItem}`)"
-                                                    @mouseleave="onPointerLeave"
-                                                />
+                                                <client-only>
+                                                    <font-awesome-icon                         
+                                                        icon="fa-solid fa-square"   
+                                                        @dragstart="createLine($event, item, output, keyItem, `${output.id}-${keyItem}`)" 
+                                                        @mousedown="createLine($event, item, output, keyItem, `${output.id}-${keyItem}`)"
+                                                        @mouseenter="onPointer($event, item, output, keyItem, `${output.id}-${keyItem}`)"
+                                                        @mouseleave="onPointerLeave"
+                                                    />
+                                                </client-only>
                                             </div>
 
                                             <div>
-                                                <span class="px-2">{{ output.name }}</span>
+                                                <span class="px-2">{{ uppercaseFirstLetter(output.name) }}</span>
                                             </div>  
                                         </div>
                                     </div>  
@@ -140,13 +149,15 @@
                                             <div class="w-full items-end"> 
                                                 <div v-for="(publicVaritem, key) in publicVar.value" :key="key" class="flex flex-row-reverse h-6"> 
                                                     <div :style="{color: getColorByType('Any')}" :id="`${publicVar.id}-${keyItem}-${key}`" ref="inputs">
-                                                        <font-awesome-icon                         
-                                                            icon="fa-solid fa-square"
-                                                            @dragstart="createLine($event, item, publicVar, keyItem, `${publicVar.id}-${keyItem}-${key}`)" 
-                                                            @mousedown="createLine($event, item, publicVar, keyItem, `${publicVar.id}-${keyItem}-${key}`)"
-                                                            @mouseenter="onPointer($event, item, publicVar, keyItem, `${publicVar.id}-${keyItem}-${key}`)"
-                                                            @mouseleave="onPointerLeave"
-                                                        />
+                                                        <client-only>
+                                                            <font-awesome-icon                         
+                                                                icon="fa-solid fa-square"
+                                                                @dragstart="createLine($event, item, publicVar, keyItem, `${publicVar.id}-${keyItem}-${key}`)" 
+                                                                @mousedown="createLine($event, item, publicVar, keyItem, `${publicVar.id}-${keyItem}-${key}`)"
+                                                                @mouseenter="onPointer($event, item, publicVar, keyItem, `${publicVar.id}-${keyItem}-${key}`)"
+                                                                @mouseleave="onPointerLeave"
+                                                            />
+                                                        </client-only>
                                                     </div>
 
                                                     <div>
@@ -192,19 +203,19 @@
             <div class="fixed h-11 bg-black/50 bottom-16 right-6 rounded-md flex">
                 <Tooltip :tooltipText="$t('Zoom in')" position="top" class="flex" @click="scaleIn">
                     <button class="text-white px-3">
-                        <font-awesome-icon icon="fa-solid fa-magnifying-glass-plus" />
+                        <client-only><font-awesome-icon icon="fa-solid fa-magnifying-glass-plus" /></client-only>
                     </button>
                 </Tooltip>
 
                 <Tooltip :tooltipText="$t('Reset')" position="top" class="flex" @click="scaleResert">
                     <button class="text-white px-3">
-                        <font-awesome-icon icon="fa-solid fa-magnifying-glass" />
+                        <client-only><font-awesome-icon icon="fa-solid fa-magnifying-glass" /></client-only>
                     </button>
                 </Tooltip>
 
                 <Tooltip :tooltipText="$t('Zoom out')" position="top" class="flex" @click="scaleOut">
                     <button class="text-white px-3">
-                        <font-awesome-icon icon="fa-solid fa-magnifying-glass-minus" />
+                        <client-only><font-awesome-icon icon="fa-solid fa-magnifying-glass-minus" /></client-only>
                     </button>
                 </Tooltip>
             </div>
@@ -267,10 +278,11 @@
 }
 
 *::-webkit-scrollbar {
-    width: 16px;
+    width: 10px;
+    height: 10px;
 }
 
-*::-webkit-scrollbar-track {
+*::-webkit-scrollbar-track, *::-webkit-scrollbar-corner {
     background: #000000;
 }
 
@@ -352,7 +364,7 @@ export default{
         }   
 
         //Resize
-        this.ro = new ResizeObserver(() => this.refreshLines());
+        this.ro = new ResizeObserver(this.refreshLines);
         this.ro.observe(this.$refs.editor);
         this.linesOffset = this.$refs.editor.getBoundingClientRect();
 

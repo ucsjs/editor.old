@@ -6,7 +6,7 @@
                     <div class="p-4">
                         <div class="flex items-start">
                             <div class="flex-shrink-0">
-                                <font-awesome-icon icon="fa-solid fa-circle-check" class="h-6 w-6 text-green-400" />
+                                <client-only><font-awesome-icon icon="fa-solid fa-circle-check" class="h-6 w-6 text-green-400" /></client-only>
                                 <!--<CheckCircleIcon class="h-6 w-6 text-green-400" aria-hidden="true" />-->
                             </div>
                             <div class="ml-3 w-0 flex-1 pt-0.5">
@@ -15,7 +15,7 @@
                             <div class="ml-4 flex flex-shrink-0">
                                 <button type="button" @click="show = false" class="inline-flex rounded-md hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                                     <span class="sr-only">Close</span>
-                                    <font-awesome-icon icon="fa-solid fa-xmark" class="h-6 w-6" />
+                                    <client-only><font-awesome-icon icon="fa-solid fa-xmark" class="h-6 w-6" /></client-only>
                                 </button>
                             </div>
                         </div>

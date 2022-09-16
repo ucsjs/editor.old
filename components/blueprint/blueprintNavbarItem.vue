@@ -3,8 +3,10 @@
         <li v-for="(item, key) in items" v-show="key != 'undefined'" :key="key" class="flex flex-col rounded-md" @click="openedState[key] = !openedState[key]"> 
             <div class="flex flex-row w-full hover:bg-neutral-800 rounded-md p-1">
                 <div class="pr-2 w-6">
-                    <font-awesome-icon icon="fa-solid fa-angle-down" v-if="openedState[key]" />
-                    <font-awesome-icon icon="fa-solid fa-angle-right" v-if="!openedState[key]" />
+                    <client-only>
+                        <font-awesome-icon icon="fa-solid fa-angle-down" v-if="openedState[key]" />
+                        <font-awesome-icon icon="fa-solid fa-angle-right" v-if="!openedState[key]" />
+                    </client-only>
                 </div>
 
                 <div>
@@ -20,7 +22,7 @@
                         @click="openedState[key] = !openedState[key]"
                     >
                         <div>
-                            <font-awesome-icon :icon="headerIcon(subitem.metadata.group)" v-if="openedState[key]" />
+                            <client-only><font-awesome-icon :icon="headerIcon(subitem.metadata.group)" v-if="openedState[key]" /></client-only>
                         </div>
 
                         <div class="ml-2 cursor-pointer" @click="addComponent(subitem)">

@@ -2,8 +2,8 @@
     <div>
         <div class="fixed w-screen h-screen z-50 mt-14" @click="resetSelected" v-if="selected != -1"></div>
 
-        <div :class="[state.darktheme ? 'bg-neutral-800 border-black' : 'bg-neutral-100', 'w-screen border-b flex justify-between p-2 select-none']" @click="resetSelected">
-            <div class="flex flex-1">
+        <div :class="[state.darktheme ? 'bg-neutral-800 border-black' : 'bg-neutral-100', 'w-screen border-b flex justify-between px-2 select-none']" @click="resetSelected">
+            <div class="flex flex-1 ">
                 <Menu as="div" class="relative" v-for="(item, key) of navbar" :key="key" @click.stop="() => {}">
                     <MenuButton 
                         :class="[(selected === key) ? (state.darktheme ? 'bg-neutral-700 text-neutral-200' : 'bg-neutral-100') : (state.darktheme ? 'bg-neutral-800 text-neutral-200 hover:bg-neutral-700' : 'bg-neutral-100'),'px-3 rounded-lg h-full']" 
@@ -31,13 +31,13 @@
                 <div class="ml-4 flex items-center md:ml-6">
                     <Tooltip :tooltipText="$t('Light mode')" position="bottom">
                         <button v-if="state.darktheme" class="w-10 h-10 text-white" @click="state.switchTheme()">
-                            <font-awesome-icon icon="fa-solid fa-sun" />
+                            <client-only><font-awesome-icon icon="fa-solid fa-sun" /></client-only>
                         </button>
                     </Tooltip>
 
                     <Tooltip :tooltipText="$t('Dark mode')" position="bottom">
                         <button v-if="!state.darktheme" class="w-10 h-10" @click="state.switchTheme()">
-                            <font-awesome-icon icon="fa-solid fa-moon" />
+                            <client-only><font-awesome-icon icon="fa-solid fa-moon" /></client-only>
                         </button>
                     </Tooltip>
 
@@ -45,7 +45,7 @@
                         <div>
                             <MenuButton class="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                                 <span class="sr-only">Open user menu</span>
-                                <img class="h-8 w-8 rounded-full" :src="state.user.photoURL" alt="" />
+                                <img class="h-5 w-5" :src="state.user?.photoURL" alt="" />
                             </MenuButton>
                         </div>
 

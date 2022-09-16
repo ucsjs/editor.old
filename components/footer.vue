@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-blue-500 w-screen h-8 fixed bottom-0 z-40">
+    <div class="bg-blue-500 w-screen h-8 bottom-0 z-40 border-t border-black">
         <div class="flex flex-row-reverse">
             <div class="flex mr-1 mt-1" v-show="state.loading">
                 <div class="spinner"></div>

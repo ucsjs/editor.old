@@ -1,76 +1,70 @@
 <template>
-    <div class="h-full overflow-hidden">
-        <div class="h-full">
-            <nav :class="[state.darktheme ? 'text-white bg-neutral-800 border-black' : 'text-gray-800 bg-neutral-200 border-neutral-100', 'flex border-b select-none overflow-auto']" aria-label="Tabs">
-                <draggable v-model="state.tabs" class="flex" @end="(event) => state.selectTab(event.newIndex)">
-                    <template 
-                        #item="{ element, index }" 
-                        :list="list" 
-                        :animation="100" 
-                        :group="{ name: 'tabs', pull: 'clone', put: false }"
-                        tag="transition-group" 
-                        v-bind="dragOptions"
-                        @end="$forceUpdate()"
-                    >
-                        <div class="flex">
-                            <a 
-                                @click="state.selectTab(index)" 
-                                :class="[state.selectedTab === index ? (state.darktheme ? 'bg-neutral-900 border-black' : 'bg-neutral-300') : (state.darktheme ? 'text-gray-500 border-black' : 'text-gray-500') , 'py-1 px-4 font-medium text-sm pointer cursor-pointer select-none flex border-r']" 
-                                :aria-current="element.current ? 'page' : undefined"
-                                :title="element.filename"
-                            >
-                                <div class="p-2 flex">
-                                    <div :style="{color: iconFromExt(element.filename).color}">
-                                        <client-only>
-                                            <font-awesome-icon :icon="iconFromExt(element.filename).icon" class="mr-3" v-if="iconFromExt(element.filename)" />
-                                        </client-only>
-                                    </div>
-                                    
-                                    {{ element.name }}
-                                </div>                     
+    <div class="overflow-hidden h-full w-full">
+        <nav :class="[state.darktheme ? 'text-white bg-neutral-800 border-black' : 'text-gray-800 bg-neutral-200 border-neutral-100', 'flex border-b select-none overflow-auto']" aria-label="Tabs">
+            <draggable v-model="state.tabs" class="flex" @end="(event) => state.selectTab(event.newIndex)">
+                <template 
+                    #item="{ element, index }" 
+                    :list="list" 
+                    :animation="100" 
+                    :group="{ name: 'tabs', pull: 'clone', put: false }"
+                    tag="transition-group" 
+                    v-bind="dragOptions"
+                    @end="$forceUpdate()"
+                >
+                    <div class="flex">
+                        <a 
+                            @click="state.selectTab(index)" 
+                            :class="[state.selectedTab === index ? (state.darktheme ? 'bg-neutral-900 border-black' : 'bg-neutral-300') : (state.darktheme ? 'text-gray-500 border-black' : 'text-gray-500') , 'py-1 px-4 font-medium text-sm pointer cursor-pointer select-none flex border-r']" 
+                            :aria-current="element.current ? 'page' : undefined"
+                            :title="element.filename"
+                        >
+                            <div class="p-2 flex">
+                                <div :style="{color: iconFromExt(element.filename).color}">
+                                    <client-only><font-awesome-icon :icon="iconFromExt(element.filename).icon" class="mr-3" v-if="iconFromExt(element.filename)" /></client-only>
+                                </div>
+                                
+                                {{ element.name }}
+                            </div>                     
 
-                                <button class="px-2 h-7 mt-1 hover:bg-neutral-700 hover:text-white rounded-lg" @click.stop="closeFile(key)" v-if="!element.change">
-                                    <font-awesome-icon icon="fa-solid fa-xmark" />
-                                </button>
+                            <button class="px-2 h-7 mt-1 hover:bg-neutral-700 hover:text-white rounded-lg" @click.stop="closeFile(index)" v-if="!element.change">
+                                <client-only><font-awesome-icon icon="fa-solid fa-xmark" /></client-only>
+                            </button>
 
-                                <button class="p-2 h-7" @click.stop="closeFile(index)" v-if="element.change">
-                                    <font-awesome-icon icon="fa-solid fa-circle" />
-                                </button>
-                            </a> 
-                        </div>
-                    </template>
-                </draggable>
-            </nav>
+                            <button class="p-2 h-7" @click.stop="closeFile(index)" v-if="element.change">
+                                <client-only><font-awesome-icon icon="fa-solid fa-circle" /></client-only>
+                            </button>
+                        </a> 
+                    </div>
+                </template>
+            </draggable>
+        </nav>
 
-            <div v-for="(tab, key) in state.tabs" :key="key" v-show="key === state.selectedTab" class="h-full">
-                <div class="flex w-full h-full" v-if="tab.language != 'blueprint'">
-                    <monaco-editor 
-                        :value="state.tabs[key]?.content" 
-                        :language="tab.language"  
-                        @changeContents="(contents) => {
-                            state.changeContents(key, contents);
-                        }" 
-                    /> 
+        <div v-for="(tab, key) in state.tabs" :key="key" v-show="key === state.selectedTab" class="text-white">
+            <div v-if="tab.language == 'page'">
+                <visual-editor 
+                    :tab="tab" 
+                    @changeState="(contents) => changeBlueprint(key, contents)"  
+                /> 
+            </div>
 
-                    <!--<div 
-                        :id="`editor-${tab.sha256}`" 
-                        :index="key" 
-                        
-                        :started="false" 
-                        ref="editors" 
-                        class="w-full h-full"
-                    ></div>-->
-                </div> 
-                
-                <div v-else class="flex w-full h-full">
-                    <blueprint-editor 
-                        :tab="tab" 
-                        @changeState="(contents) => changeBlueprint(key, contents)" 
-                    />
-                </div> 
+            <div v-else-if="tab.language == 'blueprint' && tab.hasMetadata">
+                <blueprint-editor 
+                    :tab="tab" 
+                    @changeState="(contents) => changeBlueprint(key, contents)" 
+                />
+            </div>
+
+            <div v-else>
+                <monaco-editor 
+                    :value="state.tabs[key]?.content" 
+                    :language="(tab.language == 'blueprint') ? 'typescript' : tab.language"  
+                    @changeContents="(contents) => {
+                        state.changeContents(key, contents);
+                    }" 
+                /> 
             </div>
         </div>
-
+  
         <notifications ref="notifications" :closeTimeout="2000" />
     </div>
 </template>

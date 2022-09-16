@@ -27,6 +27,15 @@ export const useUserStore = defineStore({
         leftbar: {
             open: true,
             width: 300
+        },
+        contextMenu: {
+            open: false,
+            position: { top: 0, left: 0 },
+            items: []
+        },
+        fileTree: {
+            selectedItem: null,
+            items: {}
         }
     }),
     getters: {
@@ -106,9 +115,7 @@ export const useUserStore = defineStore({
 
         closeTab(index){
             this.tabs.splice(index, 1);
-
-            if(this.selectedTab == index)
-                this.selectedTab = 0;
+            this.selectedTab = (this.tabs.length > index) ? index : 0;
         },
 
         use(state){
@@ -120,7 +127,17 @@ export const useUserStore = defineStore({
                 catch(e){}                
             }
 
+            if(!this.fileTree.items)
+                this.fileTree.items = {};
+
             this.inSaveProcess = false;
+        },
+
+        changeFileTreeState(id, prop, value){
+            if(this.fileTree.items[id])
+                this.fileTree.items[id][prop] = value;
+
+            this.saveState();
         },
 
         saveState(){

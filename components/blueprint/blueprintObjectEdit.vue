@@ -7,7 +7,7 @@
                 <span>{{ $t('Edit') }}</span>    
                 
                 <div class="mr-2 cursor-pointer" @click.prevent="close">
-                    <font-awesome-icon icon="fa-solid fa-xmark"/>
+                    <client-only><font-awesome-icon icon="fa-solid fa-xmark"/></client-only>
                 </div>
             </div>
 
@@ -68,7 +68,7 @@
                         </div>
 
                         <button class="absolute right-3 top-2" @click="remove(key)">
-                            <font-awesome-icon icon="fa-solid fa-trash" />
+                            <client-only><font-awesome-icon icon="fa-solid fa-trash" /></client-only>
                         </button>
                     </div>
                 </div>
@@ -78,7 +78,7 @@
             </div>
 
             <div class="bg-red-900 mx-2 mb-2 p-2 text-sm" v-if="this.error">
-                <font-awesome-icon icon="fa-solid fa-triangle-exclamation" class="mr-1" />
+                <client-only><font-awesome-icon icon="fa-solid fa-triangle-exclamation" class="mr-1" /></client-only>
                 {{ this.error }}
             </div>
 

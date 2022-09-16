@@ -35,14 +35,19 @@ export default {
         },
 
         iconFromExt(ext){
-            let icon = { icon: "fa-solid fa-code", color: "#FFFFFF" };
+            let icon = { icon: "fa-regular fa-file" };
 
             const iconExt = {    
                 "blueprint.ts": { icon: "fa-solid fa-boxes-stacked", color: "#F29D0D" },
+                "page.ts": { icon: "fa-solid fa-table-columns", color: "#4B1E96" },
                 ".json": { icon: "fa-solid fa-code", color: "#A0A0A0" },
                 ".ts": { icon: "fa-solid fa-code", color: "#2D79C7" },
                 ".js": { icon: "fa-brands fa-square-js", color: "#F0DB4F" },
-                ".vue": { icon: "fa-brands fa-vuejs", color: "#3FB984" }
+                ".vue": { icon: "fa-brands fa-vuejs", color: "#3FB984" },
+                ".npmignore": { icon: "fa-brands fa-npm", color: "#FF0000" },
+                ".gitignore": { icon: "fa-brands fa-git-alt", color: "#3d3d3d" },
+                ".log": { icon: "fa-solid fa-align-left", color: "#cccccc" },
+                ".md": { icon: "fa-solid fa-circle-info", color: "#6095d6" }
             }
 
             if(ext){

@@ -1,13 +1,15 @@
 <template>
     <div class="flex flex-row py-1 h-8">
         <div v-if="isInput" :style="{color: (item.metadata[input?.type.replace(/\./, '_')]) ? item.metadata[input?.type.replace(/\./, '_')].color : getColorByType(input?.type)}" :title="`Type: ${input?.type}`">
-            <font-awesome-icon 
-                :id="`${input.id}-${keyItem}`"
-                :ref="`${input.id}-${keyItem}`"
-                icon="fa-solid fa-circle"                
-                @mouseenter="onPointer($event, item, input, keyItem, `${input.id}-${keyItem}`)"
-                @mouseleave="onPointerLeave"
-            />
+            <client-only>
+                <font-awesome-icon 
+                    :id="`${input.id}-${keyItem}`"
+                    :ref="`${input.id}-${keyItem}`"
+                    icon="fa-solid fa-circle"                
+                    @mouseenter="onPointer($event, item, input, keyItem, `${input.id}-${keyItem}`)"
+                    @mouseleave="onPointerLeave"
+                />
+            </client-only>
         </div>
 
         <div class="pl-2" v-if="isInput">{{ uppercaseFirstLetter(input.name) }}<span v-if="input.default">:</span></div>
@@ -46,7 +48,7 @@
                     <div>
                         <Tooltip :tooltipText="$t('Edit')" position="right">
                             <button class="ml-2 hover:text-neutral-500" @click="$emit('openObjectEdit', item, input, keyItem)">
-                                <font-awesome-icon icon="fa-solid fa-edit" />   
+                                <client-only><font-awesome-icon icon="fa-solid fa-edit" /></client-only>
                             </button>
                         </Tooltip>
                     </div>
