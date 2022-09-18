@@ -408,24 +408,6 @@ export default{
             }   
         }
 
-        const useHotkey = await import('vue3-hotkey').then(m => m?.default);
-        const _this = this;
-
-        const hotkeys = ref([{
-            keys: ["delete"],
-            preventDefault: true,
-            async handler(keys) {
-                if(_this.lineSelected != -1){
-                    _this.connections.splice(_this.lineSelected, 1);
-                    _this.lines.splice(_this.lineSelected, 1);
-                    _this.lineSelected = -1;                    
-                    _this.saveState(true);
-                }
-            }
-        }]);
-
-        useHotkey(hotkeys.value);
-
         setInterval(() => {
             this.refreshLines();
 
@@ -605,7 +587,6 @@ export default{
         createLine(event, item, input, key, id){
             if(!this.oncreateLine){
                 this.onCreateLine = true;
-                console.log({ el: event.target, item, input, id, key });
                 this.createLineElem = { el: event.target, item, input, id, key };
                 this.tmpLine = { from: event.target, to: this.$refs.mousePointer };
             }
@@ -726,6 +707,15 @@ export default{
 
         openObjectEdit(item, input, keyItem){
             this.objectEdit = { item, input, keyItem, open: true };
+        },
+
+        onDelete(){
+            if(this.lineSelected != -1){
+                this.connections.splice(this.lineSelected, 1);
+                this.lines.splice(this.lineSelected, 1);
+                this.lineSelected = -1;                    
+                this.saveState(true);
+            }
         },
 
         saveState(emit = false){

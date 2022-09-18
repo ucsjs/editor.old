@@ -4,7 +4,7 @@ export const useUserStore = defineStore({
     id: "user",
     state: () => ({
         user: null,
-        darktheme: false,
+        darktheme: true,
         tabs: [],
         selectedTab: -1,
         dragging: false,
@@ -35,6 +35,11 @@ export const useUserStore = defineStore({
         },
         fileTree: {
             selectedItem: null,
+            items: {}
+        },
+        hierarchy: {
+            selectedItem: null,
+            overElement: null,
             items: {}
         }
     }),
@@ -140,8 +145,16 @@ export const useUserStore = defineStore({
             this.saveState();
         },
 
+        changeHierarchyItemState(tabHash, id, prop, value){
+            if(this.hierarchy.items[tabHash][id])
+                this.hierarchy.items[tabHash][id][prop] = value;
+        },
+
         saveState(){
-            localStorage.setItem("state", JSON.stringify(this));
+            try{
+                localStorage.setItem("state", JSON.stringify(this));
+            }
+            catch(e){}
         }
     }
 });

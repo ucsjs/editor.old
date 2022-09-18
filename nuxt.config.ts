@@ -11,6 +11,22 @@ export default defineNuxtConfig({
             ]
         }
     },
+    meta: {
+        title: "UCS",
+        script: [
+            { src: "https://cdn.jsdelivr.net/npm/leader-line-new@1.1.9/leader-line.min.js" },
+            { src: "https://cdnjs.cloudflare.com/ajax/libs/rxjs/7.5.6/rxjs.umd.min.js" }, 
+            { src: 'https://unpkg.com/flowbite@1.4.5/dist/flowbite.js' },
+            { src: "node_modules/xterm/lib/xterm.js" },
+            { src: "node_modules/xterm-addon-web-links/lib/xterm-addon-web-links.js" }, 
+            { src: "node_modules/ejs/ejs.min.js" }, 
+        ],
+        link: [
+            { rel: "stylesheet", href: "https://unpkg.com/flowbite@1.4.5/dist/flowbite.min.css" },
+            { rel: "stylesheet", href: "node_modules/xterm/css/xterm.css" },
+            { rel: "stylesheet", href: "node_modules/vue3-draggable-resizable/dist/Vue3DraggableResizable.css" }
+        ]
+    },
     css: [
         "@fortawesome/fontawesome-svg-core/styles.css"
     ],

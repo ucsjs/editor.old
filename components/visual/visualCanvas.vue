@@ -4,9 +4,11 @@
             class="bg-neutral-700 w-full h-full grid-background absolute"
             @mousemove="handleDrag" 
             @mouseup="handleDragEnd"
+            @click.stop="unselectItem"
             ref="editor"
         > 
             <div 
+                id="canvas-mouse-pointer"
                 class="w-4 h-4 absolute" 
                 :style="{ top: `${mouseHandler.top}px`, left: `${mouseHandler.left}px`}" 
                 ref="mousePointer"
@@ -15,10 +17,30 @@
             <div class="grid-contents block relative" @mousedown.left="move">
                 <div class="justify-center items-center flex h-full">
                     <div 
-                        class="bg-white m-auto" 
-                        :style="{width: `${viewport.width}px`, height: `${viewport.height}px`, transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`}"
+                        class="m-auto overflow-hidden relative" 
+                        :style="{
+                            backgroundColor: settings.backgroundColor,
+                            width: `${viewport.width}px`, 
+                            height: `${viewport.height}px`, 
+                            transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`
+                        }"
+                        ref="canvas"
+                        @mousedown.left.stop="() => {}"
+                        @contextmenu.prevent="contextmenu" 
+                        @mouseup.left="closeContextmenu"
                     >
-
+                        <visual-component 
+                            v-for="(component, key) in hierarchy" 
+                            :key="key" 
+                            :componentIndex="key"
+                            :settings="component"
+                            :editorOffset="editorOffset"
+                            :selectedComponent="selectedComponent"
+                            :mouseHandler="mouseHandler"
+                            :tab="tab"
+                            @selectItem="selectItem"
+                            @changeState="saveState"
+                        ></visual-component>
                     </div> 
 
                     <div class="absolute h-11 bg-black/50 bottom-6 right-6 rounded-md flex">
@@ -60,6 +82,8 @@
                             </button>
                         </Tooltip>
                     </div>
+
+                    <visual-context-menu :components="components" ref="navbar" @addComponent="addComponent" />
                 </div>
             </div>
         </div>
@@ -109,50 +133,103 @@ export default {
     props:{
         tab: {
             type: Object,
-            required: true
-        }
+            default: null
+        },
+        components: {
+            type: Array,
+            default: []
+        },
+        selectedComponent: {
+            type: Object,
+            default: null
+        },
     },
 
     data(){
         return {
+            settings: {
+                backgroundColor: "#ffffff",
+            },
+            componentIndex: 0,
+            selected: 0,
             viewport: { width: 375, height: 667  },
             scale: 1,
             position: { x: 0, y: 0 },
             mouseHandler: { top: 200, left: 200 },
             moveEvent: false,
+            canvasOffset: {},
+            editorOffset: {},
             devices: {
                 mobile: { width: 375, height: 667 },
                 tablet: { width: 768, height: 1024 },
                 desktop: { width: 1920, height: 1080 }
-            }
+            },
+            hierarchy: []
         }
     },
 
     async mounted(){
-        if(this.tab.content){
+        if(this.tab && this.tab.recent && this.tab.content){
+            this.tab.recent = false;
             const metadata = JSON.parse(this.tab.content);
 
             for(let key in metadata)
                 this[key] = metadata[key];
-        }  
-        
-        const cachePage = localStorage.getItem(`page-${this.tab.name.replace(/\./, "-")}`);
-
-        if(cachePage){
-            const cacheParse = JSON.parse(cachePage);
-
-            if(cacheParse.scale)
-                this.scale = cacheParse.scale;
-
-            if(cacheParse.position)
-                this.position = cacheParse.position; 
-
-            if(cacheParse.viewport)
-                this.viewport = cacheParse.viewport; 
         }
+        else{
+            if(this.tab.content){
+                const metadata = JSON.parse(this.tab.content);
+
+                for(let key in metadata)
+                    this[key] = metadata[key];
+            } 
+
+            this.loadCanvasFromLocalStorage();
+        } 
+
+        this.editorOffset = this.$refs.editor.getBoundingClientRect();
+        this.canvasOffset = this.$refs.canvas.getBoundingClientRect();
+        this.$emit("loadedCanvas", this.getValue());
     },
 
     methods: {
+        loadCanvasFromLocalStorage(){
+            const cachePage = localStorage.getItem(`page-${this.tab.name.replace(/\./, "-")}`);
+
+            if(cachePage){
+                const cacheParse = JSON.parse(cachePage);
+
+                for(let key in cacheParse)
+                    this[key] = cacheParse[key];
+            }
+        },
+
+        contextmenu(){            
+            this.$refs.navbar.open(this.mouseHandler);
+        },
+
+        closeContextmenu(){
+            this.$refs.navbar.close();
+        },
+
+        addComponent(item, position){
+            this.componentIndex++;
+            const canvasX = this.canvasOffset.x - this.editorOffset.x + this.position.x;
+            const canvasY = this.canvasOffset.y - this.editorOffset.y + this.position.y; 
+
+            this.hierarchy.push({
+                id: `${item.namespace}_${this.componentIndex}`,
+                ...item,
+                position: {
+                    left: 0,// position.left - canvasY,
+                    top: 0//position.top - canvasX
+                },
+                hierarchy: []
+            });
+
+            this.saveState(true);
+        },
+
         move(event){
             const { clientX, clientY } = event;
             const editorOffset = this.$refs.editor.getBoundingClientRect();
@@ -210,24 +287,151 @@ export default {
         viewportDesktop(){
             this.viewport = this.devices.desktop;
             this.saveState();
+            this.$forceUpdate();
         },
 
         viewportTablet(){
             this.viewport = this.devices.tablet;
             this.saveState();
+            this.$forceUpdate();
         },
 
         viewportMobile(){
             this.viewport = this.devices.mobile;
             this.saveState();
+            this.$forceUpdate();
+        },
+
+        async selectItem(id){
+            const component = await this.getComponent(id, this);
+
+            if(component)
+                this.$emit("selectedItem", component);
+        },
+
+        unselectItem(){
+            this.$emit("unselectItem");
         },
 
         getValue(){
             return {
+                settings: this.settings,
                 scale: this.scale,
                 position: this.position,
-                viewport: this.viewport
+                viewport: this.viewport,
+                hierarchy: this.hierarchy,
+                componentIndex: this.componentIndex
             }
+        },
+
+        async onDelete(){
+            if(this.selectedComponent){
+                await this.removeComponent(this.selectedComponent.id, this);
+                this.saveState(true);
+                this.$forceUpdate();
+                this.selectedComponent = null;
+            }
+        },
+
+        getSubHierarchy(item, selected){
+            let subHierarchy = item;
+
+            if(item.hierarchy.length > 0){
+                for(let key in item.hierarchy){
+                    if(key != selected)
+                        subHierarchy.hierarchy = subHierarchy.push(this.getSubHierarchy(item.hierarchy[key].hierarchy, selected));
+                }
+            }
+
+            return subHierarchy;
+        },
+
+        updateComponentBy(elementId, root, newComponent){
+            return new Promise(async (resolve, reject) => {
+               if(root.hierarchy.length > 0){
+                    for(let key in root.hierarchy){
+                        if(root.hierarchy[key]){
+                            if(root.hierarchy[key].id === elementId){
+                                root.hierarchy[key] = newComponent;
+                                this.saveState(true);
+                                resolve(null);
+                                break;
+                            }                            
+                            else{
+                                await this.updateComponentBy(elementId, root.hierarchy[key], newComponent);
+                            }
+                        }
+                    }
+
+                    if(root.hierarchy.length > 0)
+                        root.hierarchy = root.hierarchy.filter((item) => item);
+
+                    resolve(null);
+                }
+                else{
+                    resolve(null);
+                }
+            });
+        },
+
+        removeComponent(elementId, root){
+            return new Promise(async (resolve, reject) => {
+               if(root.hierarchy.length > 0){
+                    for(let key in root.hierarchy){
+                        if(root.hierarchy[key]){
+                            if(root.hierarchy[key].id === elementId){
+                                delete root.hierarchy[key];
+                                this.saveState(true);
+                                resolve(null);
+                                break;
+                            }                            
+                            else{
+                                await this.removeComponent(elementId, root.hierarchy[key]);
+                            }
+                        }
+                    }
+
+                    if(root.hierarchy.length > 0)
+                        root.hierarchy = root.hierarchy.filter((item) => item);
+
+                    resolve(null);
+                }
+                else{
+                    resolve(null);
+                }
+            });
+        },
+
+        async updateComponent(component){
+            await this.updateComponentBy(component.id, this, component);
+            this.$forceUpdate();
+            console.log("updateComponent");
+        },
+
+        async getComponent(elementId, root){
+            return new Promise(async (resolve, reject) => {
+               if(root.hierarchy.length > 0){
+                    for(let key in root.hierarchy){
+                        if(root.hierarchy[key]){
+                            if(root.hierarchy[key].id === elementId){
+                                resolve(root.hierarchy[key]);
+                                break;
+                            }                            
+                            else{
+                                const componentRef = await this.getComponent(elementId, root.hierarchy[key]);
+
+                                if(componentRef)
+                                    resolve(componentRef);
+                            }
+                        }
+                    }
+
+                    resolve(null);
+                }
+                else{
+                    resolve(null);
+                }
+            }); 
         },
 
         saveState(emit = false){

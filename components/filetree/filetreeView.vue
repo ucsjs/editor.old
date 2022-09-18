@@ -115,7 +115,7 @@ export default {
                 method: "GET"
             });
 
-            this.state.openTab({ ...item, content: await content.text() });
+            this.state.openTab({ ...item, content: await content.text(), recent: true });
         },
 
         async createFile(name, item, ref){
@@ -147,8 +147,6 @@ export default {
                 const createResult = await useApi(`files/create?filename=${encodeURIComponent(this.state.fileTree.items[this.state.fileTree.selectedItem.pathHash].filename)}`, {
                     method: "DELETE"
                 });
-
-                console.log(createResult);
 
                 //if(ref.listFiles)
                 //    await ref.listFiles();

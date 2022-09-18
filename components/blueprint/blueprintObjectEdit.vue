@@ -195,8 +195,6 @@ export default{
                 for(let key in this.list)
                     this.list[key].key = `${this.input.id}-${this.keyItem}-${key}`;
             }
-
-            console.log(this.list);
             
             if(this.list)
                 this.$emit('save', (Array.isArray(this.list)) ? [...this.list] : {...this.list});

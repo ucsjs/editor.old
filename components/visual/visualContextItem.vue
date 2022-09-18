@@ -1,6 +1,6 @@
 <template>
     <ol v-if="itemsFiltred.length == 0">
-        <li v-for="(item, key) in items" v-show="key != 'undefined'" :key="key" class="flex flex-col rounded-md" @click="openedState[key] = !openedState[key]"> 
+        <li v-for="(item, key) in items" v-show="key != 'undefined'" :key="key" class="flex flex-col rounded-md cursor-pointer" @click="openedState[key] = !openedState[key]"> 
             <div class="flex flex-row w-full hover:bg-neutral-800 rounded-md p-1">
                 <div class="pr-2 w-6">
                     <client-only>
@@ -18,11 +18,11 @@
                 <ol class="ml-4">
                     <li 
                         v-for="(subitem, key2) in item" :key="key2" 
-                        class="flex hover:bg-neutral-800 rounded-md p-1" 
+                        class="flex hover:bg-neutral-800 rounded-md p-1 cursor-pointer" 
                         @click="openedState[key] = !openedState[key]"
                     >
                         <div>
-                            <client-only><font-awesome-icon :icon="(subitem.metadata.headerIcon) ? subitem.metadata.headerIcon : headerIcon(subitem.metadata.group)" v-if="openedState[key]" /></client-only>
+                            <client-only><font-awesome-icon :icon="(subitem.metadata.icon) ? subitem.metadata.icon : headerIcon(subitem.metadata.group)" v-if="openedState[key]" /></client-only>
                         </div>
 
                         <div class="ml-2 cursor-pointer" @click="addComponent(subitem)">

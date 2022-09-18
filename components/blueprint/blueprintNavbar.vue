@@ -1,6 +1,6 @@
 <template>
     <div 
-        class="w-96 bg-neutral-800 absolute z-50 rounded-lg p-2 text-slate-50 shadow-md shadow-neutral-800" 
+        class="w-96 bg-neutral-800 absolute z-50 rounded-md p-2 text-slate-50 shadow-md shadow-neutral-800" 
         :style="{ top: `${position.top}px`, left: `${position.left}px`}"
         v-if="opened"
     >
@@ -9,11 +9,11 @@
         </div>
 
         <div>
-            <input class="w-full p-2 bg-neutral-900 rounded-md" :placeholder="$t('Search')" />
+            <input v-model="search" class="w-full p-2 bg-neutral-900 rounded-md" :placeholder="$t('Search')" />
         </div>
 
         <div class="bg-neutral-900 mt-2 h-72 p-2 rounded-md overflow-auto">
-            <blueprint-navbar-item :items="bluepritsCategories" @addComponent="addComponent" @onPointer="onPointer" />
+            <blueprint-navbar-item :items="bluepritsCategories" :itemsFiltred="bluepritsFiltred" @addComponent="addComponent" />
         </div>
     </div>
 </template>
@@ -25,7 +25,7 @@
 }
 
 *::-webkit-scrollbar {
-    width: 16px;
+    width: 8px;
 }
 
 *::-webkit-scrollbar-track {
@@ -45,8 +45,16 @@ export default{
         return {
             opened: false,
             blueprits: [],
+            bluepritsFiltred: [],
             bluepritsCategories: {},
-            position: { top: 0, left: 0 }
+            position: { top: 0, left: 0 },
+            search: null,
+        }
+    },
+
+    watch: {
+        search(){
+            this.filterComponents();
         }
     },
 
@@ -66,6 +74,25 @@ export default{
                     this.bluepritsCategories[item.metadata.group] = [];
                 
                 this.bluepritsCategories[item.metadata.group].push(item);
+            }
+
+            this.bluepritsCategories = Object.keys(this.bluepritsCategories).sort().reduce(
+                (obj, key) => { 
+                    obj[key] = this.bluepritsCategories[key]; 
+                    return obj;
+                }, 
+                {}
+            );
+        },
+
+        filterComponents(){
+            if(this.search){
+                this.bluepritsFiltred = this.blueprits.filter(item => {
+                    return item.namespace.toLowerCase().includes(this.search.toLowerCase());
+                });
+            }
+            else{
+                this.bluepritsFiltred = [];
             }
         },
 

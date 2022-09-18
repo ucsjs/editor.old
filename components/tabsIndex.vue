@@ -39,29 +39,34 @@
             </draggable>
         </nav>
 
-        <div v-for="(tab, key) in state.tabs" :key="key" v-show="key === state.selectedTab" class="text-white">
-            <div v-if="tab.language == 'page'">
-                <visual-editor 
-                    :tab="tab" 
-                    @changeState="(contents) => changeBlueprint(key, contents)"  
-                /> 
-            </div>
+        <div v-for="(tab, key) in state.tabs" :key="key" class="text-white">
+            <div v-if="key === state.selectedTab" ref="activeTab">
+                <div v-if="tab.language == 'page'">
+                    <visual-editor 
+                        ref="editor"
+                        :tab="tab" 
+                        @changeState="(contents) => change(key, contents)"  
+                    /> 
+                </div>
 
-            <div v-else-if="tab.language == 'blueprint' && tab.hasMetadata">
-                <blueprint-editor 
-                    :tab="tab" 
-                    @changeState="(contents) => changeBlueprint(key, contents)" 
-                />
-            </div>
+                <div v-else-if="tab.language == 'blueprint' && tab.hasMetadata">
+                    <blueprint-editor 
+                        ref="editor"
+                        :tab="tab" 
+                        @changeState="(contents) => change(key, contents)" 
+                    />
+                </div>
 
-            <div v-else>
-                <monaco-editor 
-                    :value="state.tabs[key]?.content" 
-                    :language="(tab.language == 'blueprint') ? 'typescript' : tab.language"  
-                    @changeContents="(contents) => {
-                        state.changeContents(key, contents);
-                    }" 
-                /> 
+                <div v-else>
+                    <monaco-editor 
+                        ref="editor"
+                        :value="state.tabs[key]?.content" 
+                        :language="(tab.language == 'blueprint') ? 'typescript' : tab.language"  
+                        @changeContents="(contents) => {
+                            state.changeContents(key, contents);
+                        }" 
+                    /> 
+                </div>
             </div>
         </div>
   
@@ -99,55 +104,8 @@ export default {
         }
     },
 
-    async mounted(){
-        if(process.client){
-            const useHotkey = await import('vue3-hotkey').then(m => m?.default);
-            const _this = this;
-
-            const hotkeys = ref([{
-                keys: ["ctrl", "s"],
-                preventDefault: true,
-                stop: true,
-                async handler(keys) {
-                    if(!_this.state.inSaveProcess){
-                        _this.state.loading = true;
-                        _this.state.inSaveProcess = true;
-
-                        if(_this.state.currentTab()){
-                            useApi(`files/save`, {
-                                method: "PUT", 
-                                body: _this.state.currentTab()
-                            }).then((res) => {
-                                if(res.sha256 && res.lastModified){
-                                    const file = _this.state.currentTab();
-                                    file.change = false;
-                                    file.lastModified = res.lastModified;
-                                    file.sha256 = res.sha256;
-
-                                    if(_this.$refs?.notifications)
-                                        _this.$refs?.notifications.open("File saved");
-
-                                    _this.state.loading = false;
-                                }
-
-                                _this.state.inSaveProcess = false;
-                            }).catch(() => {
-                                if(_this.$refs?.notifications)
-                                        _this.$refs?.notifications.open("Error to save file");
-
-                                _this.state.inSaveProcess = false;
-                            });
-                        }
-                    }   
-                }
-            }]);
-
-            useHotkey(hotkeys.value);
-        }
-    },
-
     methods: {
-        changeBlueprint(index, contents){
+        change(index, contents){
             if(!contents.isTrusted);
                 this.state.changeContents(index, JSON.stringify(contents));
         },
