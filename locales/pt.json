@@ -6,5 +6,10 @@
     "Run": "Executar",
     "Reset": "Resetar",
     "Zoom in": "Aumentar zoom",
-    "Zoom out": "Diminuir zoom"
+    "Zoom out": "Diminuir zoom",
+    "Default": "Padrão",
+    "Mobile": "Móvel",
+    "Desktop": "Desktop",
+    "Tablet": "Tablet",
+    "Centralize": "Centralizar"
 }

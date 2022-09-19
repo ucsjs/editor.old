@@ -12,8 +12,8 @@
                 'p-1 px-4 cursor-default flex select-none'
             ]" 
             @mousedown.left="createGhost(item, root)"
-            @mouseover="selectItem(item)"
-            @click.left="selectItem"
+            @click.left="selectItem(item)"
+            @click.right="selectItem(item)"
         >
             <div :style="{ paddingLeft: `${padding*20}px` }" class="flex">
                 <div 
@@ -35,13 +35,40 @@
                 </div>
 
                 <div style="white-space:nowrap; text-overflow: ellipsis; overflow:hidden; ">
-                    {{ item.id }}
+                    {{ item.label || item.id }}
                 </div>
             </div>
         </div>
 
         <div v-if="item.open">
             <div v-if="tab && item.hierarchy">
+                <div 
+                    :class="[
+                        state.darktheme ? 'text-white hover:bg-neutral-800' : 'hover:bg-neutral-200', 
+                        'p-1 px-4 cursor-pointer flex select-none'
+                    ]" 
+                    v-if="state.hierarchy.items[item.pathHash]?.newComponent"
+                >
+                    <div :style="{ paddingLeft: `${(padding+1)*20}px` }" class="flex">
+                        <div class="pr-2">
+                            <client-only>
+                                <font-awesome-icon icon="fa-solid fa-align-left" />
+                            </client-only>
+                        </div>
+
+                        <div style="white-space:nowrap; text-overflow: ellipsis; overflow:hidden; ">
+                            <input 
+                                type="text" 
+                                class="w-full bg-neutral-800 border-[#007fd4] border outline-none h-6" 
+                                @keydown.enter="createFile"
+                                @blur="closeNewFile"
+                                @keydown.esc="closeNewFile"
+                                ref="inputNewFile"
+                            />
+                        </div>
+                    </div>
+                </div>
+
                 <visual-hierarchy-item 
                     v-for="(subItem, key) in item.hierarchy" 
                     :key="key" 

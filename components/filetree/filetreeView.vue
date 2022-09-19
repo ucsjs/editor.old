@@ -95,9 +95,6 @@ export default {
                 else
                     this.state.contextMenu.items = this.contextMenu.file;
             }
-            else{
-
-            }
 
             this.state.contextMenu.open = true;
         },

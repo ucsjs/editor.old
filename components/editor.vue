@@ -1,5 +1,9 @@
 <template>
-    <div class="relative w-screen h-screen" @click.left="closeContextmenu">
+    <div 
+        class="relative w-screen h-screen" 
+        @click.left="closeContextmenu" 
+        @contextmenu.prevent="() => {}"
+    >
         <Top />
 
         <div ref="move" class="fixed w-screen h-screen bg-transparent z-50" @mousemove="handleDrag" @mouseup="handleDragEnd" v-if="startDrag"></div>
@@ -24,7 +28,7 @@
                 </div>
                     
                 <div class="flex flex-col relative" :style="{width: `calc(100% - ${(state.leftbar.open) ? widthLeftbar : 0}px) !important`}">
-                    <TabsIndex ref="tabs" />
+                    <TabsIndex ref="tabs" @save="save" />
 
                     <!--<TermsView :class="[(state.leftbar.open) ? '' : 'ml-16']" />-->
                 </div>
@@ -87,32 +91,9 @@ export default {
                         _this.state.loading = true;
                         _this.state.inSaveProcess = true;
 
-                        if(_this.state.currentTab()){
-                            useApi(`files/save`, {
-                                method: "PUT", 
-                                body: _this.state.currentTab()
-                            }).then((res) => {
-                                if(res.sha256 && res.lastModified){
-                                    const file = _this.state.currentTab();
-                                    file.change = false;
-                                    file.lastModified = res.lastModified;
-                                    file.sha256 = res.sha256;
-
-                                    if(_this.$refs?.notifications)
-                                        _this.$refs?.notifications.open("File saved");
-
-                                    _this.state.loading = false;
-                                }
-
-                                _this.state.inSaveProcess = false;
-                            }).catch(() => {
-                                if(_this.$refs?.notifications)
-                                        _this.$refs?.notifications.open("Error to save file");
-
-                                _this.state.inSaveProcess = false;
-                            });
-                        }
-
+                        if(_this.state.currentTab())
+                            _this.state.save(_this.state.currentTab())
+                        
                         try{
                             if(_this.$refs.tabs.$refs.editor[0])
                                 _this.$refs.tabs.$refs.editor[0].onSave();
@@ -153,6 +134,34 @@ export default {
             this.state.leftbar.width = this.widthLeftbar;
             this.startDrag = false;
             this.state.dragging = false;
+        },
+
+        save(tab){
+            useApi(`files/save`, {
+                method: "PUT", 
+                body: tab
+            }).then((res) => {
+                if(res.sha256 && res.lastModified){
+                    const file = tab;
+                    file.change = false;
+                    file.lastModified = res.lastModified;
+                    file.sha256 = res.sha256;
+
+                    if(this.$refs?.notifications)
+                        this.$refs?.notifications.open("File saved");
+
+                    this.state.loading = false;
+                }
+
+                this.state.inSaveProcess = false;
+            }).catch(() => {
+                if(this.$refs?.notifications)
+                    this.$refs?.notifications.open("Error to save file");
+
+                this.state.inSaveProcess = false;
+            });
+
+            console.log(content, tab);
         }
     }
 }

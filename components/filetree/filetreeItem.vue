@@ -47,7 +47,7 @@
                     <div style="white-space:nowrap; text-overflow: ellipsis; overflow:hidden; ">
                         <input 
                             type="text" 
-                            class="w-full bg-neutral-800 border-[#007fd4] border outline-none" 
+                            class="w-full bg-neutral-800 border-[#007fd4] border outline-none h-6" 
                             @keydown.enter="createFile"
                             @blur="closeNewFile"
                             @keydown.esc="closeNewFile"

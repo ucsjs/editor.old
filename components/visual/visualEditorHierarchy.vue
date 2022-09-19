@@ -1,11 +1,13 @@
 <template>
     <div 
-        class="bg-neutral-900 h-full w-full py-4 relative z-30" 
+        class="bg-neutral-900 h-full w-full py-4 relative z-30 border-r-2 border-black" 
         v-if="canvas"
         ref="hierarchy"
+        @contextmenu.prevent="openContextmenu" 
         @mousemove="handleDrag" 
         @mouseup.left="removeGhost"
         @mouseleave="removeGhost"
+        @click.stop="unselectComponent"
     >
         <div 
             id="ghost" 
@@ -16,7 +18,7 @@
             {{ state.hierarchy.selectedItem.id }}
         </div>
 
-        <div class="absolute z-40 w-full" v-if="canvas.hierarchy">
+        <div class="absolute z-40 w-full" v-if="canvas.hierarchy" @click.stop="() => {}">
             <visual-hierarchy-item 
                 v-for="(item, key) in canvas.hierarchy" 
                 :key="key" 
@@ -25,7 +27,7 @@
                 :padding="0" 
                 :root="canvas"
                 @createGhost="createGhost"
-                @selectItem="selectItem" 
+                @selectItem="selectItem"
             />
         </div>
     </div>
@@ -37,13 +39,29 @@ import { useUserStore } from "~/store/user.store";
 export default {
     props: {
         tab: { type: Object }, 
-        canvas: { type: Object }
+        canvas: { type: Object },
+        components: { 
+            type: Array,
+            default: [] 
+        },
     },
 
     data(){
         return {
             state: useUserStore(),
             mouseHandler: { top: 200, left: 200 },
+            contextMenu: [
+                { label: "Cut", action: "cutFolder", shortcut: "Ctrl+X" },
+                { label: "Copy", action: "copyFolder", shortcut: "Ctrl+C" },
+                { label: "Paste", action: "pasteFolder", shortcut: "Ctrl+V" },
+                { separete: true },
+                { label: "Rename", action: "cutFolder", shortcut: "F2" },
+                { label: "Duplicate", action: "cutFolder", shortcut: "Ctrl+D" },
+                { label: "Delete", action: this.deleteComponent, shortcut: "Delete" },
+                { separete: true },
+                { label: "Create Empty", action: this.create },
+            ],
+            componentsCategories: {},
             padding: 0,
             ghost: null,
         }
@@ -62,9 +80,57 @@ export default {
             }    
         }
         catch(e){} 
+
+        if(this.components.length > 0){
+            this.sortComponentsCategories();
+
+            for(let key in this.componentsCategories){
+                let subItems = [];
+
+                for(let subItem of this.componentsCategories[key]){
+                    subItems.push({
+                        label: subItem.namespace,
+                        action: (subItem) => this.addComponent(subItem),
+                        item: subItem
+                    })
+                }
+
+                this.contextMenu.push({ 
+                    label: key,
+                    items: subItems
+                })
+            }
+        }
     },
 
     methods: {
+        openContextmenu(event){            
+            const { clientX, clientY } = event;
+            this.state.contextMenu.position = { left: clientX, top: clientY };
+            this.state.contextMenu.items = { ...this.contextMenu };
+            this.state.contextMenu.open = true;
+        },
+
+        sortComponentsCategories() {
+            for(let item of this.components){
+                
+                if(!this.componentsCategories[item.metadata.group])
+                    this.componentsCategories[item.metadata.group] = [];
+                
+                this.componentsCategories[item.metadata.group].push(item);
+            }
+
+            this.componentsCategories = Object.keys(this.componentsCategories).sort().reduce(
+                (obj, key) => { 
+                    obj[key] = this.componentsCategories[key]; 
+                    return obj;
+                }, {}
+            );
+
+            this.$forceUpdate();
+            this.$nextTick();
+        },
+
         handleDrag(event){   
             const { clientX, clientY } = event;
             const hierarchyOffset = this.$refs.hierarchy.getBoundingClientRect();
@@ -125,7 +191,6 @@ export default {
 
         async isSubItem(elementId, root){
             return new Promise(async (resolve, reject) => {
-                //if(root.)
                 if(root.hierarchy.length > 0){
                     for(let key in root.hierarchy){
                         if(root.hierarchy[key]){
@@ -176,9 +241,40 @@ export default {
             });
         },
 
-        selectItem(item){
-            this.state.hierarchy.selectedItem = item;
+        addComponent(component){
+            const newComponent = {
+                id: `${component.item.namespace}_${new Date().getTime()}`,
+                ...component.item,
+                position: {
+                    left: 0,
+                    top: 0
+                },
+                hierarchy: []
+            }; 
+
+            if(this.state.hierarchy.selectedItem)
+                this.state.hierarchy.selectedItem.hierarchy.push(newComponent);
+            else
+                this.$emit("addComponent", newComponent);
+
+            this.state.contextMenu.open = false;
         },
+
+        async deleteComponent(){
+            await this.removeItem(this.state.hierarchy.selectedItem, this.canvas);
+        },
+
+        selectItem(item){
+            
+            this.state.hierarchy.selectedItem = item;
+            console.log(this.state.hierarchy.selectedItem)
+            this.$emit("selectComponent", item);
+        },
+
+        unselectComponent(){
+            this.state.hierarchy.selectedItem = null;
+            this.$emit("selectComponent", null);
+        }
     }
 }
 </script>

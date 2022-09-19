@@ -1,7 +1,11 @@
 <template>
     <div class="overflow-hidden h-full w-full">
         <nav :class="[state.darktheme ? 'text-white bg-neutral-800 border-black' : 'text-gray-800 bg-neutral-200 border-neutral-100', 'flex border-b select-none overflow-auto']" aria-label="Tabs">
-            <draggable v-model="state.tabs" class="flex" @end="(event) => state.selectTab(event.newIndex)">
+            <draggable 
+                v-model="state.tabs" 
+                class="flex" 
+                @end="(event) => state.selectTab(event.newIndex)"
+            >
                 <template 
                     #item="{ element, index }" 
                     :list="list" 
@@ -62,9 +66,8 @@
                         ref="editor"
                         :value="state.tabs[key]?.content" 
                         :language="(tab.language == 'blueprint') ? 'typescript' : tab.language"  
-                        @changeContents="(contents) => {
-                            state.changeContents(key, contents);
-                        }" 
+                        @save="() => { this.$emit('save', state.tabs[key]); }"
+                        @changeContents="(contents) => { state.changeContents(key, contents); }" 
                     /> 
                 </div>
             </div>

@@ -1,6 +1,20 @@
 <template>
     <div class="absolute w-full h-full" @contextmenu.prevent="() => {}" ref="editor">
-        <div ref="moveLeft" class="fixed w-screen h-screen bg-transparent z-50" @mousemove="handleDragLeft" @mouseup="handleDragEndLeft" v-if="startDragLeft"></div>
+        <div 
+            ref="moveLeft" 
+            class="fixed w-screen h-screen bg-transparent z-50" 
+            @mousemove="handleDragLeft" 
+            @mouseup="handleDragEndLeft" 
+            v-if="startDragLeft"
+        ></div>
+
+        <div 
+            ref="moveRight" 
+            class="fixed w-screen h-screen bg-transparent z-50" 
+            @mousemove="handleDragRight" 
+            @mouseup="handleDragEndRight" 
+            v-if="startDragRight"
+        ></div>
 
         <div class="grid-background select-none absolute left-0 right-0 top-0 bottom-11">
             <div class="flex flex-col h-full">
@@ -13,15 +27,19 @@
                         <visual-editor-hierarchy 
                             :tab="tab" 
                             :canvas="canvas"
+                            :components="components" 
                             v-if="canvas && tab" 
                             @changeState="changeState"
+                            @selectComponent="selectComponent"
+                            @addComponent="addComponent"
                         />
 
                         <div 
                             :class="[
                                 (startDragLeft) ? 'bg-blue-500' : '',
-                                'resizeRight w-2 hover:bg-blue-500 h-full absolute right-0 z-50'
+                                'resizeRight w-2 hover:bg-blue-500 h-full absolute right-0 z-40'
                             ]"
+                            @mouseup.stop="handleDragEndLeft"
                             @mousedown="handleDragStartLeft"
                             @click="handleDragStartLeft"
                             @dragstart="handleDragStartLeft"                
@@ -45,10 +63,21 @@
                     </div>
 
                     <div class="relative flex" :style="{width: `${widthRightbar}px !important`}">
-                        <visual-editor-inspector
+                        <visual-editor-inspector                            
                             :component="selectedComponent"
                             @changeProperty="changeProperty"
                         />
+
+                        <div 
+                            :class="[
+                                (startDragRight) ? 'bg-blue-500' : '',
+                                'resizeRight w-2 hover:bg-blue-500 h-full absolute left-0 z-40'
+                            ]"
+                            @mouseup.stop="handleDragEndRight"
+                            @mousedown="handleDragStartRight"
+                            @click="handleDragStartRight"
+                            @dragstart="handleDragStartRight"                
+                        ></div>
                     </div>
                 </div>
             </div>
@@ -63,6 +92,8 @@
 </style>
 
 <script>
+import { useUserStore } from "~/store/user.store";
+
 export default {
     props:{
         tab: {
@@ -73,14 +104,17 @@ export default {
 
     data(){
         return{
+            state: useUserStore(),
             components: [],
             selectedComponent: null,
             content: {},
             canvas: null,
             widthLeftbar: 300,
-            widthRightbar: 300,
             startDragLeft: false,
             startDragLeftEvent: null,
+            widthRightbar: 300,
+            startDragRight: false,
+            startDragRightEvent: null,
         }
     },
 
@@ -109,9 +143,16 @@ export default {
             this.canvas = value;
         },
 
-        selectComponent(component){
-            this.selectedComponent = component;
-            this.$forceUpdate();
+        async selectComponent(component){
+            if(component && component.id){
+                const componentSelected = await this.$refs.canvas.getComponent(component.id, this.$refs.canvas);
+                this.state.hierarchy.selectedItem = componentSelected;
+
+                if(componentSelected)
+                    this.selectedComponent = componentSelected;
+
+                this.$forceUpdate();
+            }
         },
 
         unselectComponent(){
@@ -142,8 +183,30 @@ export default {
         },
 
         handleDragEndLeft(event){
+            console.log(this);
             this.startDragLeftEvent = null;
             this.startDragLeft = false;
+            this.saveState();
+        },
+
+        handleDragStartRight(event){
+            this.startDragRight = true;
+            this.startDragRightEvent = { event, width: this.widthRightbar };
+        },
+
+        handleDragRight(event){
+            if(this.startDragRight){
+                const diffX = event.clientX - this.startDragRightEvent.event.clientX;
+                const newWidth = this.startDragRightEvent.width - diffX;
+
+                if(newWidth > 200  && newWidth <= 1000)
+                    this.widthRightbar = newWidth;
+            }
+        },
+
+        handleDragEndRight(event){
+            this.startDragRightEvent = null;
+            this.startDragRight = false;
             this.saveState();
         },
 
@@ -157,8 +220,14 @@ export default {
             this.$forceUpdate();
         },
 
-        onDelete(){
-            this.$refs.canvas.onDelete();
+        addComponent(component){
+            this.$refs.canvas.addComponent(component);
+        },
+
+        async onDelete(){
+            await this.$refs.canvas.onDelete();
+            this.saveState(true);
+            this.$forceUpdate();
         },
 
         saveState(){

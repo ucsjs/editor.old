@@ -62,6 +62,18 @@ export default {
                 minimap: { enabled: false },
             });
 
+            editorElem.addAction({
+                id: 'save',
+                label: 'Save',
+                precondition: null,
+                keybindings: [
+                    monaco.KeyMod.chord(
+                        monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
+                    )
+                ],
+                run: () => { this.$emit("save"); }
+            })
+
             editorElem.getModel().onDidChangeContent((event) => {
                 const value = editorElem.getValue();
 

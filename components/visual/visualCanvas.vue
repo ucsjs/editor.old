@@ -17,7 +17,7 @@
             <div class="grid-contents block relative" @mousedown.left="move">
                 <div class="justify-center items-center flex h-full">
                     <div 
-                        class="m-auto overflow-hidden relative" 
+                        class="m-auto overflow-hidden absolute z-40" 
                         :style="{
                             backgroundColor: settings.backgroundColor,
                             width: `${viewport.width}px`, 
@@ -41,9 +41,13 @@
                             @selectItem="selectItem"
                             @changeState="saveState"
                         ></visual-component>
+
+                        <div class="bg-blue-500/50 absolute bottom-0 p-1">
+                            Viewport: {{ editorOffset.x - canvasOffset.x }} X / {{ editorOffset.y - canvasOffset.y }} Y
+                        </div>
                     </div> 
 
-                    <div class="absolute h-11 bg-black/50 bottom-6 right-6 rounded-md flex">
+                    <div class="absolute h-11 bg-black/50 bottom-3 rounded-md flex z-40">
                         <Tooltip :tooltipText="$t('Desktop')" position="top" class="flex" @click="viewportDesktop">
                             <button class="text-white px-3">
                                 <client-only><font-awesome-icon icon="fa-solid fa-desktop" /></client-only>
@@ -81,9 +85,25 @@
                                 <client-only><font-awesome-icon icon="fa-solid fa-magnifying-glass-minus" /></client-only>
                             </button>
                         </Tooltip>
+
+                        <div class="p-2 text-neutral-600 font-bold">::</div>
+
+                        <Tooltip :tooltipText="$t('Centralize')" position="top" class="flex" @click="centralize">
+                            <button class="text-white px-3">
+                                <client-only><font-awesome-icon icon="fa-solid fa-arrows-to-dot" /></client-only>
+                            </button>
+                        </Tooltip>
                     </div>
 
                     <visual-context-menu :components="components" ref="navbar" @addComponent="addComponent" />
+                </div>
+
+                <div id="grid-margin" class="w-full h-full top-0 left-0 absolute z-20">
+                    <div class="border border-dashed border-sky-500/50 h-full w-[1px] absolute z-30" :style="{ left: `${canvasOffset.x - editorOffset.x}px`}"></div>
+                    <div class="border border-dashed border-sky-500/50 h-full w-[1px] absolute z-30" :style="{ left: `${(canvasOffset.x - editorOffset.x) + viewport.width}px`}"></div>
+                
+                    <div class="border border-dashed border-sky-500/50 h-[1px] w-full absolute z-30" :style="{ top: `${canvasOffset.y - editorOffset.y}px`}"></div>
+                    <div class="border border-dashed border-sky-500/50 h-[1px] w-full absolute z-30" :style="{ top: `${(canvasOffset.y - editorOffset.y)+ viewport.height}px`}"></div>
                 </div>
             </div>
         </div>
@@ -187,8 +207,16 @@ export default {
             this.loadCanvasFromLocalStorage();
         } 
 
-        this.editorOffset = this.$refs.editor.getBoundingClientRect();
-        this.canvasOffset = this.$refs.canvas.getBoundingClientRect();
+        setInterval(() => {
+            if(this.$refs.editor && this.$refs.editor?.getBoundingClientRect)
+                this.editorOffset = this.$refs.editor?.getBoundingClientRect();
+
+            if(this.$refs.canvas && this.$refs.canvas?.getBoundingClientRect)
+                this.canvasOffset = this.$refs.canvas?.getBoundingClientRect();
+        }, 100);
+
+        this.editorOffset = this.$refs.editor?.getBoundingClientRect();
+        this.canvasOffset = this.$refs.canvas?.getBoundingClientRect();
         this.$emit("loadedCanvas", this.getValue());
     },
 
@@ -214,25 +242,26 @@ export default {
 
         addComponent(item, position){
             this.componentIndex++;
-            const canvasX = this.canvasOffset.x - this.editorOffset.x + this.position.x;
-            const canvasY = this.canvasOffset.y - this.editorOffset.y + this.position.y; 
+            const offsetX = this.editorOffset.x - this.canvasOffset.x;
+            const offsetY = this.editorOffset.y - this.canvasOffset.y; 
 
             this.hierarchy.push({
                 id: `${item.namespace}_${this.componentIndex}`,
                 ...item,
                 position: {
-                    left: 0,// position.left - canvasY,
-                    top: 0//position.top - canvasX
+                    left: position.left + offsetX,
+                    top: position.top + offsetY
                 },
                 hierarchy: []
             });
 
             this.saveState(true);
+            this.selectItem(`${item.namespace}_${this.componentIndex}`);
         },
 
         move(event){
             const { clientX, clientY } = event;
-            const editorOffset = this.$refs.editor.getBoundingClientRect();
+            const editorOffset = this.$refs.editor?.getBoundingClientRect();
 
             this.moveStartPosition = { 
                 clientX: clientX - editorOffset.x - 10, 
@@ -246,7 +275,7 @@ export default {
 
         handleDrag(event){
             const { clientX, clientY } = event;
-            const editorOffset = this.$refs.editor.getBoundingClientRect();
+            const editorOffset = this.$refs.editor?.getBoundingClientRect();
             
             this.mouseHandler.top = clientY - editorOffset.y - 10;
             this.mouseHandler.left = clientX - editorOffset.x - 10;                
@@ -302,6 +331,11 @@ export default {
             this.$forceUpdate();
         },
 
+        centralize(){
+            this.position = { x: 0, y: 0 };
+            this.saveState();
+        },
+
         async selectItem(id){
             const component = await this.getComponent(id, this);
 
@@ -325,11 +359,9 @@ export default {
         },
 
         async onDelete(){
-            if(this.selectedComponent){
+            if(this.selectedComponent){                
                 await this.removeComponent(this.selectedComponent.id, this);
-                this.saveState(true);
-                this.$forceUpdate();
-                this.selectedComponent = null;
+                this.$emit("unselectItem");
             }
         },
 

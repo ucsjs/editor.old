@@ -6,5 +6,10 @@
     "Run": "Run",
     "Reset": "Reset",
     "Zoom in": "Zoom in",
-    "Zoom out": "Zoom out"
+    "Zoom out": "Zoom out",
+    "Default": "Default",
+    "Mobile": "Mobile",
+    "Desktop": "Desktop",
+    "Tablet": "Tablet",
+    "Centralize": "Centralizar"
 }

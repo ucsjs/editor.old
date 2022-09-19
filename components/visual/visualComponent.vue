@@ -1,5 +1,6 @@
 <template>
     <client-only>
+        <!-- eslint-disable -->
         <vue-drag-resize  
             :style="{ 
                 position: position.position,
@@ -8,43 +9,52 @@
                 top: `${position.top}px`, 
                 left: `${position.left}px`, 
                 transform: `scale(${position.scale})`,
-                visibility: this.settings.visibility ? 'visible' : 'hidden' 
+                visibility: settings.visibility ? 'visible' : 'hidden',
+                zIndex: position.zIndex, 
             }"
             :initW="dimensions.width" 
             :initH="dimensions.height"
             :minW="50"
-            :minH="50"
+            :minH="30"
             v-model:x="resizeData.x"
             v-model:y="resizeData.y"
             v-model:w="resizeData.w"
             v-model:h="resizeData.h"
             v-model:active="resizeData.active"                  
-            :draggable="!settings.static"
-            :resizable="!settings.static"
-            :parent="true"
+            :draggable="!settings.static && selectedComponent?.id == settings.id"
+            :resizable="!settings.static && selectedComponent?.id == settings.id"
+            :parent="settings.lockBox"
             @resizing="resizeOrMove"
             @dragging="resizeOrMove"
             @click.stop="selectItem(settings?.id)"
             v-if="settings"
         > 
+            <div 
+                :class="[
+                    (selectedComponent?.id == settings.id) ? 'bg-orange-500' : 'border-purple-300',
+                    'absolute -top-5 px-2 text-sm rounded-t-md'
+                ]" 
+                style="font-size: 10px"
+            >
+                {{ settings?.label }}
+            </div>
+
             <div             
                 v-if="resizeData"
                 :class="[
-                    (selectedComponent?.id == settings.id) ? 'border-red-300' : 'hover:border-purple-300 border-dashed',
-                    (settings.metadata.moveble) ? 'cursor-move' : '',
-                    'text-black border border-transparent w-full h-full'
+                    (selectedComponent?.id == settings.id) ? 'border-red-300' : 'border-purple-300 hover:border-purple-500 border-dashed',
+                    (settings.metadata.moveble && !settings.static) ? 'cursor-move' : '',
+                    'text-black border w-full h-full'
                 ]"
-            >    
-                <div 
-                    ref="component"                 
-                >
-                    {{ position }}   
-                    
-                    {{ dimensions }}
-                    
-                    <div v-if="settings.metadata.resizable" class="relative">
-                        <div class=""></div>
-                    </div>
+            >     
+                <div ref="component">
+                    <client-only placeholder="Loading...">
+                        <dynamic-renderer 
+                            v-if="settings" 
+                            :component="settings"
+                        >
+                        </dynamic-renderer>
+                    </client-only>
                 </div>
 
                 <visual-component 
@@ -90,7 +100,7 @@ export default {
         return {
             moveble: false,
             moveEvent: false,
-            position: { top: 0, left: 0, scale: 1, position: "absolute" },
+            position: { top: 0, left: 0, scale: 1, position: "absolute", zIndex: 1 },
             dimensions: { width: 0, height: 0, widthAuto: false, heightAuto: false },
             componentsIndex: {},
             resizeData: null
@@ -120,35 +130,62 @@ export default {
             if(this.settings){
                 if(!this.settings.label)
                     this.settings.label = this.settings.id || "";
-
+                    
                 if(!this.settings.visibility && this.settings.visibility != false)
                     this.settings.visibility = true;
 
                 if(!this.settings.static && this.settings.static != false)
                     this.settings.static = false;
 
+                if(!this.settings.lockBox && this.settings.lockBox != false)
+                    this.settings.lockBox = true;
+
                 for(let key in this.settings.components)
                     this.componentsIndex[this.settings.components[key].component] = key;
-                                
+                             
+                //Transform
                 const transformComponent = this.getSubcomponent("Transform");
 
-                if(this.settings.position && !transformComponent.value)
-                    this.position = this.settings.position;                
-                else if(transformComponent.value)
-                    this.position = transformComponent.value;
-                
-                if(!transformComponent.value)
-                    transformComponent.value = this.position;
-
-                const dimensionsComponent = this.getSubcomponent("Dimensions");
-                
-                if(dimensionsComponent.value)
-                    this.dimensions = dimensionsComponent.value;
-                else if(dimensionsComponent.default)
-                    this.dimensions = dimensionsComponent.default;
+                if(transformComponent){
+                    if(this.settings.position && !transformComponent.value)
+                        this.position = this.settings.position;                
+                    else if(transformComponent.value)
+                        this.position = transformComponent.value;
                     
-                if(!dimensionsComponent.value)
-                    dimensionsComponent.value = this.dimensions;
+                    if(!transformComponent.value)
+                        transformComponent.value = this.position;
+                }
+
+                //Dimensions
+                const dimensionsComponent = this.getSubcomponent("Dimensions");
+
+                if(dimensionsComponent){
+                    if(dimensionsComponent.value)
+                        this.dimensions = dimensionsComponent.value;
+                    else if(dimensionsComponent.default)
+                        this.dimensions = dimensionsComponent.default;
+                        
+                    if(!dimensionsComponent.value)
+                        dimensionsComponent.value = this.dimensions;
+                }
+
+                //Parse values
+                for(let key in this.settings.components){
+                    const component = this.settings.components[key];
+
+                    if(this.settings.componentsDafaults?.length > 0){
+                        for(let componentDefault of this.settings.componentsDafaults){
+                            if(componentDefault.component == component.component.toLowerCase()){
+                                component.default[componentDefault.property] = componentDefault.value;
+                            }
+                        }
+                    }
+
+                    if(!this.settings.components[key].value)
+                        this.settings.components[key].value = (component.default) ? component.default : {};
+                
+                    this.settings[this.settings.components[key].component] = this.settings.components[key].value;
+                }
 
                 this.resizeData = {
                     w: this.dimensions.width,
