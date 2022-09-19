@@ -8,6 +8,8 @@
 
         <div ref="move" class="fixed w-screen h-screen bg-transparent z-50" @mousemove="handleDrag" @mouseup="handleDragEnd" v-if="startDrag"></div>
 
+        <div ref="move" class="fixed w-screen h-screen bg-transparent z-50" @mousemove="handleDragTop" @mouseup="handleDragEndTop" v-if="startDragTop"></div>
+
         <div class="flex flex-col select-none h-full absolute">
             <div class="flex flex-row w-full" style="height: calc(100% - 72px)">
                 <LeftNavbar />
@@ -16,7 +18,7 @@
                     <div 
                         :class="[
                             (startDrag) ? 'bg-blue-500' : '',
-                            'resizeRight w-2 hover:bg-blue-500 h-full absolute z-50'
+                            'resizeRight w-1 hover:bg-blue-500 h-full absolute z-50'
                         ]"
                         :style="{right: '-7px' }"
                         @mousedown="handleDragStart"
@@ -27,10 +29,28 @@
                     <filetree-view />
                 </div>
                     
-                <div class="flex flex-col relative" :style="{width: `calc(100% - ${(state.leftbar.open) ? widthLeftbar : 0}px) !important`}">
-                    <TabsIndex ref="tabs" @save="save" />
+                <div 
+                    class="flex flex-col relative" 
+                    :style="{width: `calc(100% - ${(state.leftbar.open) ? widthLeftbar : 0}px) !important`}"
+                >
+                    <div class="flex relative" :style="{height: `calc(100% - ${terminalHeight}px) !important`}"> 
+                        <TabsIndex ref="tabs" @save="save" />
+                    </div>
 
-                    <!--<TermsView :class="[(state.leftbar.open) ? '' : 'ml-16']" />-->
+                    <div class="flex z-40 overflow-hidden relative" :style="{height: `${terminalHeight}px !important`}">
+                        <div 
+                            :class="[
+                                (startDragTop) ? 'bg-blue-500' : '',
+                                'resizeNS hover:bg-blue-500 w-full h-1 absolute left-0 z-40'
+                            ]"
+                            @mouseup.stop="handleDragEndTop"
+                            @mousedown="handleDragStartTop"
+                            @click="handleDragStartTop"
+                            @dragstart="handleDragStartTop"                
+                        ></div>
+
+                        <TermsView />
+                    </div>
                 </div>
             </div>
 
@@ -48,6 +68,10 @@
 .resizeRight{
     cursor: ew-resize;
 }
+
+.resizeNS{
+    cursor: ns-resize;
+}
 </style>
     
 <script>
@@ -57,9 +81,11 @@ export default {
     data(){
         return {
             state: useUserStore(),
+            startDragTop: false,
             startDrag: false,
             widthLeftbar: 300,
-            withMiddle: ""
+            withMiddle: "",
+            terminalHeight: 300
         };
     },  
 
@@ -92,7 +118,7 @@ export default {
                         _this.state.inSaveProcess = true;
 
                         if(_this.state.currentTab())
-                            _this.state.save(_this.state.currentTab())
+                            _this.save(_this.state.currentTab())
                         
                         try{
                             if(_this.$refs.tabs.$refs.editor[0])
@@ -130,10 +156,31 @@ export default {
         },
 
         handleDragEnd(event){
-            this.widthLeftbar = event.clientX;
+            this.widthTop = event.clientY;
             this.state.leftbar.width = this.widthLeftbar;
             this.startDrag = false;
             this.state.dragging = false;
+        },
+
+        //Top
+        handleDragStartTop(event){
+            this.startDragTop = true;
+            this.startDragTopEvent = { event, height: this.terminalHeight };
+        },
+
+        handleDragTop(event){
+            if(this.startDragTop){
+                const diffY = event.clientY - this.startDragTopEvent.event.clientY;
+                const newHeight = this.startDragTopEvent.height - diffY;
+
+                if(newHeight > 200  && newHeight <= 1000)
+                    this.terminalHeight = newHeight;
+            }
+        },
+
+        handleDragEndTop(event){
+            this.startDragTopEvent = null;
+            this.startDragTop = false;
         },
 
         save(tab){
@@ -160,8 +207,6 @@ export default {
 
                 this.state.inSaveProcess = false;
             });
-
-            console.log(content, tab);
         }
     }
 }

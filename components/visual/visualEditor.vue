@@ -37,7 +37,7 @@
                         <div 
                             :class="[
                                 (startDragLeft) ? 'bg-blue-500' : '',
-                                'resizeRight w-2 hover:bg-blue-500 h-full absolute right-0 z-40'
+                                'resizeRight w-1 hover:bg-blue-500 h-full absolute right-0 z-40'
                             ]"
                             @mouseup.stop="handleDragEndLeft"
                             @mousedown="handleDragStartLeft"
@@ -66,12 +66,15 @@
                         <visual-editor-inspector                            
                             :component="selectedComponent"
                             @changeProperty="changeProperty"
+                            @addComponent="addSubcomponent"
+                            @removeComponent="removeSubcomponent"
+                            @changeState="saveStateContents"
                         />
 
                         <div 
                             :class="[
                                 (startDragRight) ? 'bg-blue-500' : '',
-                                'resizeRight w-2 hover:bg-blue-500 h-full absolute left-0 z-40'
+                                'resizeRight w-1 hover:bg-blue-500 h-full absolute left-0 z-40'
                             ]"
                             @mouseup.stop="handleDragEndRight"
                             @mousedown="handleDragStartRight"
@@ -167,6 +170,11 @@ export default {
             this.$refs.canvas.loadCanvasFromLocalStorage();
         },
 
+        saveStateContents(){
+            this.$refs.canvas.saveState(true);
+            this.$refs.canvas.loadCanvasFromLocalStorage();
+        },
+
         handleDragStartLeft(event){
             this.startDragLeft = true;
             this.startDragLeftEvent = { event, width: this.widthLeftbar };
@@ -183,7 +191,6 @@ export default {
         },
 
         handleDragEndLeft(event){
-            console.log(this);
             this.startDragLeftEvent = null;
             this.startDragLeft = false;
             this.saveState();
@@ -217,11 +224,34 @@ export default {
             if(componentUpdated)
                 this.selectedComponent = componentUpdated;
 
+            this.$refs.canvas.saveState(true);
             this.$forceUpdate();
         },
 
         addComponent(component){
             this.$refs.canvas.addComponent(component);
+            this.$refs.canvas.saveState(true);
+        },
+
+        addSubcomponent(component){
+            let hasComponent = false;
+
+            for(let key in this.selectedComponent.components){
+                if(this.selectedComponent.components[key].sign === component.sign){
+                    hasComponent = true;
+                    break;
+                }
+            }
+
+            if(!hasComponent){
+                this.selectedComponent.components.push(component);
+                this.$refs.canvas.saveState(true);
+            }
+        },
+
+        removeSubcomponent(key){
+            this.selectedComponent.components.splice(key, 1);
+            this.$refs.canvas.saveState(true);
         },
 
         async onDelete(){

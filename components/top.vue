@@ -3,7 +3,7 @@
         <div class="fixed w-screen h-screen z-50 mt-14" @click="resetSelected" v-if="selected != -1"></div>
 
         <div :class="[state.darktheme ? 'bg-neutral-800 border-black' : 'bg-neutral-100', 'w-screen border-b flex justify-between px-2 select-none']" @click="resetSelected">
-            <div class="flex flex-1 ">
+            <div class="flex flex-1">
                 <Menu as="div" class="relative" v-for="(item, key) of navbar" :key="key" @click.stop="() => {}">
                     <MenuButton 
                         :class="[(selected === key) ? (state.darktheme ? 'bg-neutral-700 text-neutral-200' : 'bg-neutral-100') : (state.darktheme ? 'bg-neutral-800 text-neutral-200 hover:bg-neutral-700' : 'bg-neutral-100'),'px-3 rounded-lg h-full']" 

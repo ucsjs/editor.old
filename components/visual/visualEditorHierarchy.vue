@@ -33,6 +33,29 @@
     </div>
 </template>
 
+<style scoped>
+* {
+    scrollbar-width: auto;
+    scrollbar-color: #171717 #000000;
+}
+
+*::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+*::-webkit-scrollbar-track, *::-webkit-scrollbar-corner {
+    background: #1E1E1E;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: #383838;
+    border-radius: 0px;
+    border: 3px solid #383838;
+    border-radius: 30px;
+}
+</style>
+
 <script>
 import { useUserStore } from "~/store/user.store";
 
@@ -265,9 +288,7 @@ export default {
         },
 
         selectItem(item){
-            
             this.state.hierarchy.selectedItem = item;
-            console.log(this.state.hierarchy.selectedItem)
             this.$emit("selectComponent", item);
         },
 

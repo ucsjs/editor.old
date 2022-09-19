@@ -21,7 +21,7 @@
                         class="flex hover:bg-neutral-800 rounded-md p-1 cursor-pointer" 
                         @click="openedState[key] = !openedState[key]"
                     >
-                        <div>
+                        <div class="w-6 text-center">
                             <client-only><font-awesome-icon :icon="(subitem.metadata.icon) ? subitem.metadata.icon : headerIcon(subitem.metadata.group)" v-if="openedState[key]" /></client-only>
                         </div>
 
@@ -35,8 +35,8 @@
     </ol>
     <ol v-else>
         <li v-for="(item, key) in itemsFiltred" v-show="key != 'undefined'" :key="key" class="flex rounded-md p-1"> 
-            <div>
-                <client-only><font-awesome-icon :icon="(item.metadata.headerIcon) ? item.metadata.headerIcon : headerIcon(item.metadata.group)" /></client-only>
+            <div class="w-6 text-center">
+                <client-only><font-awesome-icon :icon="(subitem.metadata.icon) ? subitem.metadata.icon : headerIcon(subitem.metadata.group)" /></client-only>
             </div>
 
             <div class="ml-2 cursor-pointer" @click="addComponent(item)">

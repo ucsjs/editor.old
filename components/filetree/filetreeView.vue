@@ -19,7 +19,7 @@
 <style scoped>
 * {
     scrollbar-width: auto;
-    scrollbar-color: #262626 #000000;
+    scrollbar-color: #171717 #000000;
 }
 
 *::-webkit-scrollbar {
@@ -28,13 +28,14 @@
 }
 
 *::-webkit-scrollbar-track, *::-webkit-scrollbar-corner {
-    background: #000000;
+    background: #1E1E1E;
 }
 
 *::-webkit-scrollbar-thumb {
-    background-color: #262626;
+    background-color: #383838;
     border-radius: 0px;
-    border: 3px solid #262626;
+    border: 3px solid #383838;
+    border-radius: 30px;
 }
 </style>
 

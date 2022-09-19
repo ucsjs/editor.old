@@ -75,9 +75,7 @@ export default {
 
         filterComponents(){
             if(this.search){
-                console.log(this.components);
                 this.componentsFiltred = this.components.filter(item => {
-                    console.log(item);
                     return item.metadata.namespace.toLowerCase().includes(this.search.toLowerCase());
                 });
             }

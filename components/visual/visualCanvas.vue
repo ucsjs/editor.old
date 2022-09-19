@@ -42,12 +42,12 @@
                             @changeState="saveState"
                         ></visual-component>
 
-                        <div class="bg-blue-500/50 absolute bottom-0 p-1">
+                        <!--<div class="bg-blue-500/50 absolute bottom-0 p-1">
                             Viewport: {{ editorOffset.x - canvasOffset.x }} X / {{ editorOffset.y - canvasOffset.y }} Y
-                        </div>
+                        </div>-->
                     </div> 
 
-                    <div class="absolute h-11 bg-black/50 bottom-3 rounded-md flex z-40">
+                    <div class="absolute h-11 bg-black/50 top-3 right-3 rounded-md flex z-40">
                         <Tooltip :tooltipText="$t('Desktop')" position="top" class="flex" @click="viewportDesktop">
                             <button class="text-white px-3">
                                 <client-only><font-awesome-icon icon="fa-solid fa-desktop" /></client-only>
@@ -437,7 +437,6 @@ export default {
         async updateComponent(component){
             await this.updateComponentBy(component.id, this, component);
             this.$forceUpdate();
-            console.log("updateComponent");
         },
 
         async getComponent(elementId, root){
