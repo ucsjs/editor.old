@@ -271,26 +271,6 @@
     height:100%;
     background-size:50px 50px;
 }
-
-* {
-    scrollbar-width: auto;
-    scrollbar-color: #262626 #000000;
-}
-
-*::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-}
-
-*::-webkit-scrollbar-track, *::-webkit-scrollbar-corner {
-    background: #000000;
-}
-
-*::-webkit-scrollbar-thumb {
-    background-color: #262626;
-    border-radius: 0px;
-    border: 3px solid #262626;
-}
 </style>
 
 <script>

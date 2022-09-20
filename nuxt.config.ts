@@ -40,7 +40,7 @@ export default defineNuxtConfig({
         shim: false
     },
     vite: {
-        logLevel: "error",
+        logLevel: 'silent',
         define: {
             'process.env.DEBUG': 'false',
         },
@@ -49,14 +49,6 @@ export default defineNuxtConfig({
                 scss: [
                     "~/assets/main.scss"
                 ]
-            }
-        }
-    },
-    vue: {
-        compilerOptions: {
-            //isCustomElement: (tag) => tag.startsWith('font-awesome-icon'),
-            onWarn: (msg) => {
-                console.log("onWarn", msg);
             }
         }
     },
@@ -99,7 +91,7 @@ export default defineNuxtConfig({
         ]
     },
     alias:{
-        "vscode": "./node_modules/monaco-languageclient/lib/vscode-compatibility"
+        "vscode": "./node_modules/monaco-languageclient/lib/vscode-compatibility",
     },
     hooks: {
         'vite:extend'({ nuxt, config }) {

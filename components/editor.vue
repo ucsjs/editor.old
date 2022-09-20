@@ -1,6 +1,6 @@
 <template>
     <div 
-        class="relative w-screen h-screen" 
+        class="w-screen h-screen" 
         @click.left="closeContextmenu" 
         @contextmenu.prevent="() => {}"
     >
@@ -12,46 +12,13 @@
 
         <div class="flex flex-col select-none h-full absolute">
             <div class="flex flex-row w-full" style="height: calc(100% - 72px)">
-                <LeftNavbar />
+                <!--<LeftNavbar />-->
 
-                <div class="relative" :style="{width: `${widthLeftbar}px !important`}" v-show="state.leftbar.open">
-                    <div 
-                        :class="[
-                            (startDrag) ? 'bg-blue-500' : '',
-                            'resizeRight w-1 hover:bg-blue-500 h-full absolute z-50'
-                        ]"
-                        :style="{right: '-7px' }"
-                        @mousedown="handleDragStart"
-                        @click="handleDragStart"
-                        @dragstart="handleDragStart"                
-                    ></div>
-
-                    <filetree-view />
-                </div>
-                    
-                <div 
-                    class="flex flex-col relative" 
-                    :style="{width: `calc(100% - ${(state.leftbar.open) ? widthLeftbar : 0}px) !important`}"
-                >
-                    <div class="flex relative" :style="{height: `calc(100% - ${terminalHeight}px) !important`}"> 
-                        <TabsIndex ref="tabs" @save="save" />
-                    </div>
-
-                    <div class="flex z-40 overflow-hidden relative" :style="{height: `${terminalHeight}px !important`}">
-                        <div 
-                            :class="[
-                                (startDragTop) ? 'bg-blue-500' : '',
-                                'resizeNS hover:bg-blue-500 w-full h-1 absolute left-0 z-40'
-                            ]"
-                            @mouseup.stop="handleDragEndTop"
-                            @mousedown="handleDragStartTop"
-                            @click="handleDragStartTop"
-                            @dragstart="handleDragStartTop"                
-                        ></div>
-
-                        <TermsView />
-                    </div>
-                </div>
+                <layout
+                    ref="layout"
+                    path="../"
+                    style="width: 100%; height: 100%"
+                ></layout>
             </div>
 
             <div class="flex flex-row w-full">
@@ -60,9 +27,26 @@
         </div>
 
         <context-menu />
-        <Notifications ref="notifications" />
+        <Notifications ref="notifications" />-->
     </div>
 </template>
+
+<style>
+html {
+    height: 100%;
+}
+body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+.full-height, #app {
+    height: 100%;
+}
+</style>
+
+<style src="golden-layout/dist/css/goldenlayout-base.css"></style>
+<style src="golden-layout/dist/css/themes/goldenlayout-dark-theme.css"></style>
 
 <style scoped>
 .resizeRight{
@@ -73,11 +57,13 @@
     cursor: ns-resize;
 }
 </style>
-    
-<script>
-import { useUserStore } from "~/store/user.store";
 
-export default {
+<script>
+import { defineComponent } from 'vue';
+import { useUserStore } from "~/store/user.store";
+import { ItemType } from "golden-layout";
+
+export default defineComponent({
     data(){
         return {
             state: useUserStore(),
@@ -85,11 +71,43 @@ export default {
             startDrag: false,
             widthLeftbar: 300,
             withMiddle: "",
-            terminalHeight: 300
+            terminalHeight: 300,
+            terminalsOpened: false
         };
     },  
 
     async mounted(){
+        this.$refs.layout.loadGLLayout({
+            root: {
+                type: ItemType.row,
+                content: [
+                    {
+                        type: "component",
+                        title: "Files",
+                        header: { show: "top", popout: false, close: false },
+                        isClosable: false,                        
+                        componentType: "filetree/filetreeWindow",
+                        width: 10,
+                    },
+                    {
+                        type: "column",
+                        content: [{
+                            type: "component",
+                            title: "Content",
+                            header: { show: "top", popout: false, close: false },
+                            isClosable: false,  
+                            componentType: "tabsIndex",
+                        }, {
+                            type: "component",
+                            title: "Terminals",
+                            header: { show: "top" },
+                            componentType: "terms/termsView",
+                        }]
+                    }
+                ],
+            }
+        });
+
         this.widthLeftbar = this.state.leftbar.width;
         this.withMiddle = (this.state.leftbar.open) ? `calc(100% - ${this.widthLeftbar.value}px)` : '';
 
@@ -209,5 +227,5 @@ export default {
             });
         }
     }
-}
+})
 </script>

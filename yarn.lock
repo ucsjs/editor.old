@@ -1143,6 +1143,16 @@
     magic-string "^0.25.7"
     resolve "^1.17.0"
 
+"@rollup/plugin-dynamic-import-vars@^1.4.4":
+  version "1.4.4"
+  resolved "https://registry.yarnpkg.com/@rollup/plugin-dynamic-import-vars/-/plugin-dynamic-import-vars-1.4.4.tgz#6c156f7437f4e3033d53c96ba970ab476cbf367f"
+  integrity sha512-51BcU6ag9EeF09CtEsa5D/IHYo7KI42TR1Jc4doNzV1nHAiH7TvUi5vsLERFMjs9Gzy9K0otbZH/2wb0hpBhRA==
+  dependencies:
+    "@rollup/pluginutils" "^4.1.2"
+    estree-walker "^2.0.1"
+    fast-glob "^3.2.7"
+    magic-string "^0.25.7"
+
 "@rollup/plugin-inject@^4.0.4":
   version "4.0.4"
   resolved "https://registry.yarnpkg.com/@rollup/plugin-inject/-/plugin-inject-4.0.4.tgz#fbeee66e9a700782c4f65c8b0edbafe58678fbc2"
@@ -1193,7 +1203,7 @@
     estree-walker "^1.0.1"
     picomatch "^2.2.2"
 
-"@rollup/pluginutils@^4.2.1":
+"@rollup/pluginutils@^4.1.2", "@rollup/pluginutils@^4.2.1":
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/@rollup/pluginutils/-/pluginutils-4.2.1.tgz#e6c6c3aba0744edce3fb2074922d3776c0af2a6d"
   integrity sha512-iKnFXr7NkdZAIHiIWE+BX5ULi/ucVFYWD6TbAV+rZctiRTY2PL6tsIKhoIOaoskiWAkgu+VsbXgUVDNLHf+InQ==
@@ -2159,6 +2169,11 @@ cookies@~0.8.0:
     depd "~2.0.0"
     keygrip "~1.1.0"
 
+core-js@^3.6.5:
+  version "3.25.2"
+  resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.25.2.tgz#2d3670c1455432b53fa780300a6fc1bd8304932c"
+  integrity sha512-YB4IAT1bjEfxTJ1XYy11hJAKskO+qmhuDBM8/guIfMz4JvdsAQAqvyb97zXX7JgSrfPLG5mRGFWJwJD39ruq2A==
+
 core-util-is@~1.0.0:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/core-util-is/-/core-util-is-1.0.3.tgz#a6042d3634c2b27e9328f837b965fac83808db85"
@@ -2206,6 +2221,11 @@ css-declaration-sorter@^6.3.0:
   version "6.3.1"
   resolved "https://registry.yarnpkg.com/css-declaration-sorter/-/css-declaration-sorter-6.3.1.tgz#be5e1d71b7a992433fb1c542c7a1b835e45682ec"
   integrity sha512-fBffmak0bPAnyqc/HO8C3n2sHrp9wcqQz6ES9koRF2/mLOVAx9zIQ3Y7R29sYCteTPqMCwns4WYQoCX91Xl3+w==
+
+css-element-queries@^1.0.2:
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/css-element-queries/-/css-element-queries-1.2.3.tgz#e14940b1fcd4bf0da60ea4145d05742d7172e516"
+  integrity sha512-QK9uovYmKTsV2GXWQiMOByVNrLn2qz6m3P7vWpOR4IdD6I3iXoDw5qtgJEN3Xq7gIbdHVKvzHjdAtcl+4Arc4Q==
 
 css-loader@^5.0.0:
   version "5.2.7"
@@ -3211,6 +3231,11 @@ globby@^13.1.2:
     merge2 "^1.4.1"
     slash "^4.0.0"
 
+golden-layout@^2.5.0:
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/golden-layout/-/golden-layout-2.5.0.tgz#9f7425859233c4d0f3e9a08d9cce8bb75566cde6"
+  integrity sha512-HmLJLPKgKSMO+48Ro2CO5Hikk7NWQmQU5qJvpKu/PCV1Iw+mGyxRaqDGYKnx0K7DZmZs1Bk3YvWSATajjkNksw==
+
 graceful-fs@^4.1.2, graceful-fs@^4.1.6, graceful-fs@^4.2.0, graceful-fs@^4.2.4, graceful-fs@^4.2.9:
   version "4.2.10"
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.10.tgz#147d3a006da4ca3ce14728c7aefc287c367d7a6c"
@@ -3448,6 +3473,11 @@ inquirer@^9.1.1:
     through "^2.3.6"
     wrap-ansi "^8.0.1"
 
+intersection-observer@^0.5.0:
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/intersection-observer/-/intersection-observer-0.5.1.tgz#e340fc56ce74290fe2b2394d1ce88c4353ac6dfa"
+  integrity sha512-Zd7Plneq82kiXFixs7bX62YnuZ0BMRci9br7io88LwDyF3V43cQMI+G5IiTlTNTt+LsDUppl19J/M2Fp9UkH6g==
+
 ioredis@^5.2.2:
   version "5.2.3"
   resolved "https://registry.yarnpkg.com/ioredis/-/ioredis-5.2.3.tgz#d5b37eb13e643241660d6cee4eeb41a026cda8c0"
@@ -3612,6 +3642,11 @@ jiti@^1.14.0, jiti@^1.15.0:
   version "1.15.0"
   resolved "https://registry.yarnpkg.com/jiti/-/jiti-1.15.0.tgz#cfa7ebfe4a60d77cf3bd4f8630cd99225b638417"
   integrity sha512-cClBkETOCVIpPMjX3ULlivuBvmt8l2Xtz+SHrULO06OqdtV0QFR2cuhc4FJnXByjUUX4CY0pl1nph0aFh9D3yA==
+
+jquery@^3.5.0:
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.6.1.tgz#fab0408f8b45fc19f956205773b62b292c147a16"
+  integrity sha512-opJeO4nCucVnsjiXOE+/PcCgYw9Gwpvs/a6B1LL/lQhwWwpbVEVYDZ1FokFr8PRc7ghYlrFPuyHuiiDNTQxmcw==
 
 js-tokens@^4.0.0:
   version "4.0.0"
@@ -6004,6 +6039,11 @@ vue-bundle-renderer@^0.4.2:
   dependencies:
     ufo "^0.8.3"
 
+vue-class-component@^8.0.0-0:
+  version "8.0.0-rc.1"
+  resolved "https://registry.yarnpkg.com/vue-class-component/-/vue-class-component-8.0.0-rc.1.tgz#db692cd97656eb9a08206c03d0b7398cdb1d9420"
+  integrity sha512-w1nMzsT/UdbDAXKqhwTmSoyuJzUXKrxLE77PCFVuC6syr8acdFDAq116xgvZh9UCuV0h+rlCtxXolr3Hi3HyPQ==
+
 vue-color@^2.8.1:
   version "2.8.1"
   resolved "https://registry.yarnpkg.com/vue-color/-/vue-color-2.8.1.tgz#a090f3dcf8ed6f07afdb865cac84b19a73302e70"
@@ -6036,6 +6076,14 @@ vue-draggable-next@^2.1.1:
   resolved "https://registry.yarnpkg.com/vue-draggable-next/-/vue-draggable-next-2.1.1.tgz#49886da82f116d11b3e4df7674320fdacf5d7e04"
   integrity sha512-f5lmA7t6LMaL4viR7dU30zzvqJzaKQs0ymL0Jy9UDT9uiZ2tXF3MzPzEvpTH2UODXZJkT+SnjeV1fXHMsgXLYA==
 
+vue-golden-layout@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/vue-golden-layout/-/vue-golden-layout-2.1.1.tgz#dc80e00854592deb7135cb8a2171f00940be7513"
+  integrity sha512-S7XeMUYHuRXROU3j2xf8oPN7J4B+V0MegnJcxYlmevJU6fX02QYtkDBP+B6mFKhdtslo/i/k+AzFIP3Dz7nHqw==
+  dependencies:
+    jquery "^3.5.0"
+    vue-resize-directive "^1.2.0"
+
 vue-i18n@^9.2.2:
   version "9.2.2"
   resolved "https://registry.yarnpkg.com/vue-i18n/-/vue-i18n-9.2.2.tgz#aeb49d9424923c77e0d6441e3f21dafcecd0e666"
@@ -6052,6 +6100,15 @@ vue-recaptcha-v3@^2.0.1:
   integrity sha512-isEDtOfHU4wWRrZZuxciAELtQmPOeEEdicPNa0f1AOyLPy3sCcBEcpFt+FOcO3RQv5unJ3Yn5NlsWtXv9rXqjg==
   dependencies:
     recaptcha-v3 "^1.8.0"
+
+vue-resize-directive@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/vue-resize-directive/-/vue-resize-directive-1.2.0.tgz#4214ca8a80a425529b036ea868cad54a38f613e4"
+  integrity sha512-LmpFexQcl1XYyz3DQrTrq3Efgj50MKEON60nR9MMAq1D2ZtXFg1WDcy1wy1T0SeduNtIu9hos2aLTsJUplvjlQ==
+  dependencies:
+    css-element-queries "^1.0.2"
+    intersection-observer "^0.5.0"
+    lodash.debounce "^4.0.8"
 
 vue-router@^4.1.5:
   version "4.1.5"

@@ -154,18 +154,20 @@
                                         <div class="ml-4 text-sm mt-1">{{ uppercaseFirstLetter(property.name) }}</div>
                                     </div>
 
-                                    <div class="w-3/6 h-7">     
+                                    <div class="w-3/6 h-7" v-if="subComponent">     
                                         <div v-if="subComponent.metadata && subComponent.metadata[property.name]">
                                             <select 
                                                 class="bg-neutral-900 border border-black text-white px-1 h-7 w-full rounded-sm"
                                                 v-model="subComponent.value[property.name]"
                                                 @change="changeProperty(component)"
                                             >
+                                                <option :value="null"></option>
+                                                
                                                 <option 
                                                     v-for="(option, key) in subComponent.metadata[property.name]" 
                                                     :key="key" 
                                                     :value="option" 
-                                                    :selected="(subComponent?.value[property.name] || property.default) == option"
+                                                    :selected="(subComponent?.value[property.name] || property?.default) == option"
                                                 >{{ option }}</option>
                                             </select>
                                         </div>
@@ -400,15 +402,15 @@ export default {
                         this.component.components[key].open = true;
 
                     if(this.component.components[key] && this.component.components[key].value){
-                        if(this.component.components[key].default)
-                            this.component.components[key].value = { ...this.component.components[key].default, ...this.component.components[key].value };
+                        if(this.component.components[key]?.default)
+                            this.component.components[key].value = { ...this.component.components[key]?.default, ...this.component.components[key].value };
                         else 
-                        this.component.components[key].value = null;
+                            this.component.components[key].value = null;
                     }
 
                     for(let keyValue in this.component.components[key].value){
-                        if(typeof this.component.components[key].value[keyValue] == "object" && this.component.components[key].value[keyValue].default)
-                            this.component.components[key].value[keyValue] = this.component.components[key].value[keyValue].default
+                        if(typeof this.component.components[key].value[keyValue] == "object" && this.component.components[key].value[keyValue]?.default)
+                            this.component.components[key].value[keyValue] = this.component.components[key].value[keyValue]?.default
                     }
                 }
             }  

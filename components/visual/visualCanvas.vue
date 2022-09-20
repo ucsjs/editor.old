@@ -47,7 +47,7 @@
                         </div>-->
                     </div> 
 
-                    <div class="absolute h-11 bg-black/50 top-3 right-3 rounded-md flex z-40">
+                    <div class="absolute h-11 bg-black/50 bottom-3 left-3 rounded-md flex z-40">
                         <Tooltip :tooltipText="$t('Desktop')" position="top" class="flex" @click="viewportDesktop">
                             <button class="text-white px-3">
                                 <client-only><font-awesome-icon icon="fa-solid fa-desktop" /></client-only>
