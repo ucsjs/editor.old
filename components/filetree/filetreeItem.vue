@@ -71,7 +71,7 @@
 </template>
 
 <script>
-import { useUserStore } from "~/store/user.store";
+import { useStateStore } from "~~/store/state.store";
 import globalMixin from "@/mixins/globalMixin";
 
 export default {
@@ -89,7 +89,7 @@ export default {
     },
 
     data: () => ({
-        state: useUserStore(),
+        state: useStateStore(),
         items: []
     }),
 

@@ -53,7 +53,7 @@
 </template>
 
 <script>
-import { useUserStore } from "~/store/user.store";
+import { useStateStore } from "~~/store/state.store";
 
 export default {
     data(){
@@ -61,7 +61,7 @@ export default {
             open: false,
             title: 'Title',
             contents: "",
-            state: useUserStore()
+            state: useStateStore()
         };
     },
 

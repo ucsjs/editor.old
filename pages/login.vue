@@ -42,8 +42,8 @@
 <script setup>
 import { signInWithGoogle } from "~/composables/useFirebase";
 import { useVueRecaptcha } from "~/composables/useRecaptcha";
-import { useUserStore } from "~/store/user.store";
-const state = useUserStore();
+import { useStateStore } from "~~/store/state.store";
+const state = useStateStore();
 
 useHead({
     title: "Login"

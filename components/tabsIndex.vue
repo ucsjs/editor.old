@@ -78,8 +78,8 @@
 </template>
 
 <script setup>
-import { useUserStore } from "~/store/user.store";
-const state = useUserStore();
+import { useStateStore } from "~~/store/state.store";
+const state = useStateStore();
 </script>
 
 <script>
@@ -101,13 +101,19 @@ export default {
         }
     },
 
-    watch: {
-        state(){
-            setTimeout(async() => { await this.updateEdiors() }, 50);
-        }
+    mounted(){
+        this.updateEdiors()
+
+        setInterval(() => {
+            this.updateEdiors()
+        }, 300);
     },
 
     methods: {
+        updateEdiors(){
+            this.state.editor = this.$refs.editor;
+        },
+
         change(index, contents){
             if(!contents.isTrusted);
                 this.state.changeContents(index, JSON.stringify(contents));

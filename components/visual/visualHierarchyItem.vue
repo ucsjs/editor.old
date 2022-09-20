@@ -84,7 +84,7 @@
 </template>
 
 <script>
-import { useUserStore } from "~/store/user.store";
+import { useStateStore } from "~~/store/state.store";
 
 export default {
     props: {
@@ -96,7 +96,7 @@ export default {
 
     data(){
         return {
-            state: useUserStore(),
+            state: useStateStore(),
             selected: -1
         }
     },

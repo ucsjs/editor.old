@@ -27,6 +27,6 @@
 </style>
 
 <script setup>
-import { useUserStore } from "~/store/user.store";
-const state = useUserStore();
+import { useStateStore } from "~~/store/state.store";
+const state = useStateStore();
 </script>

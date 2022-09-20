@@ -27,6 +27,7 @@
         </div>
 
         <context-menu />
+
         <Notifications ref="notifications" />-->
     </div>
 </template>
@@ -60,13 +61,13 @@ body {
 
 <script>
 import { defineComponent } from 'vue';
-import { useUserStore } from "~/store/user.store";
+import { useStateStore } from "~~/store/state.store";
 import { ItemType } from "golden-layout";
 
-export default defineComponent({
+export default {
     data(){
         return {
-            state: useUserStore(),
+            state: useStateStore(),
             startDragTop: false,
             startDrag: false,
             widthLeftbar: 300,
@@ -76,78 +77,103 @@ export default defineComponent({
         };
     },  
 
-    async mounted(){
-        this.$refs.layout.loadGLLayout({
-            root: {
-                type: ItemType.row,
-                content: [
-                    {
-                        type: "component",
-                        title: "Files",
-                        header: { show: "top", popout: false, close: false },
-                        isClosable: false,                        
-                        componentType: "filetree/filetreeWindow",
-                        width: 10,
-                    },
-                    {
-                        type: "column",
-                        content: [{
-                            type: "component",
-                            title: "Content",
-                            header: { show: "top", popout: false, close: false },
-                            isClosable: false,  
-                            componentType: "tabsIndex",
-                        }, {
-                            type: "component",
-                            title: "Terminals",
-                            header: { show: "top" },
-                            componentType: "terms/termsView",
-                        }]
-                    }
-                ],
-            }
-        });
-
-        this.widthLeftbar = this.state.leftbar.width;
-        this.withMiddle = (this.state.leftbar.open) ? `calc(100% - ${this.widthLeftbar.value}px)` : '';
-
+    async created(){
         if(process.client){
+            console.log("Editor created");
             const useHotkey = await import('vue3-hotkey').then(m => m?.default);
             const _this = this;
 
             const hotkeys = ref([
-            {
-                keys: ["delete"],
-                preventDefault: true,
-                async handler(keys) {
-                    try{
-                        if(_this.$refs.tabs.$refs.editor[0])
-                            _this.$refs.tabs.$refs.editor[0].onDelete();
-                    }catch(e){}
-                }
-            },
-            {
-                keys: ["ctrl", "s"],
-                preventDefault: true,
-                stop: true,
-                async handler(keys) {
-                    if(!_this.state.inSaveProcess){
-                        _this.state.loading = true;
-                        _this.state.inSaveProcess = true;
-
-                        if(_this.state.currentTab())
-                            _this.save(_this.state.currentTab())
-                        
+                {
+                    keys: ["delete"],
+                    preventDefault: true,
+                    stop: true,
+                    async handler(keys) {
                         try{
-                            if(_this.$refs.tabs.$refs.editor[0])
-                                _this.$refs.tabs.$refs.editor[0].onSave();
+                            console.log(_this.state.editor);
+                            if(_this.state.editor[0])
+                                _this.state.editor[0].onDelete();
                         }catch(e){}
-                    }   
+                    }
+                },
+                {
+                    keys: ["ctrl", "s"],
+                    preventDefault: true,
+                    stop: true,
+                    async handler(keys) {
+                        if(!_this.state.inSaveProcess){
+                            _this.state.loading = true;
+                            _this.state.inSaveProcess = true;
+
+                            if(_this.state.currentTab())
+                                _this.save(_this.state.currentTab())
+                            
+                            try{
+                                if(_this.state.editor[0])
+                                    _this.state.editor[0].onSave();
+                            }catch(e){}
+                        }   
+                    }
                 }
-            }]);
+            ]);
 
             useHotkey(hotkeys.value);
         }
+    },
+
+    async mounted(){
+        let layout;
+        const cache = localStorage.getItem("editor_layout");
+
+        if(cache){
+            layout = JSON.parse(cache);
+        }
+        else{
+            layout = {
+                root: {
+                    type: ItemType.row,
+                    content: [
+                        {
+                            type: "component",
+                            title: "Files",
+                            header: { show: "top", popout: false, close: false },
+                            isClosable: false,                        
+                            componentType: "filetree/filetreeWindow",
+                            width: 10,
+                        },
+                        {
+                            type: "column",
+                            content: [{
+                                type: "component",
+                                title: "Content",
+                                header: { show: "top", popout: false, close: false },
+                                isClosable: false,  
+                                componentType: "tabsIndex",
+                            }, {
+                                type: "component",
+                                title: "Terminals",
+                                header: { show: "top" },
+                                componentType: "terms/termsView",
+                            }]
+                        }
+                    ],
+                }
+            }
+        }
+
+        this.$refs.layout.loadGLLayout(layout);
+
+        setInterval(() => {
+            if(this.$refs.layout && this.$refs.layout?.getLayoutConfig){
+                const config = this.$refs.layout?.getLayoutConfig();
+
+                if(config && config.root && config.root.content)
+                    localStorage.setItem("editor_layout", JSON.stringify(config));
+            }                
+        }, 10000);
+
+        this.widthLeftbar = this.state.leftbar.width;
+        this.withMiddle = (this.state.leftbar.open) ? `calc(100% - ${this.widthLeftbar.value}px)` : '';
     },
 
     watch: {
@@ -227,5 +253,5 @@ export default defineComponent({
             });
         }
     }
-})
+}
 </script>

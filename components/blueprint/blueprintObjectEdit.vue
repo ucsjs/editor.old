@@ -40,7 +40,7 @@
                                 </div>
                                 <input 
                                     v-else-if="type == 'String' || type == 'string'" 
-                                    class="max-w-[80px] bg-neutral-800 border border-black text-white px-1 ml-2" 
+                                    class="max-w-[80px] bg-neutral-800 border border-black text-white px-1 ml-2 h-6" 
                                     type="text" 
                                     :value="item[field]"
                                     @keyup="editList(key, field, $event.target.value)" 

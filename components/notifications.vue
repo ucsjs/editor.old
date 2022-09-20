@@ -34,7 +34,7 @@
 
 <script>
 import { TransitionRoot, TransitionChild } from "@headlessui/vue";
-import { useUserStore } from "~/store/user.store";
+import { useStateStore } from "~~/store/state.store";
 
 export default {
     props: {
@@ -44,7 +44,7 @@ export default {
         }
     },
     setup(){
-        const state = useUserStore();   
+        const state = useStateStore();   
         return { state };
     },
 

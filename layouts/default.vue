@@ -15,14 +15,12 @@ body{
 </style>
 
 <script setup>
-import { useUserStore } from "~/store/user.store";
+import { useStateStore } from "~~/store/state.store";
 import { useI18n } from 'vue-i18n';
 
-const state = useUserStore();
+const state = useStateStore();
 const { t } = useI18n();
   
-await initApp({ $t: t});
-
 if(process.client){
     const stateCache = localStorage.getItem("state");
 

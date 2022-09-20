@@ -11,7 +11,7 @@
             </div>
         </div>
 
-        <div class="bg-neutral-900 z-50 flex justify-between flex-row-reverse p-2 h-12 select-none">
+        <!--<div class="bg-neutral-900 z-50 flex justify-between flex-row-reverse p-2 h-12 select-none">
             <div class="flex">
                 <button class="text-white bg-blue-800 hover:bg-blue-900 px-2 py-1 flex align-middle mr-2" @click="resertPosition">
                     <div>
@@ -29,10 +29,10 @@
                     </div>                    
                 </button>
             </div>  
-        </div>
+        </div>-->
 
         <div 
-            class="grid-background select-none overflow-scroll absolute left-0 right-0 top-12" 
+            class="grid-background select-none overflow-scroll absolute left-0 right-0 top-0" 
             style="bottom: 45px;"
             @mousemove="handleDrag" 
             @mouseup="handleDragEnd" 
@@ -73,7 +73,7 @@
                                     </client-only>
                                 </div>
 
-                                <span>{{ uppercaseFirstLetter(item.metadata.namespace) }}</span>    
+                                <span>{{ uppercaseFirstLetter(item.metadata.namespace) }} ({{ keyItem }})</span>    
 
                                 <div class="flex" @mousedown.left.stop="" :collaped="item.collaped">
                                     <div class="mr-2 cursor-pointer px-2" @click.stop="item.collaped = !item.collaped">
@@ -352,7 +352,7 @@ export default{
         this.scrollOffset = { x: this.$refs.editor.scrollLeft, y: this.$refs.editor.scrollTop };
         this.$refs.editor.addEventListener('scroll', (event) => {
             this.scrollOffset = { x: this.$refs.editor.scrollLeft, y: this.$refs.editor.scrollTop };
-            this.saveState();
+            this.saveState(false);
         });
 
         //Load blueprints                
@@ -395,7 +395,7 @@ export default{
                 this.linesOffset = this.$refs.editor.getBoundingClientRect();
 
             this.saveState();
-        }, 100);
+        }, 1000);
 
         this.$forceUpdate();
         this.loading = true;
@@ -425,6 +425,10 @@ export default{
             this.sortBlueprintsCategories();
         },
 
+        clearLines(){
+            this.lines = [];
+        },
+
         createLines(){
             if(this.lines.length > 0)
                 this.lines = [];
@@ -450,7 +454,7 @@ export default{
                     this.lines.push({ from: input, to: output, connectionKey: key });
                 }                    
                 else{
-                    this.connections.splice(key, 1);
+                    //this.connections.splice(key, 1);
                     this.lines.splice(key, 1);
                 }   
             }
@@ -591,19 +595,45 @@ export default{
         },
 
         removeComponent(key){
-            for(let connection of this.connections){
-                const indexInput = parseInt(connection.from.input.split("-")[1]);
-                const indexOutput = parseInt(connection.to.input.split("-")[1]);
+            this.clearLines(); 
+            let newConnections = [];
 
-                if(key === indexInput || key === indexOutput){
-                    this.connections.splice(key, 1);
-                    this.lines.splice(key, 1);
+            for(let keyConnect in this.connections){
+                const indexInput = parseInt(this.connections[keyConnect].from.input.split("-")[1]);
+                const indexOutput = parseInt(this.connections[keyConnect].to.input.split("-")[1]);
+
+                if(key !== indexInput && key !== indexOutput)
+                    newConnections.push(this.connections[keyConnect]);
+            }
+
+            this.connections = newConnections;            
+            this.saveState(false);
+
+
+            for(let keyConnect in this.connections){
+                const indexInput = parseInt(this.connections[keyConnect].from.input.split("-")[1]);
+                const indexOutput = parseInt(this.connections[keyConnect].to.input.split("-")[1]);
+
+                if(indexInput > key){
+                    if(this.connections[keyConnect].from.input.split("-").length === 2)
+                        this.connections[keyConnect].from.input = this.connections[keyConnect].from.input.replace(`-${indexInput}`, `-${indexInput - 1}`);
+                    else
+                        this.connections[keyConnect].from.input = this.connections[keyConnect].from.input.replace(`-${indexInput}-`, `-${indexInput - 1}-`);
+                }
+
+                if(indexOutput > key){
+                    if(this.connections[keyConnect].to.input.split("-").length === 2)
+                        this.connections[keyConnect].to.input = this.connections[keyConnect].to.input.replace(`-${indexOutput}`, `-${indexOutput - 1}`);
+                    else
+                        this.connections[keyConnect].to.input = this.connections[keyConnect].to.input.replace(`-${indexOutput}-`, `-${indexOutput - 1}-`);
                 }
             }
 
+            this.saveState(false);
             this.items.splice(key, 1);
-            this.createLines(); 
             this.saveState(true);
+            this.createLines();
+            setTimeout(() => { this.createLines(); }, 100);
         },
 
         onPointer(event, item, input, key, id){

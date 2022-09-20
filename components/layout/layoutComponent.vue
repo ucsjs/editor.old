@@ -6,16 +6,14 @@
 
 <script setup lang="ts">
 import { ref, defineExpose } from "vue";
+
 const GLComponent = ref<null | HTMLElement>(null);
+    
 const numberToPixels = (value: number): string => {
     return value.toString(10) + "px";
 };
-const setPosAndSize = (
-    left: number,
-    top: number,
-    width: number,
-    height: number
-): void => {
+
+const setPosAndSize = ( left, top, width, height) => {
     if (GLComponent.value) {
         const el = GLComponent.value as HTMLElement;
         el.style.left = numberToPixels(left);
@@ -24,22 +22,21 @@ const setPosAndSize = (
         el.style.height = numberToPixels(height);
     }
 };
-const setVisibility = (visible: boolean): void => {
+
+const setVisibility = (visible: boolean) => {
     if (GLComponent.value) {
         const el = GLComponent.value as HTMLElement;
-        if (visible) {
-            el.style.display = "";
-        } else {
-            el.style.display = "none";
-        }
+        el.style.display = (visible) ? "" : "none";
     }
 };
-const setZIndex = (value: string): void => {
+
+const setZIndex = (value: string) => {
     if (GLComponent.value) {
         const el = GLComponent.value as HTMLElement;
         el.style.zIndex = value;
     }
 };
+
 defineExpose({
     setPosAndSize,
     setVisibility,

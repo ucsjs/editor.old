@@ -44,7 +44,7 @@
             </div>
             <div v-else>
                 <hr :class="[
-                    state.darktheme ? 'border-neutral-500' : 'border-neutral-300',
+                    state.darktheme ? 'border-neutral-700' : 'border-neutral-300',
                     'my-2 border-1'
                 ]" />
             </div>
@@ -53,19 +53,26 @@
 </template>
 
 <script>
-import { useUserStore } from "~/store/user.store";
+import { useStateStore } from "~~/store/state.store";
+import { MenuItem} from "@headlessui/vue";
 
 export default {
     props: {
         items: {
             type: Array,
             default: []
+        },
+        isMenu: {
+            type: Boolean,
+            default: false
         }
     },
 
+    components: { MenuItem },
+
     data(){
         return {
-            state: useUserStore()
+            state: useStateStore()
         };
     }
 }

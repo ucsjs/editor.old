@@ -6,7 +6,7 @@
             <div class="flex flex-1">
                 <Menu as="div" class="relative" v-for="(item, key) of navbar" :key="key" @click.stop="() => {}">
                     <MenuButton 
-                        :class="[(selected === key) ? (state.darktheme ? 'bg-neutral-700 text-neutral-200' : 'bg-neutral-100') : (state.darktheme ? 'bg-neutral-800 text-neutral-200 hover:bg-neutral-700' : 'bg-neutral-100'),'px-3 rounded-lg h-full']" 
+                        :class="[(selected === key) ? (state.darktheme ? 'bg-neutral-700 text-neutral-200' : 'bg-neutral-100') : (state.darktheme ? 'bg-neutral-800 text-neutral-200 hover:bg-neutral-700' : 'bg-neutral-100'),'px-3 rounded-lg h-full py-1']" 
                         @click="(selected == -1) ? selected = key : selected = -1" 
                         @mouseenter="forceClick(key)"
                     >
@@ -16,11 +16,53 @@
                     <transition enter-active-class="transition ease-out duration-100" enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100" leave-active-class="transition ease-in duration-75" leave-from-class="transform opacity-100 scale-100" leave-to-class="transform opacity-0 scale-95">
                         <MenuItems 
                             v-if="selected === key"
-                            :class="[state.darktheme ? 'bg-neutral-800 text-neutral-200 ring-black border-black' : 'bg-white','absolute left-0 z-50 mt-2 w-48 origin-top-left rounded-md py-1 shadow-lg shadow-neutral-900 ring-1 ring-opacity-60 focus:outline-none h-80']" 
+                            :class="[state.darktheme ? 'bg-neutral-800 text-neutral-200 ring-black border-black' : 'bg-white','absolute left-0 z-50 mt-2 origin-top-left rounded-md py-1 shadow-lg shadow-neutral-900 ring-1 ring-opacity-60 focus:outline-none text-neutral-100 min-w-[300px]']" 
                             static
                         >
-                            <MenuItem v-for="children in item.children" :key="children" v-slot="{ active }">
-                                <a @click="item.event" :class="[active ? 'bg-neutral-100' : '', 'block px-4 py-2 text-sm text-gray-700']">{{ item.name }}</a>
+                            <MenuItem v-for="(item, key) in item.items" :key="key" v-slot="{ active }">
+                                <div v-if="!item.separete && !item.items" class="flex flex-row px-5 py-1 hover:bg-[#04395e] hover:text-white">
+                                    <div class="flex flex-1">{{ item.name }}</div>
+                                    
+                                    <div v-if="item.shortcut" class="flex justify-end">{{ item.shortcut }}</div>
+                                </div>
+                                <div 
+                                    v-else-if="item.items" 
+                                    class="flex flex-row px-5 py-1 hover:bg-[#04395e] hover:text-white"
+                                    @mouseover="item.open = true" 
+                                >
+                                    <div class="flex flex-1">{{ item.name }}</div>
+
+                                    <div class="flex justify-end mt-1 relative" >
+                                        <client-only><font-awesome-icon icon="fa-solid fa-caret-right" /></client-only>
+
+                                        <div 
+                                            :class="[
+                                                state.darktheme ? 'text-white bg-neutral-800 border-black' : 'text-gray-800 bg-neutral-200',
+                                                'absolute min-w-[300px] py-2 rounded-lg cursor-pointer h-10 left-4 z-50 shadow-lg'
+                                            ]"
+                                            v-if="item.open"
+                                        >
+                                            <div 
+                                                :class="[
+                                                    state.darktheme ? 'text-white bg-neutral-800' : 'text-gray-800 bg-neutral-200',
+                                                    'z-50 min-w-[300px] pb-2 rounded-lg cursor-pointer'
+                                                ]" 
+                                            >
+                                                <context-menu-item 
+                                                    :items="item.items" 
+                                                    @mouseover="item.open = true"
+                                                    @mouseleave.stop="item.open = false" 
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-else>
+                                    <hr :class="[
+                                        state.darktheme ? 'border-neutral-700' : 'border-neutral-300',
+                                        'my-2 border-1'
+                                    ]" />
+                                </div>
                             </MenuItem>
                         </MenuItems>
                     </transition>
@@ -29,7 +71,7 @@
 
             <div class="flex justify-end">
                 <div class="ml-4 flex items-center md:ml-6">
-                    <Tooltip :tooltipText="$t('Light mode')" position="bottom">
+                    <!--<Tooltip :tooltipText="$t('Light mode')" position="bottom">
                         <button v-if="state.darktheme" class="w-10 h-10 text-white" @click="state.switchTheme()">
                             <client-only><font-awesome-icon icon="fa-solid fa-sun" /></client-only>
                         </button>
@@ -39,7 +81,7 @@
                         <button v-if="!state.darktheme" class="w-10 h-10" @click="state.switchTheme()">
                             <client-only><font-awesome-icon icon="fa-solid fa-moon" /></client-only>
                         </button>
-                    </Tooltip>
+                    </Tooltip>-->
 
                     <Menu as="div" class="relative ml-3">
                         <div>
@@ -66,11 +108,9 @@
 <script setup>
 import { signOut } from "~/composables/useFirebase";
 
-import { useUserStore } from "~/store/user.store";
-import { userNavbarStore } from "~/store/navbar.store";
+import { useStateStore } from "~/store/state.store";
 import { Menu, MenuButton, MenuItem, MenuItems, TransitionRoot, TransitionChild } from "@headlessui/vue";
-const state = useUserStore();
-const navbar = userNavbarStore().navbar;
+const state = useStateStore();
 const selected = ref(-1);
 
 const userNavigation = [
@@ -91,4 +131,133 @@ const forceClick = (index) => {
 const resetSelected = () => {
     selected.value = -1
 ;}
+</script>
+
+<script>
+export default {
+    data(){
+        return {
+            navbar: [
+                {
+                    key: 'File',
+                    items: [
+                        {
+                            name: 'New File',
+                            shortcut: 'Ctrl+N',
+                            event: () => { },
+                        },
+                        {
+                            name: 'New Component',
+                            shortcut: 'Ctrl+Shift+N',
+                            event: () => { },
+                        },
+                        { separete: true },
+                        {
+                            name: 'Open',
+                            shortcut: 'Ctrl+O',
+                            event: () => { },
+                        },
+                        {
+                            name: 'Open Recent',
+                            event: () => { },
+                        },
+                        { separete: true },
+                        {
+                            name: 'Save',
+                            shortcut: 'Ctrl+S',
+                            event: () => { },
+                        },
+                        {
+                            name: 'Save as',
+                            shortcut: 'Ctrl+Shift+S',
+                            event: () => { },
+                        },
+                    ]
+                },
+                {
+                    key: 'Edit',
+                    items: [
+                        {
+                            name: 'Undo',
+                            shortcut: 'Ctrl+Z',
+                            event: () => { },
+                        },
+                        {
+                            name: 'Redo',
+                            shortcut: 'Ctrl+Y',
+                            event: () => { },
+                        },
+                        { separete: true },
+                        {
+                            name: 'Cut',
+                            shortcut: 'Ctrl+X',
+                            event: () => { }
+                        },
+                        {
+                            name: 'Copy',
+                            shortcut: 'Ctrl+C',
+                            event: () => { }
+                        },
+                        {
+                            name: 'Paste',
+                            shortcut: 'Ctrl+V',
+                            event: () => { }
+                        },
+                        { separete: true },
+                        {
+                            name: 'Localize',
+                            shortcut: 'Ctrl+F',
+                            event: () => { }
+                        },
+                        {
+                            name: 'Replace',
+                            shortcut: 'Ctrl+H',
+                            event: () => { }
+                        },
+                        { separete: true },
+                        {
+                            name: 'Find In Files',
+                            shortcut: 'Ctrl+Shift+F',
+                            event: () => { }
+                        },
+                        {
+                            name: 'Replace In File',
+                            shortcut: 'Ctrl+Shift+H',
+                            event: () => { }
+                        },
+                        { separete: true },
+                        {
+                            name: 'Select all',
+                            event: () => {
+                                this.$store.commit('editor/SET_SELECT_ALL', true);
+                            }
+                        },
+                    ]
+                },
+                {
+                    key: "Terminal",
+                    items: [
+                        {
+                            name: 'Novo Terminal',
+                            event: () => {
+                                this.$store.commit('terminal/NEW_TERINAL', true);
+                            }
+                        },
+                    ]
+                },
+                {
+                    key: 'Help',
+                    items: [
+                        {
+                            name: 'About',
+                            event: () => {
+                                this.$store.commit('editor/SET_ABOUT', true);
+                            }
+                        },
+                    ]
+                },
+            ]
+        }
+    }
+}
 </script>

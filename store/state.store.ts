@@ -1,11 +1,12 @@
 import { defineStore } from "pinia";
 
-export const useUserStore = defineStore({
+export const useStateStore = defineStore({
     id: "user",
     state: () => ({
         user: null,
         darktheme: true,
         tabs: [],
+        editor: null,
         selectedTab: -1,
         dragging: false,
         loading: false,

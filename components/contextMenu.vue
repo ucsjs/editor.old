@@ -7,17 +7,17 @@
         :style="{top: `${state.contextMenu.position.top}px`, left: `${state.contextMenu.position.left}px`}"
         v-if="state.contextMenu.open"
     >
-        <context-menu-item :items="state.contextMenu.items"></context-menu-item>
+        <context-menu-item :items="state.contextMenu.items" :isMenu="true"></context-menu-item>
     </div>
 </template>
 
 <script>
-import { useUserStore } from "~/store/user.store";
+import { useStateStore } from "~~/store/state.store";
 
 export default {
     data(){
         return {
-            state: useUserStore()
+            state: useStateStore()
         };
     }
 }   

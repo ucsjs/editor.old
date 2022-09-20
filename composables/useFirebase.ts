@@ -1,10 +1,10 @@
 import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup } from "firebase/auth";
-import { useUserStore } from "~/store/user.store";
+import { useStateStore } from "~~/store/state.store";
 
 export const initUser = async () => {
     const auth = getAuth();
     const firebaseUser = useFirebaseUser();
-    const { login } = useUserStore();
+    const { login } = useStateStore();
     firebaseUser.value = auth.currentUser;
 
     if(localStorage.getItem("user") !== null){

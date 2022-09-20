@@ -3,12 +3,8 @@
 </template>
 
 <script setup>
-import { useUserStore } from "~/store/user.store";
-const state = useUserStore();
-
-useHead({
-    
-});
+import { useStateStore } from "~~/store/state.store";
+const state = useStateStore();
 
 if(!state.isAuthentication){
     const router = useRouter();
