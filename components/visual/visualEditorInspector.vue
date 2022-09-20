@@ -57,44 +57,46 @@
 
                             <label for="lockBox" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Lock Viewport</label>
                         </div>
-                    </div>
-
-                    <div class="flex w-full mt-2">                        
-                        <label for="layer" class="block mb-2 text-sm font-medium text-gray-800 dark:text-gray-400 mr-2">{{ $t("Layer") }}</label>
-                        
-                        <select 
-                            id="layer" 
-                            v-model="component.layer" 
-                            class="bg-neutral-900 border border-black text-white px-1 h-6 w-full rounded-sm"
-                        >
-                            <option selected>Choose a country</option>
-                            <option value="US">United States</option>
-                            <option value="CA">Canada</option>
-                            <option value="FR">France</option>
-                            <option value="DE">Germany</option>
-                        </select>                        
-                    </div>
+                    </div>                    
                 </div>
             </div>
-            
+
+            <div class="bg-neutral-700 p-1 text-sm border-t border-b border-black">
+                <select 
+                    id="events" 
+                    v-model="component.events" 
+                    class="bg-neutral-900 border border-black text-neutral-300 px-1 h-6 rounded-sm w-full text-sm "
+                    :placeholder="$t('Events')"
+                >
+                    <option :value="null"></option>
+
+                    <option 
+                        v-for="tab in events" 
+                        :key="tab" 
+                        :value="tab"
+                        :selected="component.events == tab"
+                    >{{ uppercaseFirstLetter(tab) }}</option>
+                </select>  
+            </div>
+
             <div v-if="component.components">
                 <div v-for="(subComponent, key) in component.components" :key="key">
                     <div class="bg-neutral-900 hover:bg-neutral-700 border-b border-black flex justify-between">
-                        <div class="flex flex-1 p-1" @click="toggle(subComponent)">
-                            <div class="pr-1 pl-1 w-6">
+                        <div class="flex flex-1 p-1 cursor-pointer" @click="toggle(subComponent)">
+                            <div class="pr-1 pl-1 w-6 text-sm">
                                 <client-only>
                                     <font-awesome-icon icon="fa-solid fa-angle-down" v-if="subComponent.open" />
                                     <font-awesome-icon icon="fa-solid fa-angle-right" v-if="!subComponent.open" />
                                 </client-only>
                             </div>
 
-                            <div class="pr-2">
+                            <div class="pr-2 text-sm">
                                 <client-only>
                                     <font-awesome-icon :icon="subComponent.icon || subComponent.metadata.icon" />
                                 </client-only>
                             </div>
 
-                            <div class="pr-2">
+                            <div class="pr-2 text-sm">
                                 {{ subComponent.component || subComponent.metadata.namespace }}
                             </div>
                         </div>   
@@ -151,11 +153,25 @@
                                 </div>
                                 <div v-else class="flex-1 flex p-0.5 pr-2">
                                     <div class="w-3/6 h-7">
-                                        <div class="ml-4 text-sm mt-1">{{ uppercaseFirstLetter(property.name) }}</div>
+                                        <div class="ml-2 text-sm mt-1">{{ property.label || uppercaseFirstLetter(property.name) }}</div>
                                     </div>
 
-                                    <div class="w-3/6 h-7" v-if="subComponent">     
-                                        <div v-if="subComponent.metadata && subComponent.metadata[property.name]">
+                                    <div class="w-3/6 h-7" v-if="subComponent">  
+                                        <div v-if="component.editor && component.editor[subComponent.component] && component.editor[subComponent.component][property.name]">
+                                            <client-only placeholder="Loading...">
+                                                <dynamic-renderer 
+                                                    v-if="component.editor[subComponent.component][property.name].template && subComponent.value[property.name]"
+                                                    :component="component.editor[subComponent.component][property.name]"
+                                                    :state="subComponent.value[property.name]"
+                                                    @change="(v) => { 
+                                                        subComponent.value[property.name] = v;
+                                                        changeProperty(component) 
+                                                    }"
+                                                >
+                                                </dynamic-renderer>
+                                            </client-only>
+                                        </div>   
+                                        <div v-else-if="subComponent.metadata && subComponent.metadata[property.name]">
                                             <select 
                                                 class="bg-neutral-900 border border-black text-white px-1 h-7 w-full rounded-sm"
                                                 v-model="subComponent.value[property.name]"
@@ -182,8 +198,8 @@
                                         <input 
                                             v-else-if="property.type == 'number' || property.type == 'Number' || property.type == 'Int'" 
                                             class="bg-neutral-900 border border-black text-white px-1 h-7 text-sm w-full rounded-sm" 
-                                            type="number" 
-                                            v-model.number="subComponent.value[property.name]"
+                                            type="text" 
+                                            v-model="subComponent.value[property.name]"
                                             @keyup="changeProperty(component)" 
                                             @change="changeProperty(component)"
                                         />
@@ -216,7 +232,7 @@
                                                 <input 
                                                     v-model="subComponent.value[property.name]" 
                                                     class="bg-neutral-900 border border-black text-white px-1 h-6 text-sm w-full rounded-sm" 
-                                                    type="number"
+                                                    type="text"
                                                     @change="changeProperty(component)"
                                                 />
                                             </div>
@@ -238,7 +254,7 @@
                                                 :style="{backgroundColor: subComponent.value[property.name].hex || property.default?.hex || '#FFFFFF'}"                                                                                             
                                             >
                                                 <input 
-                                                    class="border-0 w-full" 
+                                                    class="border-0 w-full text-sm" 
                                                     type="text" 
                                                     v-model="subComponent.value[property.name].hex"                                                 
                                                     :style="{backgroundColor: (subComponent.value[property.name].hex || property.default?.hex || '#FFFFFF')}"
@@ -339,12 +355,31 @@ export default {
             components: [],
             componentsCategories: {},
             componentsFiltred: [],
+            events: ["checked", "default", "focus", "disabled", "fullscreen", "hover", "required"]
         }
     },
 
     watch:{
         component(){
             this.refreshToggles();
+
+            for(let key in this.component.editor){
+                for(let keyEditorProperty in this.component.editor[key]){
+                    if(this.component.editor[key][keyEditorProperty].script){
+                        try{
+                            let script = null
+                            eval("script = " + this.component.editor[key][keyEditorProperty].script)
+
+                            this.component.editor[key][keyEditorProperty] = {
+                                template: this.component.editor[key][keyEditorProperty].template,
+                                style: this.component.editor[key][keyEditorProperty].style,
+                                ...script
+                            }
+                        }
+                        catch(e){}
+                    }
+                }
+            }
         },
 
         search(){
@@ -355,6 +390,7 @@ export default {
     async mounted(){
         this.refreshToggles();
         this.loadComponents();
+        
     },
 
     methods: {

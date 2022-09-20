@@ -229,6 +229,57 @@ export default {
 
                 for(let key in cacheParse)
                     this[key] = cacheParse[key];
+
+                this.hierarchy = this.hierarchy.filter((item) => item);
+
+                for(let component of this.hierarchy){
+                    if(component)
+                        this.updateComponentByDefault(component);
+                }
+            }
+        },
+
+        updateComponentByDefault(component){
+            for(let componentDefault of this.components){
+                if(componentDefault.sign === component.sign){
+                    component.metadata = { ...componentDefault.metadata, ...component.metadata };
+
+                    if(componentDefault.template != component.template)
+                        component.template = componentDefault.template;
+
+                    if(componentDefault.content != component.content)
+                        component.content = componentDefault.content;
+
+                    if(componentDefault.editor != component.editor)
+                        component.editor = componentDefault.editor;
+
+                    for(let subComponentDefault of componentDefault.components){
+                        let isNewProperty = true;
+
+                        for(let subComponent of component.components){
+                            if(subComponentDefault.component === subComponent.component){
+                                subComponent.default = subComponentDefault.default;
+                                subComponent.metadata = subComponentDefault.metadata;
+                                subComponent.properties = subComponentDefault.properties;
+
+                                for(let property of subComponentDefault.properties){
+                                    if(!subComponent.value[property.name] && property.default){
+                                        if(typeof property.default === "object" && property.default.default !== undefined)
+                                            subComponent.value[property.name] = property.default.default;
+                                        else
+                                            subComponent.value[property.name] = property.default;
+                                    } 
+                                }
+
+                                isNewProperty = false;
+                            }
+                        }
+
+                        if(isNewProperty){
+                            console.log("new property", subComponentDefault);
+                        }
+                    }
+                }
             }
         },
 
@@ -245,9 +296,22 @@ export default {
             const offsetX = this.editorOffset.x - this.canvasOffset.x;
             const offsetY = this.editorOffset.y - this.canvasOffset.y; 
 
+            const tmpComponent = { ...item };
+
+            for(let property of tmpComponent.components){
+                if(property.component == "Transform"){
+                    property.value = property.default;
+                    property.value.left = position.left + offsetX;
+                    property.value.top = position.top + offsetY;
+                }
+                else{
+                    property.value = property.default;
+                }
+            }
+            
             this.hierarchy.push({
                 id: `${item.namespace}_${this.componentIndex}`,
-                ...item,
+                ...tmpComponent,
                 position: {
                     left: position.left + offsetX,
                     top: position.top + offsetY
@@ -353,7 +417,7 @@ export default {
                 scale: this.scale,
                 position: this.position,
                 viewport: this.viewport,
-                hierarchy: this.hierarchy,
+                hierarchy: this.hierarchy.filter((item) => item),
                 componentIndex: this.componentIndex
             }
         },

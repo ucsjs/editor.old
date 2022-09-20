@@ -9,11 +9,9 @@ export default defineNuxtPlugin((nuxtApp) => {
         
         render(){
             return h({
-                template: this.component?.content,
-                props: { component: this.component }
-            }, { 
-                component: this.component
-            });
+                template: (this.component?.content) ? this.component?.content : ((this.component.template) ? this.component.template : '') ,
+                props: { component: this.component, state: this.state },
+            }, { component: this.component, state: this.state });
         }
     });
 });

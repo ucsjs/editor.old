@@ -93,7 +93,7 @@ export default {
         return {
             moveble: false,
             moveEvent: false,
-            position: { top: 0, left: 0, scale: 1, position: "absolute", zIndex: 1 },
+            position: { top: 0, left: 0, scale: 1, position: "absolute", zIndex: 1, rotate: 0 },
             dimensions: { width: 0, height: 0, widthAuto: false, heightAuto: false },
             componentsIndex: {},
             resizeData: null,
@@ -129,7 +129,7 @@ export default {
                 height: (this.dimensions.heightAuto) ? 'auto' : `${this.dimensions.height}px`,
                 top: `${this.position.top}px`, 
                 left: `${this.position.left}px`, 
-                transform: `scale(${this.position.scale})`,
+                transform: `scale(${this.position.scale}) rotate(${this.position.rotate}deg)`,
                 visibility: this.settings.visibility ? 'visible' : 'hidden',
                 zIndex: this.position.zIndex
             };
