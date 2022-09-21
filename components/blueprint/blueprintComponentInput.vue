@@ -1,6 +1,11 @@
 <template>
     <div class="flex flex-row py-1 h-8">
-        <div v-if="isInput" :style="{color: (item.metadata[input?.type.replace(/\./, '_')]) ? item.metadata[input?.type.replace(/\./, '_')].color : getColorByType(input?.type)}" :title="`Type: ${input?.type}`">
+        <div 
+            v-if="isInput" 
+            class="text-sm"
+            :style="{color: (item.metadata[input?.type.replace(/\./, '_')]) ? item.metadata[input?.type.replace(/\./, '_')].color : getColorByType(input?.type)}" 
+            :title="`Type: ${input?.type}`"
+        >
             <client-only>
                 <font-awesome-icon 
                     :id="`${input.id}-${keyItem}`"
@@ -12,10 +17,10 @@
             </client-only>
         </div>
 
-        <div class="pl-2" v-if="isInput">{{ uppercaseFirstLetter(input.name) }}<span v-if="input.default">:</span></div>
+        <div class="pl-2 text-sm" v-if="isInput">{{ uppercaseFirstLetter(input.name) }}</div>
 
         <div v-if="!collaped" class="flex">
-            <div class="pl-2" v-if="!isInput">{{ uppercaseFirstLetter(input.name) }}<span v-if="input.default">:</span></div>
+            <div class="pl-2 pt-1 text-sm" v-if="!isInput">{{ uppercaseFirstLetter(input.name) }}</div>
 
             <div v-if="item.metadata[input.name]">
                 <select 
@@ -44,7 +49,7 @@
                 </Switch>
             </div>
             <div v-else-if="input.type == 'object' || input.type == 'Object' || input.type == 'JSON'">
-                <div class="flex flex-row">
+                <div class="flex flex-row text-sm">
                     <div>
                         <Tooltip :tooltipText="$t('Edit')" position="right">
                             <button class="ml-2 hover:text-neutral-500" @click="$emit('openObjectEdit', item, input, keyItem)">

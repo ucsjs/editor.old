@@ -1,6 +1,12 @@
 <template>
     <ol v-if="itemsFiltred.length == 0">
-        <li v-for="(item, key) in items" v-show="key != 'undefined'" :key="key" class="flex flex-col rounded-md" @click="openedState[key] = !openedState[key]"> 
+        <li 
+            v-for="(item, key) in items" 
+            v-show="key != 'undefined'" 
+            :key="key" 
+            class="flex flex-col rounded-md cursor-pointer" 
+            @click="toggle(key)"
+        > 
             <div class="flex flex-row w-full hover:bg-neutral-800 rounded-md p-1">
                 <div class="pr-2 w-6">
                     <client-only>
@@ -20,6 +26,7 @@
                         v-for="(subitem, key2) in item" :key="key2" 
                         class="flex hover:bg-neutral-800 rounded-md p-1" 
                         @click="openedState[key] = !openedState[key]"
+                        @mousedown.stop="createGhost(subitem)"
                     >
                         <div>
                             <client-only><font-awesome-icon :icon="(subitem.metadata.headerIcon) ? subitem.metadata.headerIcon : headerIcon(subitem.metadata.group)" v-if="openedState[key]" /></client-only>
@@ -57,10 +64,16 @@ export default{
             type: Object,
             required: true
         },
+
         itemsFiltred: {
             type: Array,
             default: []
-        }
+        },
+
+        fixed: {
+            type: Boolean,
+            default: false
+        },
     },
 
     data() {
@@ -70,14 +83,40 @@ export default{
     },
 
     mounted() {
+        const cache = localStorage.getItem('blueprint-navbar');
+
         for(let key in this.items){
             this.openedState[key] = false;
+        }
+
+        if(cache){
+            const cacheParsed = JSON.parse(cache);
+
+            for(let key in cacheParsed)
+                this.openedState[key] = cacheParsed[key];
+
+            this.$forceUpdate();
         }
     },
 
     methods: {
+        toggle(key){
+            this.openedState[key] = !this.openedState[key];
+            this.saveState();
+        },
+
         addComponent(item){
-            this.$emit("addComponent", item);
+            if(!this.fixed)
+                this.$emit("addComponent", item);
+        },
+
+        createGhost(item){
+            if(this.fixed)
+                this.$emit("createGhost", item);
+        },
+
+        saveState(){
+            localStorage.setItem(`blueprint-navbar`, JSON.stringify(this.openedState));
         }
     }
 }

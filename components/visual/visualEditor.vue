@@ -148,7 +148,7 @@ export default {
 
         async selectComponent(component){
             if(component && component.id){
-                const componentSelected = await this.$refs.canvas.getComponent(component.id, this.$refs.canvas);
+                const componentSelected = await this.$refs.canvas?.getComponent(component.id, this.$refs.canvas);
                 this.state.hierarchy.selectedItem = componentSelected;
 
                 if(componentSelected)
@@ -219,7 +219,7 @@ export default {
 
         async changeProperty(component){
             await this.$refs.canvas.updateComponent(component);
-            const componentUpdated = await this.$refs.canvas.getComponent(component.id, this.$refs.canvas);
+            const componentUpdated = await this.$refs.canvas?.getComponent(component.id, this.$refs.canvas);
 
             if(componentUpdated)
                 this.selectedComponent = componentUpdated;
@@ -244,14 +244,19 @@ export default {
             }
 
             if(!hasComponent){
-                this.selectedComponent.components.push(component);
+                this.components.push(component);
+                this.selectedComponent.components.push(component);   
+                this.$refs.canvas.update(); 
                 this.$refs.canvas.saveState(true);
+                this.$forceUpdate();  
             }
         },
 
         removeSubcomponent(key){
             this.selectedComponent.components.splice(key, 1);
+            this.$refs.canvas.update(); 
             this.$refs.canvas.saveState(true);
+            this.$forceUpdate();
         },
 
         async onDelete(){

@@ -134,13 +134,14 @@
                         </div>
                     </div>
 
-                    <div class="bg-neutral-800 w-full border-b border-black text-sm text-neutral-400" v-if="subComponent.open">
+                    <div class="bg-neutral-800 w-full border-b border-black text-sm text-neutral-400" v-if="subComponent.open && subComponent.value">
                         <div class="py-2">
                             <div 
                                 class="flex" 
                                 v-for="(property, keySubcomponent) in subComponent.properties"
                                 :key="keySubcomponent"
                             >
+                                
                                 <div v-if="property.type == 'BigText'" class="w-full p-2">
                                     <textarea 
                                         v-model="subComponent.value[property.name]"
@@ -157,10 +158,10 @@
                                     </div>
 
                                     <div class="w-3/6 h-7" v-if="subComponent">  
-                                        <div v-if="component.editor && component.editor[subComponent.component] && component.editor[subComponent.component][property.name]">
+                                        <div v-if="component?.editor && component.editor[subComponent.component] && component.editor[subComponent.component][property.name]">
                                             <client-only placeholder="Loading...">
                                                 <dynamic-renderer 
-                                                    v-if="component.editor[subComponent.component][property.name].template && subComponent.value[property.name]"
+                                                    v-if="component.editor[subComponent.component][property.name].content && subComponent.value[property.name]"
                                                     :component="component.editor[subComponent.component][property.name]"
                                                     :state="subComponent.value[property.name]"
                                                     @change="(v) => { 
@@ -363,20 +364,22 @@ export default {
         component(){
             this.refreshToggles();
 
-            for(let key in this.component.editor){
-                for(let keyEditorProperty in this.component.editor[key]){
-                    if(this.component.editor[key][keyEditorProperty].script){
-                        try{
-                            let script = null
-                            eval("script = " + this.component.editor[key][keyEditorProperty].script)
+            if(this.component && this.component.editor){
+                for(let key in this.component.editor){
+                    for(let keyEditorProperty in this.component.editor[key]){
+                        if(this.component.editor[key][keyEditorProperty].script){
+                            try{
+                                let script = null
+                                eval("script = " + this.component.editor[key][keyEditorProperty].script)
 
-                            this.component.editor[key][keyEditorProperty] = {
-                                template: this.component.editor[key][keyEditorProperty].template,
-                                style: this.component.editor[key][keyEditorProperty].style,
-                                ...script
+                                this.component.editor[key][keyEditorProperty] = {
+                                    content: this.component.editor[key][keyEditorProperty]?.content,
+                                    style: this.component.editor[key][keyEditorProperty]?.style,
+                                    ...script
+                                }
                             }
+                            catch(e){}
                         }
-                        catch(e){}
                     }
                 }
             }
@@ -390,7 +393,6 @@ export default {
     async mounted(){
         this.refreshToggles();
         this.loadComponents();
-        
     },
 
     methods: {
@@ -434,19 +436,24 @@ export default {
         refreshToggles(){
             if(this.component){
                 for(let key in this.component.components){
-                    if(!this.component.components[key].open && this.component.components[key].open !== false)
-                        this.component.components[key].open = true;
+                    try{
+                        if(!this.component.components[key].open && this.component.components[key].open !== false)
+                            this.component.components[key].open = true;
 
-                    if(this.component.components[key] && this.component.components[key].value){
-                        if(this.component.components[key]?.default)
-                            this.component.components[key].value = { ...this.component.components[key]?.default, ...this.component.components[key].value };
-                        else 
-                            this.component.components[key].value = null;
-                    }
+                        if(this.component.components[key] && this.component.components[key]?.value){
+                            if(this.component.components[key]?.default)
+                                this.component.components[key].value = { ...this.component.components[key]?.default, ...this.component.components[key]?.value };
+                            else 
+                                this.component.components[key].value = null;
+                        }
 
-                    for(let keyValue in this.component.components[key].value){
-                        if(typeof this.component.components[key].value[keyValue] == "object" && this.component.components[key].value[keyValue]?.default)
-                            this.component.components[key].value[keyValue] = this.component.components[key].value[keyValue]?.default
+                        for(let keyValue in this.component.components[key]?.value){
+                            if(typeof this.component.components[key].value[keyValue] == "object" && this.component.components[key].value[keyValue]?.default)
+                                this.component.components[key].value[keyValue] = this.component.components[key].value[keyValue]?.default
+                        }
+                    }   
+                    catch(e){
+                        console.log(e);
                     }
                 }
             }  
@@ -467,11 +474,13 @@ export default {
 
         addComponent(component){
             this.$emit('addComponent', component);
+            this.$emit('changeProperty', this.component);
             this.openedAddComponent = false;
         },
 
         removeComponent(key){
             this.$emit('removeComponent', key);
+            this.$emit('changeProperty', this.component);
         },
 
         closeAllWindowOpened(){

@@ -1,7 +1,10 @@
 <template>
-    <div class="absolute w-full h-full">
+    <div 
+        class="absolute w-full h-full"
+        @mousemove="handleDrag" 
+    >
         <div class="bg-black/80 absolute w-full bottom-36 top-0 left-0 right-0 z-50 m-auto text-center" v-if="!loading">
-            <div class=" align-middle content-between inline-block bg-white p-4 rounded-lg mt-16">
+            <div class="align-middle content-between inline-block bg-white p-4 rounded-lg mt-16">
                 <div class="flex">
                     <div class="mr-2">
                         <div class="spinner"></div>
@@ -10,6 +13,12 @@
                 </div>
             </div>
         </div>
+
+        <div 
+            class="w-4 h-4 absolute" 
+            :style="{ top: `${mouseHandlerFull.top}px`, left: `${mouseHandlerFull.left}px`}" 
+            ref="mousePointerFull"
+        ></div>
 
         <!--<div class="bg-neutral-900 z-50 flex justify-between flex-row-reverse p-2 h-12 select-none">
             <div class="flex">
@@ -31,88 +40,96 @@
             </div>  
         </div>-->
 
-        <div 
-            class="grid-background select-none overflow-scroll absolute left-0 right-0 top-0" 
-            style="bottom: 45px;"
-            @mousemove="handleDrag" 
-            @mouseup="handleDragEnd" 
-            @scroll="refreshLines"
-            ref="editor"
-        >
+        <div class="flex flex-row h-full relative">
+            <!-- Canvas -->
             <div 
-                class="w-4 h-4 absolute" 
-                :style="{ top: `${mouseHandler.top}px`, left: `${mouseHandler.left}px`}" 
-                ref="mousePointer"
-            ></div>
+                :style="{width: `calc(100% - ${(widthLeftbar)}px) !important`}"
+                :class="[
+                    (overCanvas) ? 'border-yellow-300' : 'border-transparent',
+                    'grid-background select-none border overflow-scroll absolute right-0 top-0'
+                ]" 
+                style="bottom: 45px;"
+                @mousemove="handleDrag" 
+                @mouseup="handleDragEnd" 
+                @scroll="refreshLines"
+                ref="editor"
+            >
+                <div 
+                    class="w-4 h-4 absolute" 
+                    :style="{ top: `${mouseHandler.top}px`, left: `${mouseHandler.left}px`}" 
+                    ref="mousePointer"
+                ></div>
 
-            <div class="grid-contents block" style="width: 5000px; height: 5000px" ref="contents"  @mousedown.left="move">
-                <div                     
-                    class="relative block w-full h-full" 
-                    @contextmenu.prevent="contextmenu" 
-                    @mousedown.left="closeContextmenu"
+                <div 
+                    class="grid-contents block" 
+                    style="width: 5000px; height: 5000px" 
+                    ref="contents"  
+                    @mouseenter="overCanvas = true"
+                    @mouseleave="overCanvas = false"
+                    @mousedown.left="move"
                 >
-                    <div :style="{ transform: `translate(${position.x}px, ${position.y}px) scale(${scale})` }" ref="contentsTransform">
-                        <div 
-                            v-for="(item, keyItem) in items" 
-                            :key="keyItem"
-                            :style="{ top: `${item.position.top}px`, left: `${item.position.left}px` }"
-                            class="rounded-xl absolute border-black border-2 shadow-black shadow-md bg-neutral-900 bg-opacity-80 hover:border-neutral-800 z-40"
-                            @mousedown.left.stop="closeContextmenu"
-                        >
+                    <div                     
+                        class="relative block w-full h-full" 
+                        @contextmenu.prevent="contextmenu" 
+                        @mousedown.left="closeContextmenu"
+                    >
+                        <div :style="{ transform: `translate(${position.x}px, ${position.y}px) scale(${scale})` }" ref="contentsTransform">
                             <div 
-                                :class="['p-2 rounded-t-xl border-b border-black text-gray-50 font-bold cursor-move flex justify-between']"
-                                :style="{backgroundColor: (item.metadata.headerColor) ? item.metadata.headerColor : headerColor(item.metadata.group)}"
-                                @mousedown.left.stop="handleDragStart(keyItem, $event)"
-                                @dragstart="handleDragStart(keyItem, $event)"
-                                @drop="handleDragEnd"
-                                @mouseup="handleDragEnd"
+                                v-for="(item, keyItem) in items" 
+                                :key="keyItem"
+                                :style="{ top: `${item.position.top}px`, left: `${item.position.left}px` }"
+                                class="rounded-xl absolute border-black border-2 shadow-black shadow-md bg-neutral-900 bg-opacity-80 hover:border-neutral-800 z-40"
+                                @mousedown.left.stop="closeContextmenu"
                             >
-                                <div class="mr-2">
-                                    <client-only>
-                                        <font-awesome-icon :icon="(item.metadata.headerIcon) ? item.metadata.headerIcon : headerIcon(item.metadata.group)"/>
-                                    </client-only>
+                                <div 
+                                    :class="['p-1 rounded-t-lg border-b border-black text-gray-50 font-bold cursor-move flex']"
+                                    :style="{backgroundColor: (item.metadata.headerColor) ? item.metadata.headerColor : headerColor(item.metadata.group)}"
+                                    @mousedown.left.stop="handleDragStart(keyItem, $event)"
+                                    @dragstart="handleDragStart(keyItem, $event)"
+                                    @drop="handleDragEnd"
+                                    @mouseup="handleDragEnd"
+                                >
+                                    <div class="flex flex-1">
+                                        <div class="mr-2 ml-2 text-sm">
+                                            <client-only>
+                                                <font-awesome-icon :icon="(item.metadata.headerIcon) ? item.metadata.headerIcon : headerIcon(item.metadata.group)"/>
+                                            </client-only>
+                                        </div>
+
+                                        <span class="text-sm">{{ uppercaseFirstLetter(item.metadata.namespace) }}</span>   
+                                    </div> 
+
+                                    <div class="flex text-sm" @mousedown.left.stop="" :collaped="item.collaped">
+                                        <div class="mr-2 cursor-pointer px-2" @click.stop="item.collaped = !item.collaped">
+                                            <client-only>
+                                                <Tooltip :tooltipText="$t('Expand')" position="top">
+                                                    <font-awesome-icon icon="fa-solid fa-caret-down" v-if="item.collaped" />
+                                                </Tooltip>
+
+                                                <Tooltip :tooltipText="$t('Contract')" position="top">
+                                                    <font-awesome-icon icon="fa-solid fa-caret-up" v-if="!item.collaped" />
+                                                </Tooltip>
+                                            </client-only>
+                                        </div>
+                                        
+                                        <div class="mr-2 cursor-pointer" @click.stop="removeComponent(keyItem)">
+                                            <client-only>
+                                                <Tooltip :tooltipText="$t('Delete')" position="top">
+                                                    <font-awesome-icon icon="fa-solid fa-xmark"/>
+                                                </Tooltip>
+                                            </client-only>
+                                        </div>
+                                    </div>
                                 </div>
-
-                                <span>{{ uppercaseFirstLetter(item.metadata.namespace) }} ({{ keyItem }})</span>    
-
-                                <div class="flex" @mousedown.left.stop="" :collaped="item.collaped">
-                                    <div class="mr-2 cursor-pointer px-2" @click.stop="item.collaped = !item.collaped">
-                                        <client-only>
-                                            <font-awesome-icon icon="fa-solid fa-caret-down" v-if="!item.collaped" />
-                                            <font-awesome-icon icon="fa-solid fa-caret-up" v-if="item.collaped" />
-                                        </client-only>
-                                    </div>
-                                    
-                                    <div class="mr-2 cursor-pointer" @click.stop="removeComponent(keyItem)">
-                                        <client-only>
-                                            <font-awesome-icon icon="fa-solid fa-xmark"/>
-                                        </client-only>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="p-2 flex text-white font-medium">
-                                <div class="content-start items-start">
-                                    <div class="flex" v-for="(input, key) in item.inputs" :key="key" :id="`${input.id}-${keyItem}`" ref="inputs">
-                                        <blueprint-component-input 
-                                            :keyItem="keyItem" 
-                                            :input="input" 
-                                            :item="item" 
-                                            :isInput="true" 
-                                            :collaped="item.collaped"
-                                            @changeDefault="changeDefault" 
-                                            @onPointer="onPointer" 
-                                            @onPointerLeave="onPointerLeave"
-                                            @openObjectEdit="openObjectEdit"
-                                        ></blueprint-component-input>
-                                    </div>
-
-                                    <div v-if="!item.collaped">
-                                        <div class="flex" v-for="(input, key) in item.publicVars" :key="key" :id="`${input.id}-${keyItem}`" ref="inputs">
+                                
+                                <div class="p-2 flex text-white font-medium">
+                                    <div class="content-start items-start">
+                                        <div class="flex" v-for="(input, key) in item.inputs" :key="key" :id="`${input.id}-${keyItem}`" ref="inputs">
                                             <blueprint-component-input 
                                                 :keyItem="keyItem" 
                                                 :input="input" 
                                                 :item="item" 
-                                                :isInput="false" 
+                                                :isInput="true" 
                                                 :collaped="item.collaped"
                                                 @changeDefault="changeDefault" 
                                                 @onPointer="onPointer" 
@@ -120,122 +137,168 @@
                                                 @openObjectEdit="openObjectEdit"
                                             ></blueprint-component-input>
                                         </div>
-                                    </div>
-                                </div>
 
-                                <div class="content-end items-end text-right ml-4">
-                                    <div class="text-right w-full items-end h-6 py-1" v-for="(output, key) in item.outputs" :key="key">
-                                        <div class="flex flex-row-reverse" :id="`${output.id}-${keyItem}`" ref="inputs">                       
-                                            <div :style="{color: (item.metadata[output?.type.replace(/\./, '_')]) ? item.metadata[output?.type.replace(/\./, '_')].color : getColorByType(output?.type)}" :title="`Type: ${output?.type}`" >
-                                                <client-only>
-                                                    <font-awesome-icon                         
-                                                        icon="fa-solid fa-square"   
-                                                        @dragstart="createLine($event, item, output, keyItem, `${output.id}-${keyItem}`)" 
-                                                        @mousedown="createLine($event, item, output, keyItem, `${output.id}-${keyItem}`)"
-                                                        @mouseenter="onPointer($event, item, output, keyItem, `${output.id}-${keyItem}`)"
-                                                        @mouseleave="onPointerLeave"
-                                                    />
-                                                </client-only>
-                                            </div>
-
-                                            <div>
-                                                <span class="px-2">{{ uppercaseFirstLetter(output.name) }}</span>
-                                            </div>  
-                                        </div>
-                                    </div>  
-                                    
-                                    <div class="text-right" v-for="(publicVar, key) in item.publicVars" :key="key">
-                                        <div  v-if="publicVar.type == 'object' && publicVar.default && publicVar.default.createOutputs">
-                                            <div class="w-full items-end"> 
-                                                <div v-for="(publicVaritem, key) in publicVar.value" :key="key" class="flex flex-row-reverse h-6"> 
-                                                    <div :style="{color: getColorByType('Any')}" :id="`${publicVar.id}-${keyItem}-${key}`" ref="inputs">
-                                                        <client-only>
-                                                            <font-awesome-icon                         
-                                                                icon="fa-solid fa-square"
-                                                                @dragstart="createLine($event, item, publicVar, keyItem, `${publicVar.id}-${keyItem}-${key}`)" 
-                                                                @mousedown="createLine($event, item, publicVar, keyItem, `${publicVar.id}-${keyItem}-${key}`)"
-                                                                @mouseenter="onPointer($event, item, publicVar, keyItem, `${publicVar.id}-${keyItem}-${key}`)"
-                                                                @mouseleave="onPointerLeave"
-                                                            />
-                                                        </client-only>
-                                                    </div>
-
-                                                    <div>
-                                                        <span class="px-2">{{ (publicVaritem.method) ? publicVaritem.method : 'GET' }} [{{ publicVaritem.url }}]</span>
-                                                    </div>
-                                                </div> 
+                                        <div v-if="!item.collaped">
+                                            <div class="flex" v-for="(input, key) in item.publicVars" :key="key" :id="`${input.id}-${keyItem}`" ref="inputs">
+                                                <blueprint-component-input 
+                                                    :keyItem="keyItem" 
+                                                    :input="input" 
+                                                    :item="item" 
+                                                    :isInput="false" 
+                                                    :collaped="item.collaped"
+                                                    @changeDefault="changeDefault" 
+                                                    @onPointer="onPointer" 
+                                                    @onPointerLeave="onPointerLeave"
+                                                    @openObjectEdit="openObjectEdit"
+                                                ></blueprint-component-input>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>                
+
+                                    <div class="content-end items-end text-right ml-4">
+                                        <div class="text-right w-full items-end h-6 py-1" v-for="(output, key) in item.outputs" :key="key">
+                                            <div class="flex flex-row-reverse" :id="`${output.id}-${keyItem}`" ref="inputs">                       
+                                                <div :style="{color: (item.metadata[output?.type.replace(/\./, '_')]) ? item.metadata[output?.type.replace(/\./, '_')].color : getColorByType(output?.type)}" :title="`Type: ${output?.type}`" >
+                                                    <client-only>
+                                                        <font-awesome-icon                         
+                                                            icon="fa-solid fa-square"   
+                                                            @dragstart="createLine($event, item, output, keyItem, `${output.id}-${keyItem}`)" 
+                                                            @mousedown="createLine($event, item, output, keyItem, `${output.id}-${keyItem}`)"
+                                                            @mouseenter="onPointer($event, item, output, keyItem, `${output.id}-${keyItem}`)"
+                                                            @mouseleave="onPointerLeave"
+                                                        />
+                                                    </client-only>
+                                                </div>
+
+                                                <div>
+                                                    <span class="px-2 text-sm">{{ uppercaseFirstLetter(output.name) }}</span>
+                                                </div>  
+                                            </div>
+                                        </div>  
+                                        
+                                        <div class="text-right" v-for="(publicVar, key) in item.publicVars" :key="key">
+                                            <div  v-if="publicVar.type == 'object' && publicVar.default && publicVar.default.createOutputs">
+                                                <div class="w-full items-end"> 
+                                                    <div v-for="(publicVaritem, key) in publicVar.value" :key="key" class="flex flex-row-reverse h-6"> 
+                                                        <div :style="{color: getColorByType('Any')}" :id="`${publicVar.id}-${keyItem}-${key}`" ref="inputs">
+                                                            <client-only>
+                                                                <font-awesome-icon                         
+                                                                    icon="fa-solid fa-square"
+                                                                    @dragstart="createLine($event, item, publicVar, keyItem, `${publicVar.id}-${keyItem}-${key}`)" 
+                                                                    @mousedown="createLine($event, item, publicVar, keyItem, `${publicVar.id}-${keyItem}-${key}`)"
+                                                                    @mouseenter="onPointer($event, item, publicVar, keyItem, `${publicVar.id}-${keyItem}-${key}`)"
+                                                                    @mouseleave="onPointerLeave"
+                                                                />
+                                                            </client-only>
+                                                        </div>
+
+                                                        <div>
+                                                            <span class="px-2 text-sm">{{ (publicVaritem.method) ? publicVaritem.method : 'GET' }} [{{ publicVaritem.url }}]</span>
+                                                        </div>
+                                                    </div> 
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>                
+                            </div>
+
+                            <blueprint-line-connector 
+                                v-for="(line, key) in lines" 
+                                :selected="lineSelected == key" 
+                                :key="key" 
+                                :keyref="line.connectionKey" 
+                                :line="line" 
+                                :offset="linesOffset"
+                                :scale="scale" 
+                                :scrollOffset="scrollOffset"
+                                :transformPosition="position"
+                                ref="lines" 
+                                @clickLine="clickLine"
+                            ></blueprint-line-connector>
+
+                            <blueprint-line-connector 
+                                v-if="tmpLine" 
+                                :line="tmpLine" 
+                                :offset="linesOffset" 
+                                :scale="scale"
+                                :scrollOffset="scrollOffset"
+                                :transformPosition="position"
+                                ref="tmpLine"
+                            ></blueprint-line-connector>
                         </div>
-
-                        <blueprint-line-connector 
-                            v-for="(line, key) in lines" 
-                            :selected="lineSelected == key" 
-                            :key="key" 
-                            :keyref="line.connectionKey" 
-                            :line="line" 
-                            :offset="linesOffset"
-                            :scale="scale" 
-                            :scrollOffset="scrollOffset"
-                            :transformPosition="position"
-                            ref="lines" 
-                            @clickLine="clickLine"
-                        ></blueprint-line-connector>
-
-                        <blueprint-line-connector 
-                            v-if="tmpLine" 
-                            :line="tmpLine" 
-                            :offset="linesOffset" 
-                            :scale="scale"
-                            :scrollOffset="scrollOffset"
-                            :transformPosition="position"
-                            ref="tmpLine"
-                        ></blueprint-line-connector>
                     </div>
                 </div>
+
+                <blueprint-navbar 
+                    ref="navbar"
+                    @addComponent="addComponent" 
+                    @onPointer="onPointer" 
+                />
+
+                <div class="fixed h-11 bg-black/50 bottom-16 right-6 rounded-md flex">
+                    <Tooltip :tooltipText="$t('Zoom in')" position="top" class="flex" @click="scaleIn">
+                        <button class="text-white px-3">
+                            <client-only><font-awesome-icon icon="fa-solid fa-magnifying-glass-plus" /></client-only>
+                        </button>
+                    </Tooltip>
+
+                    <Tooltip :tooltipText="$t('Reset')" position="top" class="flex" @click="scaleResert">
+                        <button class="text-white px-3">
+                            <client-only><font-awesome-icon icon="fa-solid fa-magnifying-glass" /></client-only>
+                        </button>
+                    </Tooltip>
+
+                    <Tooltip :tooltipText="$t('Zoom out')" position="top" class="flex" @click="scaleOut">
+                        <button class="text-white px-3">
+                            <client-only><font-awesome-icon icon="fa-solid fa-magnifying-glass-minus" /></client-only>
+                        </button>
+                    </Tooltip>
+                </div>
+
+                <blueprint-object-edit 
+                    class="fixed top-0 left-0 w-full h-full z-50"
+                    v-if="objectEdit.open"
+                    :keyItem="objectEdit.keyItem"
+                    :component="objectEdit.item" 
+                    :input="objectEdit.input" 
+                    :fields="objectEdit.input.default" 
+                    :values="objectEdit.input.value"
+                    @save="(value) => {                     
+                        changeDefault(value, objectEdit.input, 'object');
+                        objectEdit.input.value = value; 
+                        objectEdit.open = false; 
+                    }"
+                    @close="objectEdit.open = false" 
+                />
+
+                <blueprint-item-ghost :item="componentGhost" :position="componentGhostPosition" />
             </div>
 
-            <blueprint-navbar ref="navbar" @addComponent="addComponent" @onPointer="onPointer" />
+            <div class="relative flex" :style="{width: `${widthLeftbar}px !important`}">
+                <!-- Components -->
+                <div class="absolute top-0 left-0 w-full h-full bg-neutral-800 border-r border-black">
+                    <blueprint-navbar 
+                        :fixed="true" 
+                        :showTitle="false" 
+                        :dragItem="true" 
+                        @createGhost="createGhost"
+                    />
+                </div>
 
-            <div class="fixed h-11 bg-black/50 bottom-16 right-6 rounded-md flex">
-                <Tooltip :tooltipText="$t('Zoom in')" position="top" class="flex" @click="scaleIn">
-                    <button class="text-white px-3">
-                        <client-only><font-awesome-icon icon="fa-solid fa-magnifying-glass-plus" /></client-only>
-                    </button>
-                </Tooltip>
-
-                <Tooltip :tooltipText="$t('Reset')" position="top" class="flex" @click="scaleResert">
-                    <button class="text-white px-3">
-                        <client-only><font-awesome-icon icon="fa-solid fa-magnifying-glass" /></client-only>
-                    </button>
-                </Tooltip>
-
-                <Tooltip :tooltipText="$t('Zoom out')" position="top" class="flex" @click="scaleOut">
-                    <button class="text-white px-3">
-                        <client-only><font-awesome-icon icon="fa-solid fa-magnifying-glass-minus" /></client-only>
-                    </button>
-                </Tooltip>
+                <div 
+                    :class="[
+                        (startDragLeft) ? 'bg-blue-500' : '',
+                        'resizeRight w-1 hover:bg-blue-500 h-full absolute right-0 z-40'
+                    ]"
+                    @mouseup.stop="handleDragEndLeft"
+                    @mousedown="handleDragStartLeft"
+                    @click="handleDragStartLeft"
+                    @dragstart="handleDragStartLeft"                
+                ></div>
             </div>
-
-            <blueprint-object-edit 
-                class="fixed top-0 left-0 w-full h-full z-50"
-                v-if="objectEdit.open"
-                :keyItem="objectEdit.keyItem"
-                :component="objectEdit.item" 
-                :input="objectEdit.input" 
-                :fields="objectEdit.input.default" 
-                :values="objectEdit.input.value"
-                @save="(value) => {                     
-                    changeDefault(value, objectEdit.input, 'object');
-                    objectEdit.input.value = value; 
-                    objectEdit.open = false; 
-                }"
-                @close="objectEdit.open = false" 
-            />
         </div>
+        
     </div>
 </template>
 
@@ -271,6 +334,10 @@
     height:100%;
     background-size:50px 50px;
 }
+
+.resizeRight{
+    cursor: ew-resize;
+}
 </style>
 
 <script>
@@ -293,6 +360,7 @@ export default{
 
     data(){
         return {
+            widthLeftbar: 300,
             loading: false,
             dragIndex: 0,
             dragElement: null,
@@ -315,6 +383,7 @@ export default{
                 position: { top: 200, left: 700 } 
             },
             mouseHandler: { top: 200, left: 200 }, 
+            mouseHandlerFull: { top: 200, left: 200 }, 
             items:[],
             blueprits: [],
             bluepritsCategories: {},
@@ -331,7 +400,10 @@ export default{
             moveStartPosition: null,
             dragStartPosition: null,
             moveEvent: false,
-            objectEdit: { open: false }
+            objectEdit: { open: false },
+            overCanvas: false,
+            componentGhost: null,
+            componentGhostPosition: { top: 200, left: 200 }
         }
     },
 
@@ -515,7 +587,10 @@ export default{
             const contentsTransformOffset = this.$refs.contentsTransform.getBoundingClientRect();
             
             this.mouseHandler.top = clientY + this.scrollOffset.y - editorOffset.y - 10;
-            this.mouseHandler.left = clientX + this.scrollOffset.x - editorOffset.x - 10;                
+            this.mouseHandler.left = clientX + this.scrollOffset.x - editorOffset.x - 10;
+            
+            this.mouseHandlerFull.top = clientY - 10;
+            this.mouseHandlerFull.left = clientX - 10;
             
             if(this.startDrag){             
                 const { clientX, clientY, positionX, positionY } = this.dragStartPosition;   
@@ -564,6 +639,17 @@ export default{
 
             if(this.moveEvent)
                 this.moveEvent = false;
+
+            if(this.componentGhost){
+                const tmpComponent = this.componentGhost;
+
+                setTimeout(() => {
+                    if(this.overCanvas && tmpComponent)
+                        this.addComponent(tmpComponent, this.mouseHandler);
+                }, 100);
+
+                this.componentGhost = null;
+            }
 
             this.saveState(true);
         },
@@ -634,6 +720,11 @@ export default{
             this.saveState(true);
             this.createLines();
             setTimeout(() => { this.createLines(); }, 100);
+        },
+
+        createGhost(item){
+            this.componentGhost = item;
+            this.componentGhostPosition = this.mouseHandlerFull;
         },
 
         onPointer(event, item, input, key, id){

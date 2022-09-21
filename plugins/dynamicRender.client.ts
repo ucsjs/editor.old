@@ -6,10 +6,14 @@ export default defineNuxtPlugin((nuxtApp) => {
                 required: true
             }
         },
+
+        mounted(){
+            console.log(this.component);
+        },
         
         render(){
             return h({
-                template: (this.component?.content) ? this.component?.content : ((this.component.template) ? this.component.template : '') ,
+                template: this.component?.content,
                 props: { component: this.component, state: this.state },
             }, { component: this.component, state: this.state });
         }

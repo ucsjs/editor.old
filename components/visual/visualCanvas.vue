@@ -38,6 +38,7 @@
                             :selectedComponent="selectedComponent"
                             :mouseHandler="mouseHandler"
                             :tab="tab"
+                            ref="components"
                             @selectItem="selectItem"
                             @changeState="saveState"
                         ></visual-component>
@@ -47,7 +48,7 @@
                         </div>-->
                     </div> 
 
-                    <div class="absolute h-11 bg-black/50 bottom-3 left-3 rounded-md flex z-40">
+                    <div class="absolute h-11 bg-black/50 bottom-3 rounded-md flex z-40">
                         <Tooltip :tooltipText="$t('Desktop')" position="top" class="flex" @click="viewportDesktop">
                             <button class="text-white px-3">
                                 <client-only><font-awesome-icon icon="fa-solid fa-desktop" /></client-only>
@@ -279,6 +280,14 @@ export default {
                             console.log("new property", subComponentDefault);
                         }
                     }
+                }
+            }
+        },
+
+        update(){
+            if(this.$refs.components){
+                for(let component of this.$refs.components){
+                    component.update(true);
                 }
             }
         },
@@ -534,6 +543,8 @@ export default {
 
             if(emit)
                 this.$emit("changeState", this.getValue());
+
+            this.$forceUpdate();
         }
     }
 }
