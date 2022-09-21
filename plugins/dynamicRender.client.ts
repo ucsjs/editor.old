@@ -6,10 +6,6 @@ export default defineNuxtPlugin((nuxtApp) => {
                 required: true
             }
         },
-
-        mounted(){
-            console.log(this.component);
-        },
         
         render(){
             return h({

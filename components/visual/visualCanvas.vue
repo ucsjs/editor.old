@@ -277,7 +277,7 @@ export default {
                         }
 
                         if(isNewProperty){
-                            console.log("new property", subComponentDefault);
+                            //console.log("new property", subComponentDefault);
                         }
                     }
                 }
@@ -405,7 +405,7 @@ export default {
         },
 
         centralize(){
-            this.position = { x: 0, y: 0 };
+            this.transform = { x: 0, y: 0 };
             this.saveState();
         },
 
@@ -424,7 +424,7 @@ export default {
             return {
                 settings: this.settings,
                 scale: this.scale,
-                position: this.position,
+                position: this.transform,
                 viewport: this.viewport,
                 hierarchy: this.hierarchy.filter((item) => item),
                 componentIndex: this.componentIndex

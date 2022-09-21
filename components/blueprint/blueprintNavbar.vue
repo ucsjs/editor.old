@@ -132,7 +132,7 @@ export default{
 
         addComponent(item) {
             if(!this.fixed){
-                this.$emit("addComponent", item, this.position);
+                this.$emit("addComponent", item, this.transform);
                 this.close();
             }
         },
@@ -143,8 +143,8 @@ export default{
             }
         },
 
-        open(position){
-            this.position = { ...position };
+        open(transform){
+            this.transform = { ...transform };
             this.opened = true;
         },
 

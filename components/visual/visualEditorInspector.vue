@@ -102,9 +102,9 @@
                         </div>   
                         
                         <div class="flex justify-end">
-                            <button class="mr-1 text-sm px-1 w-6 hover:bg-neutral-600">
+                            <!--<button class="mr-1 text-sm px-1 w-6 hover:bg-neutral-600">
                                 <font-awesome-icon icon="fa-solid fa-circle-question" />
-                            </button>
+                            </button>-->
 
                             <Menu as="div" class="relative">
                                 <div>
@@ -141,23 +141,33 @@
                                 v-for="(property, keySubcomponent) in subComponent.properties"
                                 :key="keySubcomponent"
                             >
-                                
                                 <div v-if="property.type == 'BigText'" class="w-full p-2">
                                     <textarea 
                                         v-model="subComponent.value[property.name]"
                                         v-if="property.type == 'BigText'"
                                         class=" w-full h-56 p-1 bg-neutral-900 border-black"
                                         placeholder="Text..."
-                                        @keyup="changeProperty(component)" 
+                                        @keyup.stop="changeProperty(component)" 
                                         @change="changeProperty(component)"
                                     ></textarea>
                                 </div>
-                                <div v-else class="flex-1 flex p-0.5 pr-2">
-                                    <div class="w-3/6 h-7">
+                                <div v-else class="flex-1 flex p-0.5 ">
+                                    <div class="w-3/6 h-7 flex">
+                                        <div class="mt-1" v-if="subComponent && subComponent.metadata && subComponent.metadata[`${property.name}Help`]">
+                                            <Tooltip :tooltipText="$t('Help')" position="right">
+                                                <a :href="subComponent.metadata[`${property.name}Help`]" target="_blank" class="text-sm ml-1 hover:bg-neutral-600">
+                                                    <font-awesome-icon icon="fa-solid fa-circle-question" />
+                                                </a>
+                                            </Tooltip>
+                                        </div>
+
                                         <div class="ml-2 text-sm mt-1">{{ property.label || uppercaseFirstLetter(property.name) }}</div>
                                     </div>
 
-                                    <div class="w-3/6 h-7" v-if="subComponent">  
+                                    <div 
+                                        class="w-3/6 h-7 pr-2" 
+                                        v-if="subComponent"
+                                    >  
                                         <div v-if="component?.editor && component.editor[subComponent.component] && component.editor[subComponent.component][property.name]">
                                             <client-only placeholder="Loading...">
                                                 <dynamic-renderer 
@@ -193,7 +203,7 @@
                                             class="bg-neutral-900 border border-black text-white px-1 h-7 text-sm w-full rounded-sm" 
                                             type="text" 
                                             v-model="subComponent.value[property.name]"
-                                            @keyup="changeProperty(component)" 
+                                            @keyup.stop="changeProperty(component)" 
                                             @change="changeProperty(component)"
                                         />
                                         <input 
@@ -201,7 +211,7 @@
                                             class="bg-neutral-900 border border-black text-white px-1 h-7 text-sm w-full rounded-sm" 
                                             type="text" 
                                             v-model="subComponent.value[property.name]"
-                                            @keyup="changeProperty(component)" 
+                                            @keyup.stop="changeProperty(component)" 
                                             @change="changeProperty(component)"
                                         />
                                         <div v-else-if="property.type == 'boolean' || property.type == 'Boolean' || property.type == 'Bool'" class="text-white pt-1">
@@ -234,6 +244,7 @@
                                                     v-model="subComponent.value[property.name]" 
                                                     class="bg-neutral-900 border border-black text-white px-1 h-6 text-sm w-full rounded-sm" 
                                                     type="text"
+                                                    @keyup.stop="changeProperty(component)"
                                                     @change="changeProperty(component)"
                                                 />
                                             </div>
@@ -267,6 +278,25 @@
                                                 <div class="absolute top-6 z-50" v-if="property.open">
                                                     <Chrome v-model="subComponent.value[property.name]"></Chrome>
                                                 </div>
+                                            </div>
+                                        </div>
+                                        <div v-else-if="(property.type == 'image' || property.type == 'Image') && subComponent.value[property.name]">
+                                            <div 
+                                                class="border border-black h-full flex justify-end relative text-sm"                                                                                          
+                                            >
+                                                <input 
+                                                    type="hidden" 
+                                                    v-model="subComponent.value[property.name]" 
+                                                    @change="changeProperty(component)" 
+                                                    @input="changeProperty(component)" 
+                                                />
+
+                                                <input 
+                                                    class="bg-neutral-900 border border-black text-white px-1 h-6 text-sm w-full rounded-sm"
+                                                    type="text" 
+                                                    v-model="subComponent.value[property.name].src"
+                                                    @keyup.stop="() => {}"
+                                                />
                                             </div>
                                         </div>
                                     </div>
@@ -437,8 +467,12 @@ export default {
             if(this.component){
                 for(let key in this.component.components){
                     try{
-                        if(!this.component.components[key].open && this.component.components[key].open !== false)
-                            this.component.components[key].open = true;
+                        if(!this.component.components[key].open && this.component.components[key].open !== false){
+                            if(this.component.components[key].namespace === "Class")
+                                this.component.components[key].open = false;
+                            else
+                                this.component.components[key].open = true;
+                        }
 
                         if(this.component.components[key] && this.component.components[key]?.value){
                             if(this.component.components[key]?.default)
@@ -452,9 +486,7 @@ export default {
                                 this.component.components[key].value[keyValue] = this.component.components[key].value[keyValue]?.default
                         }
                     }   
-                    catch(e){
-                        console.log(e);
-                    }
+                    catch(e){}
                 }
             }  
         },

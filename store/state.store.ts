@@ -151,6 +151,26 @@ export const useStateStore = defineStore({
                 this.hierarchy.items[tabHash][id][prop] = value;
         },
 
+        saveFile(tab){
+            this.loading = true;
+
+            useApi(`files/save`, {
+                method: "PUT", 
+                body: tab
+            }).then((res) => {
+                if(res.sha256 && res.lastModified){
+                    tab.change = false;
+                    tab.lastModified = res.lastModified;
+                    tab.sha256 = res.sha256;
+                    this.loading = false;
+                }
+
+                this.inSaveProcess = false;
+            }).catch(() => {
+                this.inSaveProcess = false;
+            });
+        },
+
         saveState(){
             try{
                 localStorage.setItem("state", JSON.stringify(this));

@@ -24,7 +24,7 @@
 
             <div v-if="item.metadata[input.name]">
                 <select 
-                    class="bg-neutral-800 border border-black text-white px-1 ml-2"
+                    class="bg-neutral-800 border border-black text-white px-1 ml-2 max-w-[100px]"
                     @change="$emit('changeDefault', $event.target.value, input)"
                 >
                     <option 
@@ -61,6 +61,14 @@
             </div>
             <div v-else-if="input.default" class="pl-1">
                 {{ input.default }}
+            </div>
+
+            <div v-if="item.metadata[`${input.name}Help`]" class="cursor-pointer ml-2 mt-0.5 text-sm">
+                <Tooltip :tooltipText="$t('Help')" position="top">
+                    <a :href="item.metadata[`${input.name}Help`]" target="_blank">
+                        <font-awesome-icon icon="fa-solid fa-circle-question" />
+                    </a>
+                </Tooltip>
             </div>
         </div>
     </div>

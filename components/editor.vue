@@ -90,7 +90,6 @@ export default {
                     stop: true,
                     async handler(keys) {
                         try{
-                            console.log(_this.state.editor);
                             if(_this.state.editor[0])
                                 _this.state.editor[0].onDelete();
                         }catch(e){}

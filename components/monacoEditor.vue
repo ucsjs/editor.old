@@ -24,15 +24,18 @@ export default {
 
     data(){
         return {
-            loading: false
+            loading: false,
+            loader: null,
+            listen: null
         }
     },  
 
     async mounted(){
         if(process.client){
-
-            const loader = await import('@monaco-editor/loader').then(m => m?.default);
+            this.loader = await import('@monaco-editor/loader').then(m => m?.default);
             const { listen } = await import('vscode-ws-jsonrpc').then(m => m);
+            this.listen = listen;
+
             /*const {
                 MonacoLanguageClient,
                 CloseAction,
@@ -40,8 +43,8 @@ export default {
                 createConnection,
                 MonacoServices,
             } = await import('monaco-languageclient').then(m => m?.default);*/
-
-            const monaco = await loader.init();
+            
+            const monaco = await this.loader.init();
             //MonacoServices.install(monaco);
             let contents = this.value;
 
@@ -87,7 +90,7 @@ export default {
                 editorElem.layout();
             });
 
-            const webSocket = new WebSocket("ws://localhost:5003");
+            /*const webSocket = new WebSocket("ws://localhost:5003");
 
             listen({
                 webSocket: webSocket,
@@ -103,7 +106,7 @@ export default {
                         //console.log(error);
                     });
                 },
-            });
+            });*/
 
             this.loading = true;
         }

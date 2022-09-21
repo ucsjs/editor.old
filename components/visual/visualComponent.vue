@@ -2,9 +2,9 @@
     <client-only>
         <!-- eslint-disable -->
         <vue-drag-resize  
-            :style="style"
-            :initW="dimensions.width" 
-            :initH="dimensions.height"
+            :style="{ position: transform.position }"
+            :initW="transform.width" 
+            :initH="transform.height"
             :minW="50"
             :minH="30"
             v-model:x="resizeData.x"
@@ -15,6 +15,7 @@
             :draggable="!settings.static && selectedComponent?.id == settings.id"
             :resizable="!settings.static && selectedComponent?.id == settings.id"
             :parent="settings.lockBox"
+            @mouseover.stop="() => {}"
             @dragging="(d) => resizeOrMove(d, false)"
             @resizing="(d) =>resizeOrMove(d, false)"
             @resize-end="(d) =>resizeOrMove(d, true)"
@@ -40,10 +41,14 @@
                     'border w-full h-full'
                 ]"
             >     
-                <div ref="component">
+                <div ref="component" class="w-full h-full">
+                    <div class="w-full h-full absolute z-40"></div>
+                    
                     <client-only placeholder="Loading...">
                         <dynamic-renderer 
                             v-if="settings" 
+                            class="w-full h-full"
+                            :style="style"
                             :component="settings"
                         >
                         </dynamic-renderer>
@@ -94,12 +99,10 @@ export default {
             moveble: false,
             moveEvent: false,
             position: { top: 0, left: 0, scale: 1, position: "absolute", zIndex: 1, rotate: 0 },
-            dimensions: { width: 0, height: 0, widthAuto: false, heightAuto: false },
             componentsIndex: {},
             resizeData: null,
             style: {},
-            transformComponent: null,
-            dimensionsComponent: null
+            transformComponent: null
         }
     },
 
@@ -108,10 +111,6 @@ export default {
             this.update();
         },
         
-        dimensions(){
-            this.update(false);
-        },
-
         selectedComponent(){
             this.update(false);
         }
@@ -123,15 +122,14 @@ export default {
 
     methods: {
         updateComponentStyle(updateSubComponents = true){
+            let finalStyles = null;
+
             let defaultStyle = {
-                position: this.position.position,
-                width: (this.dimensions.widthAuto) ? 'auto' : `${this.dimensions.width}px`, 
-                height: (this.dimensions.heightAuto) ? 'auto' : `${this.dimensions.height}px`,
-                top: `${this.position.top}px`, 
-                left: `${this.position.left}px`, 
-                transform: `scale(${this.position.scale}) rotate(${this.position.rotate}deg)`,
+                width: (this.transform.widthAuto) ? 'auto' : `${this.transform.width}px`, 
+                height: (this.transform.heightAuto) ? 'auto' : `${this.transform.height}px`,
+                transform: `scale(${this.transform.scale}) rotate(${this.transform.rotate}deg)`,
                 visibility: this.settings.visibility ? 'visible' : 'hidden',
-                zIndex: this.position.zIndex
+                zIndex: this.transform.zIndex
             };
 
             if(updateSubComponents){
@@ -141,17 +139,31 @@ export default {
                         if(property.changeStyle){
                             if(property.name == "color")
                                 defaultStyle[property.changeStyle.styleVue] = component.value[property.name].hex;
+                            else if(typeof component.value[property.name] == "object" && component.value[property.name].src)
+                                defaultStyle[property.changeStyle.styleVue] =component.value[property.name].src;
                             else
                                 defaultStyle[property.changeStyle.styleVue] = component.value[property.name] + ((property.changeStyle.subfix) ? property.changeStyle.subfix : '');
                         }
                     }
                 }
 
-                this.style = defaultStyle;
+                finalStyles = defaultStyle;
             }
             else {
-                this.style = { ...this.style, ...defaultStyle };
+                finalStyles = { ...this.style, ...defaultStyle };
             }
+
+            if(finalStyles){
+                for(let key in finalStyles){
+                    if(typeof finalStyles[key] == "string" && finalStyles[key].includes("http") && !finalStyles[key].includes("url("))
+                        finalStyles[key] = `url(${finalStyles[key]})`;
+
+                    if(finalStyles[key] == "undefined")
+                        finalStyles[key] = null;
+                }
+            }
+
+            this.style = finalStyles;
         },
 
         update(updateStyle = true){
@@ -176,30 +188,20 @@ export default {
 
                 if(this.transformComponent){
                     if(this.settings.position && !this.transformComponent.value)
-                        this.position = this.settings.position;                
+                        this.transform = this.settings.position;                
                     else if(this.transformComponent.value)
-                        this.position = this.transformComponent.value;
+                        this.transform = this.transformComponent.value;
                     
                     if(!this.transformComponent.value)
-                        this.transformComponent.value = this.position;
-                }
-
-                //Dimensions
-                this.dimensionsComponent = this.getSubcomponent("Dimensions");
-
-                if(this.dimensionsComponent){
-                    if(this.dimensionsComponent.value)
-                        this.dimensions = this.dimensionsComponent.value;
-                    else if(this.dimensionsComponent.default)
-                        this.dimensions = this.dimensionsComponent.default;
-                        
-                    if(!this.dimensionsComponent.value)
-                        this.dimensionsComponent.value = this.dimensions;
+                        this.transformComponent.value = this.transform;
                 }
 
                 //Parse values
                 for(let key in this.settings.components){
                     const component = this.settings.components[key];
+
+                    if(component.component === "Class" && !component.open && component.open !== true)
+                        component.open = false;
 
                     if(this.settings.componentsDafaults?.length > 0){
                         for(let componentDefault of this.settings.componentsDafaults){
@@ -216,10 +218,10 @@ export default {
                 }
 
                 this.resizeData = {
-                    w: this.dimensions.width,
-                    h: this.dimensions.height,
-                    x: this.position.left,
-                    y: this.position.top,
+                    w: this.transform.width,
+                    h: this.transform.height,
+                    x: this.transform.left,
+                    y: this.transform.top,
                     active: (this.selectedComponent?.id == this.settings.id)
                 }
 
@@ -250,8 +252,8 @@ export default {
                 this.moveStartPosition = { 
                     left: clientX, 
                     top: clientY,
-                    positionX: this.position.left,
-                    positionY: this.position.top
+                    positionX: this.transform.left,
+                    positionY: this.transform.top
                 };
 
                 this.moveEvent = true;
@@ -265,16 +267,15 @@ export default {
                 const { left, top, positionX, positionY } = this.moveStartPosition; 
                 const diffX = clientX - left;
                 const diffY = clientY - top;  
-                this.position.left = positionX + diffX;
-                this.position.top = positionY + diffY;
+                this.transform.left = positionX + diffX;
+                this.transform.top = positionY + diffY;
             }
         },
 
         handleDragEnd(event){
             if(this.moveEvent){
                 this.moveEvent = false;
-                this.getSubcomponent("Dimensions").value = this.dimensions;
-                this.getSubcomponent("Transform").value = this.position;
+                this.getSubcomponent("Transform").value = this.transform;
                 this.$emit('changeState');
             } 
         },
@@ -286,19 +287,19 @@ export default {
                     this.transformComponent.value.top = newRect.y;
                 }               
                 
-                this.position.left = newRect.x;
-                this.position.top = newRect.y;
+                this.transform.left = newRect.x;
+                this.transform.top = newRect.y;
                 this.updateComponentStyle(false);
             }                
              
             if(newRect.w && newRect.h){       
                 if(updateComponent){         
-                    this.dimensionsComponent.value.width = newRect.w;
-                    this.dimensionsComponent.value.height = newRect.h;
+                    this.transformComponent.value.width = newRect.w;
+                    this.transformComponent.value.height = newRect.h;
                 }
 
-                this.dimensions.width = newRect.w;
-                this.dimensions.height = newRect.h;
+                this.transform.width = newRect.w;
+                this.transform.height = newRect.h;
                 this.updateComponentStyle(false);
             }    
             

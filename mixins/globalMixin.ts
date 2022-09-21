@@ -47,7 +47,8 @@ export default {
                 ".npmignore": { icon: "fa-brands fa-npm", color: "#FF0000" },
                 ".gitignore": { icon: "fa-brands fa-git-alt", color: "#3d3d3d" },
                 ".log": { icon: "fa-solid fa-align-left", color: "#cccccc" },
-                ".md": { icon: "fa-solid fa-circle-info", color: "#6095d6" }
+                ".md": { icon: "fa-solid fa-circle-info", color: "#6095d6" },
+                ".html": { icon: "fa-regular fa-file-code", color: "#b27211" }
             }
 
             if(ext){

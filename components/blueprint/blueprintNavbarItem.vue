@@ -29,7 +29,10 @@
                         @mousedown.stop="createGhost(subitem)"
                     >
                         <div>
-                            <client-only><font-awesome-icon :icon="(subitem.metadata.headerIcon) ? subitem.metadata.headerIcon : headerIcon(subitem.metadata.group)" v-if="openedState[key]" /></client-only>
+                            <client-only v-if="!subitem.metadata.headerIcon.includes('data:')">
+                                <font-awesome-icon :icon="(subitem.metadata.headerIcon) ? subitem.metadata.headerIcon : headerIcon(subitem.metadata.group)"/>
+                            </client-only>                                        
+                            <img v-else :src="subitem.metadata.headerIcon" class="w-4 h-4 mt-1"/>
                         </div>
 
                         <div class="ml-2 cursor-pointer" @click="addComponent(subitem)">
