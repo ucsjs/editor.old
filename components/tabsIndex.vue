@@ -122,7 +122,7 @@ export default {
             },
             tinymceSettings: {
                 skin_url: "/skins/ui/ucs",
-                content_css: "/skins/content/ucs",
+                content_css: "/skins/content/ucs/content.min.css",
                 themes: "modern",
                 width: "100%",
                 height: "100%",

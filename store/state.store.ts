@@ -115,8 +115,10 @@ export const useStateStore = defineStore({
         },
 
         changeContents(index, newContent){
-            this.tabs[index].content = newContent;
-            this.tabs[index].change = true;
+            if(this.tabs[index]){
+                this.tabs[index].content = newContent;
+                this.tabs[index].change = true;
+            }
         },
 
         currentTab(){
