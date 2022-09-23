@@ -121,20 +121,22 @@ export default {
                 ghostClass: "ghost"
             },
             tinymceSettings: {
-                skin: "oxide-dark",
-                content_css: "dark",
+                skin_url: "/skins/ui/ucs",
+                content_css: "/skins/content/ucs",
                 themes: "modern",
                 width: "100%",
                 height: "100%",
                 resize: false,
-                plugins: ['link','lists', 'powerpaste', 'autolink', 'save'],
+                plugins: 'save preview powerpaste casechange importcss searchreplace autolink autosave directionality advcode visualblocks visualchars fullscreen image imagetools link media mediaembed template codesample table charmap hr pagebreak nonbreaking anchor toc insertdatetime advlist lists checklist wordcount imagetools textpattern noneditable help formatpainter permanentpen pageembed charmap mentions quickbars linkchecker emoticons advtable',
                 toolbar: [
-                    'undo redo | bold italic underline | fontselect fontsizeselect | forecolor backcolor | alignleft aligncenter alignright alignfull | numlist bullist outdent indent',
+                    'undo redo | bold italic underline | fontselect fontsizeselect formatselect | forecolor backcolor | alignleft aligncenter alignright alignfull | numlist bullist outdent indent',
                 ],
+                quickbars_selection_toolbar: 'bold italic | quicklink h2 h3 blockquote quicktable',
                 model_events: "change input undo redo",
-                valid_elements: 'p[style],strong,em,span[style],a[href],ul,ol,li',
-                menubar: false,
-                save_onsavecallback: this.save
+                menubar: 'edit view insert format tools table',
+                save_onsavecallback: this.save,
+                imagetools_proxy: '/file/upload',
+                automatic_uploads: false
             }
         }
     },

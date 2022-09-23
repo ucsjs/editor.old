@@ -29,7 +29,7 @@
                         @mousedown.stop="createGhost(subitem)"
                     >
                         <div>
-                            <client-only v-if="!subitem.metadata.headerIcon.includes('data:')">
+                            <client-only v-if="!subitem.metadata.headerIcon?.includes('data:')">
                                 <font-awesome-icon :icon="(subitem.metadata.headerIcon) ? subitem.metadata.headerIcon : headerIcon(subitem.metadata.group)"/>
                             </client-only>                                        
                             <img v-else :src="subitem.metadata.headerIcon" class="w-4 h-4 mt-1"/>
@@ -88,10 +88,9 @@ export default{
     mounted() {
         const cache = localStorage.getItem('blueprint-navbar');
 
-        for(let key in this.items){
+        for(let key in this.items)
             this.openedState[key] = false;
-        }
-
+        
         if(cache){
             const cacheParsed = JSON.parse(cache);
 

@@ -62,6 +62,7 @@
                 :key="key" 
                 :item="item" 
                 :padding="padding+1"
+                :onlyDir="onlyDir"
                 @selectItem="selectItem"
                 @openFile="openFile" 
                 @createFile="createFile"
@@ -82,10 +83,16 @@ export default {
             type: Object,
             default: ""
         },
+
         padding: {
             type: Number,
             default: 0
-        }
+        },
+
+        onlyDir: {
+            type: Boolean,
+            default: false
+        },
     },
 
     data: () => ({
@@ -127,9 +134,16 @@ export default {
         },
 
         async listFiles(){
-            const items = await useApi(`files?path=${encodeURIComponent(this.item.path)}`, {
-                method: "GET"
-            });
+            let uri = "files";
+            let query = [`path=${encodeURIComponent(this.item.path)}`]
+
+            if(this.onlyDir)
+                query.push(`onlyDir=${this.onlyDir}`);
+
+            if(query.length > 0)
+                uri += "?" + query.join("&");
+
+            const items = await useApi(uri, { method: "GET" });
 
             if(items)
                 this.items = items;

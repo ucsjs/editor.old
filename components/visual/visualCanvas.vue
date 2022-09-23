@@ -36,7 +36,6 @@
                             :settings="component"
                             :editorOffset="editorOffset"
                             :selectedComponent="selectedComponent"
-                            :mouseHandler="mouseHandler"
                             :tab="tab"
                             ref="components"
                             @selectItem="selectItem"

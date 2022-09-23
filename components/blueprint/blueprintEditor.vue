@@ -91,7 +91,7 @@
                                 >
                                     <div class="flex flex-1">
                                         <div class="mr-2 ml-2 text-sm">
-                                            <client-only v-if="!item.metadata.headerIcon.includes('data:')">
+                                            <client-only v-if="!item.metadata.headerIcon?.includes('data:')">
                                                 <font-awesome-icon :icon="(item.metadata.headerIcon) ? item.metadata.headerIcon : headerIcon(item.metadata.group)"/>
                                             </client-only>                                        
                                             <img v-else :src="item.metadata.headerIcon" class="w-4 h-4 mt-0.5"/>
@@ -451,8 +451,8 @@ export default{
             if(cacheParse.scale)
                 this.scale = cacheParse.scale;
 
-            if(cacheParse.transform)
-                this.transform = cacheParse.transform;
+            if(cacheParse.position)
+                this.position = cacheParse.position;
 
             if(cacheParse.scrollOffset){
                 this.$refs.editor.scrollLeft = cacheParse.scrollOffset.x;
@@ -553,14 +553,15 @@ export default{
         },     
         
         move(event){
+            console.log("move");
             const { clientX, clientY } = event;
             const editorOffset = this.$refs.editor.getBoundingClientRect();
 
             this.moveStartPosition = { 
                 clientX: clientX + this.scrollOffset.x - editorOffset.x - 10, 
                 clientY: clientY + this.scrollOffset.y - editorOffset.y - 10,
-                positionX: this.transform.x,
-                positionY: this.transform.y 
+                positionX: this.position.x,
+                positionY: this.position.y 
             };
 
             this.moveEvent = true;
@@ -606,7 +607,7 @@ export default{
                 const { clientX, clientY, positionX, positionY } = this.moveStartPosition;
                 const diffY = this.mouseHandler.top - clientY;
                 const diffX = this.mouseHandler.left - clientX;       
-                this.transform = { x: positionX + diffX, y: positionY + diffY };
+                this.position = { x: positionX + diffX, y: positionY + diffY };
             }
 
             if(this.tmpLine !== null && this.tmpLine != undefined)
@@ -672,8 +673,8 @@ export default{
             this.items.push({ 
                 ...item,
                 position: { 
-                    top: this.mouseHandler.top - this.transform.y,
-                    left: this.mouseHandler.left - this.transform.x 
+                    top: this.mouseHandler.top - this.position.y,
+                    left: this.mouseHandler.left - this.position.x 
                 },
                 collaped: false
             });
@@ -756,7 +757,7 @@ export default{
                 items: this.items,
                 connections: this.connections,
                 scale: this.scale,
-                transform: this.transform,
+                position: this.position,
                 scrollOffset: this.scrollOffset
             };
         },
@@ -789,7 +790,7 @@ export default{
         }, 
 
         resertPosition(){
-            this.transform = { x: 0, y: 0 };
+            this.position = { x: 0, y: 0 };
             this.scale = 1;
         },
 
@@ -825,7 +826,7 @@ export default{
                 items: this.items,
                 connections: this.connections,
                 scale: this.scale,
-                transform: this.transform,
+                position: this.position,
                 scrollOffset: this.scrollOffset
             }));
 

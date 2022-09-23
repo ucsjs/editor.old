@@ -280,7 +280,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div v-else-if="(property.type == 'image' || property.type == 'Image') && subComponent.value[property.name]">
+                                        <div v-else-if="(property.type == 'image' || property.type == 'Image' || property.type == 'ImageType') && subComponent.value[property.name]">
                                             <div 
                                                 class="border border-black h-full flex justify-end relative text-sm"                                                                                          
                                             >
@@ -297,6 +297,19 @@
                                                     v-model="subComponent.value[property.name].src"
                                                     @keyup.stop="() => {}"
                                                 />
+
+                                                <button 
+                                                    class="px-1 hover:bg-neutral-900" 
+                                                    @click="state.fileDialogOpen((path) => { 
+                                                        subComponent.value[property.name].src = path;
+                                                        changeProperty(component)
+                                                        $forceUpdate() 
+                                                    })"
+                                                >
+                                                    <Tooltip :tooltipText="$t('Upload')" position="left">
+                                                        <font-awesome-icon icon="fa-solid fa-cloud-arrow-up" />
+                                                    </Tooltip>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -366,6 +379,7 @@ input{
 import globalMixin from "@/mixins/globalMixin";
 import { Menu, MenuButton, MenuItem, MenuItems, TransitionRoot, TransitionChild } from "@headlessui/vue";
 import { Chrome } from '@ckpack/vue-color';
+import { useStateStore } from "~~/store/state.store";
 
 export default {
     mixins : [globalMixin],
@@ -381,6 +395,7 @@ export default {
 
     data(){
         return {
+            state: useStateStore(),
             search: null,
             openedAddComponent: false,
             components: [],

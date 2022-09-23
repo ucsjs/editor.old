@@ -42,6 +42,10 @@ export const useStateStore = defineStore({
             selectedItem: null,
             overElement: null,
             items: {}
+        },
+        fileDialog: {
+            open: false,
+            cb: null,
         }
     }),
     getters: {
@@ -149,6 +153,11 @@ export const useStateStore = defineStore({
         changeHierarchyItemState(tabHash, id, prop, value){
             if(this.hierarchy.items[tabHash][id])
                 this.hierarchy.items[tabHash][id][prop] = value;
+        },
+
+        fileDialogOpen(cb){
+            this.fileDialog.open = true;
+            this.fileDialog.cb = cb;
         },
 
         saveFile(tab){

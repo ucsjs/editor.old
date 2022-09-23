@@ -1,6 +1,6 @@
 <template>
     <div 
-        class="w-screen h-screen" 
+        class="w-screen h-screen select-none" 
         @click.left="closeContextmenu" 
         @contextmenu.prevent="() => {}"
     >
@@ -28,7 +28,9 @@
 
         <context-menu />
 
-        <Notifications ref="notifications" />-->
+        <file-dialog />
+
+        <Notifications ref="notifications" />
     </div>
 </template>
 
@@ -36,11 +38,13 @@
 html {
     height: 100%;
 }
+
 body {
     height: 100%;
     margin: 0;
     overflow: hidden;
 }
+
 .full-height, #app {
     height: 100%;
 }
@@ -60,7 +64,6 @@ body {
 </style>
 
 <script>
-import { defineComponent } from 'vue';
 import { useStateStore } from "~~/store/state.store";
 import { ItemType } from "golden-layout";
 
@@ -135,7 +138,7 @@ export default {
                         {
                             type: "component",
                             title: "Files",
-                            header: { show: "top", popout: false, close: false },
+                            header: { position: false, show: false, popout: false, close: false },
                             isClosable: false,                        
                             componentType: "filetree/filetreeWindow",
                             width: 10,
@@ -145,13 +148,14 @@ export default {
                             content: [{
                                 type: "component",
                                 title: "Content",
-                                header: { show: "top", popout: false, close: false },
+                                header: { position: false, show: false, popout: false, close: false },
                                 isClosable: false,  
+                                hasHeaders: false,
                                 componentType: "tabsIndex",
                             }, {
                                 type: "component",
                                 title: "Terminals",
-                                header: { show: "top" },
+                                header: { show: "top", popout: false },
                                 componentType: "terms/termsView",
                             }]
                         }

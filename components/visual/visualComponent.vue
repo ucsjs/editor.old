@@ -3,10 +3,10 @@
         <!-- eslint-disable -->
         <vue-drag-resize  
             :style="{ position: transform.position }"
-            :initW="transform.width" 
-            :initH="transform.height"
-            :minW="50"
-            :minH="30"
+            :initW="parseInt(transform.width)" 
+            :initH="parseInt(transform.height)"
+            :minW="16"
+            :minH="16"
             v-model:x="resizeData.x"
             v-model:y="resizeData.y"
             v-model:w="resizeData.w"
@@ -20,7 +20,7 @@
             @resizing="(d) =>resizeOrMove(d, false)"
             @resize-end="(d) =>resizeOrMove(d, true)"
             @drag-end="(d) => resizeOrMove(d, true)"
-            @click.stop="selectItem(settings?.id)"
+            @click.stop="$emit('selectItem', settings?.id)"
             v-if="settings"
         > 
             <!--<div 
@@ -51,26 +51,34 @@
                             :style="style"
                             :component="settings"
                         >
+                            <template>
+                                <div v-if="settings.hierarchy.length > 0">
+                                    <visual-component 
+                                        v-for="(component, key) in settings.hierarchy" 
+                                        :key="key" 
+                                        :componentIndex="key"
+                                        :settings="component"
+                                        :editorOffset="editorOffset"
+                                        :selectedComponent="selectedComponent"
+                                        :tab="tab"
+                                        @selectItem="$emit('selectItem', component?.id)"
+                                        @saveState="$emit('saveState')"
+                                    ></visual-component>  
+                                </div>
+                            </template>
                         </dynamic-renderer>
                     </client-only>
                 </div>
-
-                <visual-component 
-                    v-for="(component, key) in settings.hierarchy" 
-                    :key="key" 
-                    :componentIndex="key"
-                    :settings="component"
-                    :editorOffset="editorOffset"
-                    :selectedComponent="selectedComponent"
-                    :mouseHandler="mouseHandler"
-                    :tab="tab"
-                    @selectItem="selectItem"
-                    @changeState="saveState"
-                ></visual-component>   
             </div>
         </vue-drag-resize>
     </client-only>
 </template>
+
+<style>
+.vdr-handle{
+    z-index: 500;
+}
+</style>
 
 <script>
 export default {
@@ -218,10 +226,10 @@ export default {
                 }
 
                 this.resizeData = {
-                    w: this.transform.width,
-                    h: this.transform.height,
-                    x: this.transform.left,
-                    y: this.transform.top,
+                    w: parseInt(this.transform.width),
+                    h: parseInt(this.transform.height),
+                    x: parseInt(this.transform.left),
+                    y: parseInt(this.transform.top),
                     active: (this.selectedComponent?.id == this.settings.id)
                 }
 
@@ -231,10 +239,6 @@ export default {
                 this.$forceUpdate();
                 this.$nextTick();
             }
-        },
-
-        selectItem(id){
-            this.$emit('selectItem', (id) ? id : this.settings.id);
         },
 
         getSubcomponentIndex(namespace){
@@ -303,7 +307,7 @@ export default {
                 this.updateComponentStyle(false);
             }    
             
-            this.selectItem(this.settings.id);
+            this.$emit('selectItem', this.settings.id);
         }
     }
 }

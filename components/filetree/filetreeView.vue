@@ -7,6 +7,7 @@
             v-for="(item, key) in items" 
             :key="key" 
             :item="item" 
+            :onlyDir="onlyDir"
             @selectItem="selectItem" 
             @openFile="openFile" 
             @createFile="createFile" 
@@ -43,6 +44,18 @@
 import { useStateStore } from "~~/store/state.store";
 
 export default {
+    props: {
+        path: {
+            type: String,
+            default: ""
+        },
+
+        onlyDir: {
+            type: Boolean,
+            default: false
+        },
+    },
+
     components: {
         ModalDialog: () => import("~/components/modalDialog.vue")
     },
@@ -78,7 +91,19 @@ export default {
     },
 
     async mounted(){
-        this.items = await useApi("files", { method: "GET" });
+        let uri = "files";
+        let query = []
+
+        if(this.path)
+            query.push(`path=${encodeURIComponent(this.path)}`);
+
+        if(this.onlyDir)
+            query.push(`onlyDir=${this.onlyDir}`);
+
+        if(query.length > 0)
+            uri += "?" + query.join("&");
+        
+        this.items = await useApi(uri, { method: "GET" });
 
         for(let item of this.items)
             if(item && item.pathHash)
@@ -102,6 +127,7 @@ export default {
 
         selectItem(item){
             this.state.fileTree.selectedItem = item;
+            this.$emit("selectItem", item);
         },
 
         async openFileContext(){

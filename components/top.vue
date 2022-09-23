@@ -1,9 +1,15 @@
 <template>
     <div>
-        <div class="fixed w-screen h-screen z-50 mt-14" @click="resetSelected" v-if="selected != -1"></div>
+        <div class="fixed w-screen h-screen z-40 mt-14" @click="resetSelected" v-if="selected != -1"></div>
 
         <div :class="[state.darktheme ? 'bg-neutral-800 border-black' : 'bg-neutral-100', 'w-screen border-b flex justify-between px-2 select-none']" @click="resetSelected">
             <div class="flex flex-1">
+                <div class="mt-2 mr-2">
+                    <a href="https://ucsjs.io" target="_blank">
+                        <img src="favicon-16x16.png" alt="UCS.js" title="UCS.js" />
+                    </a>
+                </div>
+
                 <Menu as="div" class="relative" v-for="(item, key) of navbar" :key="key" @click.stop="() => {}">
                     <MenuButton 
                         :class="[(selected === key) ? (state.darktheme ? 'bg-neutral-700 text-neutral-200' : 'bg-neutral-100') : (state.darktheme ? 'bg-neutral-800 text-neutral-200 hover:bg-neutral-700' : 'bg-neutral-100'),'px-3 rounded-lg h-full py-1']" 
@@ -16,7 +22,7 @@
                     <transition enter-active-class="transition ease-out duration-100" enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100" leave-active-class="transition ease-in duration-75" leave-from-class="transform opacity-100 scale-100" leave-to-class="transform opacity-0 scale-95">
                         <MenuItems 
                             v-if="selected === key"
-                            :class="[state.darktheme ? 'bg-neutral-800 text-neutral-200 ring-black border-black' : 'bg-white','absolute left-0 z-50 mt-2 origin-top-left rounded-md py-1 shadow-lg shadow-neutral-900 ring-1 ring-opacity-60 focus:outline-none text-neutral-100 min-w-[300px]']" 
+                            :class="[state.darktheme ? 'bg-neutral-800 text-neutral-200 ring-black border-black' : 'bg-white','absolute left-0 z-40 mt-2 origin-top-left rounded-md py-1 shadow-lg shadow-neutral-900 ring-1 ring-opacity-60 focus:outline-none text-neutral-100 min-w-[300px]']" 
                             static
                         >
                             <MenuItem v-for="(item, key) in item.items" :key="key" v-slot="{ active }">
@@ -38,14 +44,14 @@
                                         <div 
                                             :class="[
                                                 state.darktheme ? 'text-white bg-neutral-800 border-black' : 'text-gray-800 bg-neutral-200',
-                                                'absolute min-w-[300px] py-2 rounded-lg cursor-pointer h-10 left-4 z-50 shadow-lg'
+                                                'absolute min-w-[300px] py-2 rounded-lg cursor-pointer h-10 left-4 z-40 shadow-lg'
                                             ]"
                                             v-if="item.open"
                                         >
                                             <div 
                                                 :class="[
                                                     state.darktheme ? 'text-white bg-neutral-800' : 'text-gray-800 bg-neutral-200',
-                                                    'z-50 min-w-[300px] pb-2 rounded-lg cursor-pointer'
+                                                    'z-40 min-w-[300px] pb-2 rounded-lg cursor-pointer'
                                                 ]" 
                                             >
                                                 <context-menu-item 
@@ -81,7 +87,7 @@
                         <button v-if="!state.darktheme" class="w-10 h-10" @click="state.switchTheme()">
                             <client-only><font-awesome-icon icon="fa-solid fa-moon" /></client-only>
                         </button>
-                    </Tooltip>-->
+                    </Tooltip>
 
                     <Menu as="div" class="relative ml-3">
                         <div>
@@ -98,7 +104,7 @@
                                 </MenuItem>
                             </MenuItems>
                         </transition>
-                    </Menu>
+                    </Menu>-->
                 </div>
             </div>            
         </div>
