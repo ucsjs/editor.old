@@ -13,15 +13,15 @@
 
             <div class="p-2 h-[300px] overflow-auto">
                 <div v-if="fields && fields.multi" class="w-full">
-                    <div v-for="(item, key) in list" :key="key" class="border border-black rounded-md p-2 relative mb-2">
+                    <div v-for="(item, key) in list" :key="key" class="flex border border-black rounded-md p-2 relative mb-2">
                         <div 
                             v-for="(type, field) in fields" 
                             :key="field" 
-                            v-show="field !== 'multi' && field !== 'createOutputs'"
-                            class="flex flex-row items-center mb-1 mr-2"
+                            v-show="field !== 'multi' && field !== 'createOutputs' && field !== 'realType'"
+                            class="flex items-center mb-1 mr-4"
                         >
                             <div>
-                                {{ field }}: 
+                                {{ fixedLabel(field) }}: 
                             </div>
 
                             <div>
@@ -56,7 +56,7 @@
                                 <div v-else-if="type == 'boolean' || type == 'Boolean' || type == 'Bool'" class="text-white px-1">
                                     <Switch 
                                         v-model="item[field]" 
-                                        class="group relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer items-center justify-center rounded-full border-black focus:outline-none"
+                                        class="group pt-2 relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer items-center justify-center rounded-full border-black focus:outline-none"
                                     >
                                         <span class="sr-only">Use setting</span>
                                         <span aria-hidden="true" class="pointer-events-none absolute h-full w-full rounded-md" />
@@ -126,8 +126,10 @@
 
 <script>
 import { Switch } from '@headlessui/vue';
+import globalMixin from "@/mixins/globalMixin";
 
 export default{
+    mixins: [globalMixin],
     components: { Switch },
 
     props: {

@@ -274,10 +274,6 @@ export default {
                                 isNewProperty = false;
                             }
                         }
-
-                        if(isNewProperty){
-                            //console.log("new property", subComponentDefault);
-                        }
                     }
                 }
             }

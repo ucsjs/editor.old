@@ -2,7 +2,7 @@
     <div class="w-full h-full" @click="closeAllWindowOpened">
         <div class="p-2 bg-neutral-900 border-b border-black">{{ $t("Metadata") }}</div>
 
-        <div class="py-2 h-[170px] overflow-scroll">
+        <div class="py-2 h-[168px] overflow-scroll">
             <div class="flex flex-col">
                 <div 
                     class="flex" 
@@ -19,7 +19,9 @@
                     </div>
                     <div v-else class="flex-1 flex p-0.5 ">
                         <div class="w-3/6 h-7 flex">
-                            <div class="ml-2 text-sm mt-1">{{ item.label || uppercaseFirstLetter(item.name) }}</div>
+                            <div class="ml-2 text-sm mt-1">
+                                {{ item.label || uppercaseFirstLetter(item.name) }}
+                            </div>
                         </div>
 
                         <div 
@@ -47,7 +49,8 @@
                                         v-model="values[item.name]" 
                                         :id="item.name" 
                                         class="sr-only peer"
-                                    >
+                                    />
+
                                     <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full p after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                                 </label>
                             </div>  
@@ -59,13 +62,24 @@
                                     <input 
                                         class="border-0 w-full text-sm" 
                                         type="text" 
-                                        v-model="values[item.name]"                                                 
+                                        v-model="values[item.name].hex"                                                 
                                         :style="{backgroundColor: (values[item.name]?.hex || '#FFFFFF')}"
                                         @click.prevent="item.open = true"
                                     />
 
                                     <div class="absolute top-6 z-50" v-if="item.open">
                                         <Chrome v-model="values[item.name]"></Chrome>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-else-if="item.type == 'object' || item.type == 'Object' || item.type == 'JSON'">
+                                <div class="flex flex-row">
+                                    <div>
+                                        <Tooltip :tooltipText="$t('Edit')" position="right">
+                                            <button class="ml-2 hover:text-neutral-500" @click="$emit('openObjectEdit', items, item, key)">
+                                                <client-only><font-awesome-icon icon="fa-solid fa-edit" /></client-only>
+                                            </button>
+                                        </Tooltip>
                                     </div>
                                 </div>
                             </div>
@@ -80,7 +94,7 @@
 
                                     <input 
                                         class="bg-neutral-900 border border-black text-white px-1 h-6 text-sm w-full rounded-sm"
-                                        type="text" 
+                                        type="text"     
                                         v-model="values[item.name]"
                                         @keyup.stop="() => {}"
                                     />
@@ -137,7 +151,7 @@ export default {
             ],
             values: {
                 group: "Custom",
-                headerColor: "#FFFFFF",
+                headerColor: { hex: "#FFFFFF" },
                 headerIcon: ""
             }
         }
@@ -145,7 +159,7 @@ export default {
 
     mounted(){
         if(this.metadata)
-            this.values = this.metadata;
+            this.values = { ...{ headerColor: {hex: "#FFFFFF"} }, ...this.metadata };
     },
 
     methods: {

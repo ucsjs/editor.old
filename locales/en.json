@@ -11,5 +11,14 @@
     "Mobile": "Mobile",
     "Desktop": "Desktop",
     "Tablet": "Tablet",
-    "Centralize": "Centralizar"
+    "Centralize": "Centralizar",
+    "Expand": "Expand",
+    "Contract": "Contract",
+    "Search": "Search",
+    "Blueprints": "Blueprints",
+    "Loading...": "Loading...",
+    "Delete": "Delete",
+    "Metadata": "Metadata",
+    "Upload": "Upload",
+    "Save": "Save"
 }

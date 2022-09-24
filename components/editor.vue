@@ -82,7 +82,6 @@ export default {
 
     async created(){
         if(process.client){
-            console.log("Editor created");
             const useHotkey = await import('vue3-hotkey').then(m => m?.default);
             const _this = this;
 

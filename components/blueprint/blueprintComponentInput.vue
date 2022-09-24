@@ -52,7 +52,10 @@
                 <div class="flex flex-row text-sm">
                     <div>
                         <Tooltip :tooltipText="$t('Edit')" position="right">
-                            <button class="ml-2 hover:text-neutral-500" @click="$emit('openObjectEdit', item, input, keyItem)">
+                            <button 
+                                class="ml-2 hover:text-neutral-500" 
+                                @click="$emit('openObjectEdit', item, input, keyItem, `${input.id}-${input.name}-${keyItem}`)"
+                            >
                                 <client-only><font-awesome-icon icon="fa-solid fa-edit" /></client-only>
                             </button>
                         </Tooltip>

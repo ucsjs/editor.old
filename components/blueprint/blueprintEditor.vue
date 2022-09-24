@@ -181,13 +181,18 @@
                                             <div  v-if="publicVar.type == 'object' && publicVar.default && publicVar.default.createOutputs">
                                                 <div class="w-full items-end"> 
                                                     <div v-for="(publicVaritem, key) in publicVar.value" :key="key" class="flex flex-row-reverse h-6"> 
-                                                        <div :style="{color: getColorByType('Any')}" :id="`${publicVar.id}-${keyItem}-${key}`" ref="inputs">
+                                                        <div 
+                                                            :style="{color: (item.metadata[publicVar.default.realType?.replace(/\./, '_')]) ? item.metadata[publicVar.default.realType?.replace(/\./, '_')].color : getColorByType((publicVar.default.realType) ? publicVar.default.realType : 'Any')}" 
+                                                            :id="`${publicVar.id}-${publicVar.name}-${key}`" 
+                                                            :title="`Type: ${(publicVar.default.realType) ? publicVar.default.realType : 'Any'}`"
+                                                            ref="inputs"
+                                                        >
                                                             <client-only>
                                                                 <font-awesome-icon                         
                                                                     icon="fa-solid fa-square"
-                                                                    @dragstart="createLine($event, item, publicVar, keyItem, `${publicVar.id}-${keyItem}-${key}`)" 
-                                                                    @mousedown="createLine($event, item, publicVar, keyItem, `${publicVar.id}-${keyItem}-${key}`)"
-                                                                    @mouseenter="onPointer($event, item, publicVar, keyItem, `${publicVar.id}-${keyItem}-${key}`)"
+                                                                    @dragstart="createLine($event, item, publicVar, publicVar.name, `${publicVar.id}-${publicVar.name}-${key}`)" 
+                                                                    @mousedown="createLine($event, item, publicVar, publicVar.name, `${publicVar.id}-${publicVar.name}-${key}`)"
+                                                                    @mouseenter="onPointer($event, item, publicVar, publicVar.name, `${publicVar.id}-${publicVar.name}-${key}`)"
                                                                     @mouseleave="onPointerLeave"
                                                                 />
                                                             </client-only>
@@ -255,9 +260,7 @@
                     ref="navbar"
                     @addComponent="addComponent" 
                     @onPointer="onPointer" 
-                />
-
-                
+                />  
 
                 <blueprint-object-edit 
                     class="fixed top-0 left-0 w-full h-full z-50"
@@ -284,6 +287,7 @@
                         v-if="metadata"
                         :metadata="metadata"
                         @changeMetadata="changeMetadata" 
+                        @openObjectEdit="openObjectEdit"
                     />
                 </div>
 
@@ -386,6 +390,7 @@ export default{
             createLineElem: null,
             tmpLine: null,
             tmpComponentHover: null,
+            startDragLeft: false,
             lineOptions: {
                 color: 'white',
                 size: 2,
@@ -575,7 +580,6 @@ export default{
         },     
         
         move(event){
-            console.log("move");
             const { clientX, clientY } = event;
             const editorOffset = this.$refs.editor.getBoundingClientRect();
 
@@ -645,12 +649,26 @@ export default{
 
                 if(this.tmpComponentHover){
                     if(this.createLineElem.id !== this.tmpComponentHover.id){
-                        this.connections.push({
-                            from: { component: this.createLineElem.item.namespace, input: this.createLineElem.id },
-                            to: { component: this.tmpComponentHover.item.namespace, input: this.tmpComponentHover.id }
-                        });
+                        if(
+                            (this.createLineElem.input.type === this.tmpComponentHover.input.type) ||
+                            (this.createLineElem.input.default?.realType === this.tmpComponentHover.input.type) ||
+                            (this.createLineElem.input.type === "Any" || this.tmpComponentHover.input.type === "Any")
+                        ){
+                            this.connections.push({
+                                from: { 
+                                    componentKey: this.createLineElem.item.componentKey,
+                                    component: this.createLineElem.item.namespace, 
+                                    input: this.createLineElem.id 
+                                },
+                                to: { 
+                                    componentKey: this.tmpComponentHover.item.componentKey,
+                                    component: this.tmpComponentHover.item.namespace, 
+                                    input: this.tmpComponentHover.id 
+                                }
+                            });
 
-                        this.createLines(); 
+                            this.createLines(); 
+                        }
                     }
                 }
                 else{
@@ -686,14 +704,13 @@ export default{
             }
         },
 
-        addComponent(item, position){
-            const editorOffset = this.$refs.editor.getBoundingClientRect();
-
+        addComponent(item){
             if(this.tmpLine)
                 this.tmpLine = null;
             
             this.items.push({ 
                 ...item,
+                componentKey: `${item.namespace}::${new Date().getTime()}`,
                 position: { 
                     top: this.mouseHandler.top - this.position.y,
                     left: this.mouseHandler.left - this.position.x 
@@ -784,10 +801,6 @@ export default{
             };
         },
 
-        resizeEditor(){
-            console.log("resizeEditor");
-        },
-
         clickLine(key){
             this.lineSelected = key;
             this.$forceUpdate();
@@ -826,8 +839,8 @@ export default{
             this.saveState(true);
         },
 
-        openObjectEdit(item, input, keyItem){
-            this.objectEdit = { item, input, keyItem, open: true };
+        openObjectEdit(item, input, keyItem, key){
+            this.objectEdit = { item, input, keyItem, key, open: true };
         },
 
         onDelete(){

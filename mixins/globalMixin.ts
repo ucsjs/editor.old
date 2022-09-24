@@ -7,7 +7,9 @@ export default {
                 case "String": return "#166534";
                 case "Any": return "#C98904";
                 case "JSON": return "#9603c6";
+                case "Boolean": return "#1941d3";
                 default: return "white";
+                true
             }
         },
 
@@ -65,6 +67,10 @@ export default {
 
         uppercaseFirstLetter(value) {
             return (value && value.length > 0) ? value.charAt(0).toUpperCase() + value.slice(1) : value
+        },
+
+        fixedLabel(value) {
+            return (value) ? this.uppercaseFirstLetter(value === null || value === void 0 ? void 0 : value.replace(/([A-Z])/g, " $1")) : '';
         }
     }
 }

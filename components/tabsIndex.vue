@@ -3,6 +3,7 @@
         <nav :class="[state.darktheme ? 'text-white bg-neutral-800 border-black' : 'text-gray-800 bg-neutral-200 border-neutral-100', 'flex border-b select-none overflow-auto']" aria-label="Tabs">
             <draggable 
                 v-model="state.tabs" 
+                itemKey="sha256"
                 class="flex" 
                 @end="(event) => state.selectTab(event.newIndex)"
             >

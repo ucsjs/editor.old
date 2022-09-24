@@ -52,10 +52,6 @@
                         :item="item" 
                         :isInput="true" 
                         :collaped="item.collaped"
-                        @changeDefault="changeDefault" 
-                        @onPointer="onPointer" 
-                        @onPointerLeave="onPointerLeave"
-                        @openObjectEdit="openObjectEdit"
                     ></blueprint-component-input>
                 </div>
 
