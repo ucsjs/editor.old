@@ -35,27 +35,6 @@
     </div>
 </template>
 
-<style scoped>    
-* {
-    scrollbar-width: auto;
-    scrollbar-color: #262626 #000000;
-}
-
-*::-webkit-scrollbar {
-    width: 8px;
-}
-
-*::-webkit-scrollbar-track {
-    background: #000000;
-}
-
-*::-webkit-scrollbar-thumb {
-    background-color: #262626;
-    border-radius: 0px;
-    border: 3px solid #262626;
-}
-</style>
-
 <script>
 export default{
     props: {
@@ -143,8 +122,8 @@ export default{
             }
         },
 
-        open(transform){
-            this.transform = { ...transform };
+        open(position){
+            this.position = { ...position };
             this.opened = true;
         },
 

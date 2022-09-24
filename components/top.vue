@@ -25,7 +25,7 @@
                             :class="[state.darktheme ? 'bg-neutral-800 text-neutral-200 ring-black border-black' : 'bg-white','absolute left-0 z-40 mt-2 origin-top-left rounded-md py-1 shadow-lg shadow-neutral-900 ring-1 ring-opacity-60 focus:outline-none text-neutral-100 min-w-[300px]']" 
                             static
                         >
-                            <MenuItem v-for="(item, key) in item.items" :key="key" v-slot="{ active }">
+                            <MenuItem v-for="(item, key) in item.items" :key="key" v-slot="{ active }" class="cursor-pointer">
                                 <div v-if="!item.separete && !item.items" class="flex flex-row px-5 py-1 hover:bg-[#04395e] hover:text-white">
                                     <div class="flex flex-1">{{ item.name }}</div>
                                     

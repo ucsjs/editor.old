@@ -228,6 +228,26 @@
                                 ref="tmpLine"
                             ></blueprint-line-connector>
                         </div>
+
+                        <div class="fixed h-11 bg-black/50 m-auto rounded-md flex m-4">
+                            <Tooltip :tooltipText="$t('Zoom in')" position="top" class="flex" @click="scaleIn">
+                                <button class="text-white px-3">
+                                    <client-only><font-awesome-icon icon="fa-solid fa-magnifying-glass-plus" /></client-only>
+                                </button>
+                            </Tooltip>
+
+                            <Tooltip :tooltipText="$t('Reset')" position="top" class="flex" @click="scaleResert">
+                                <button class="text-white px-3">
+                                    <client-only><font-awesome-icon icon="fa-solid fa-magnifying-glass" /></client-only>
+                                </button>
+                            </Tooltip>
+
+                            <Tooltip :tooltipText="$t('Zoom out')" position="top" class="flex" @click="scaleOut">
+                                <button class="text-white px-3">
+                                    <client-only><font-awesome-icon icon="fa-solid fa-magnifying-glass-minus" /></client-only>
+                                </button>
+                            </Tooltip>
+                        </div>
                     </div>
                 </div>
 
@@ -237,25 +257,7 @@
                     @onPointer="onPointer" 
                 />
 
-                <div class="fixed h-11 bg-black/50 bottom-16 right-6 rounded-md flex">
-                    <Tooltip :tooltipText="$t('Zoom in')" position="top" class="flex" @click="scaleIn">
-                        <button class="text-white px-3">
-                            <client-only><font-awesome-icon icon="fa-solid fa-magnifying-glass-plus" /></client-only>
-                        </button>
-                    </Tooltip>
-
-                    <Tooltip :tooltipText="$t('Reset')" position="top" class="flex" @click="scaleResert">
-                        <button class="text-white px-3">
-                            <client-only><font-awesome-icon icon="fa-solid fa-magnifying-glass" /></client-only>
-                        </button>
-                    </Tooltip>
-
-                    <Tooltip :tooltipText="$t('Zoom out')" position="top" class="flex" @click="scaleOut">
-                        <button class="text-white px-3">
-                            <client-only><font-awesome-icon icon="fa-solid fa-magnifying-glass-minus" /></client-only>
-                        </button>
-                    </Tooltip>
-                </div>
+                
 
                 <blueprint-object-edit 
                     class="fixed top-0 left-0 w-full h-full z-50"
@@ -277,13 +279,27 @@
             </div>
 
             <div class="relative flex" :style="{width: `${widthLeftbar}px !important`}">
+                <div class="top-0 w-full h-[200px] bg-neutral-800 border-b border-black">
+                    <blueprint-metadata 
+                        v-if="metadata"
+                        :metadata="metadata"
+                        @changeMetadata="changeMetadata" 
+                    />
+                </div>
+
                 <!-- Components -->
-                <div class="absolute top-0 left-0 w-full h-full bg-neutral-800 border-r border-black">
+                <div 
+                    class="absolute top-[200px] left-0 w-full bg-neutral-800 border-r border-black" 
+                    :style="{ height: 'calc(100% - 200px)'}"
+                >
+                    <div class="p-2 bg-neutral-900 border-b border-black">{{ $t("Blueprints") }}</div>
+
                     <blueprint-navbar 
                         :fixed="true" 
                         :showTitle="false" 
                         :dragItem="true" 
                         @createGhost="createGhost"
+                        :style="{ height: 'calc(100% - 135px)'}"
                     />
                 </div>
 
@@ -404,7 +420,8 @@ export default{
             objectEdit: { open: false },
             overCanvas: false,
             componentGhost: null,
-            componentGhostPosition: { top: 200, left: 200 }
+            componentGhostPosition: { top: 200, left: 200 },
+            metadata: null
         }
     },
 
@@ -454,11 +471,16 @@ export default{
             if(cacheParse.position)
                 this.position = cacheParse.position;
 
+            if(cacheParse.metadata)
+                this.metadata = cacheParse.metadata;
+
             if(cacheParse.scrollOffset){
                 this.$refs.editor.scrollLeft = cacheParse.scrollOffset.x;
                 this.$refs.editor.scrollTop = cacheParse.scrollOffset.y;
                 this.scrollOffset = cacheParse.scrollOffset;
             }   
+
+            this.$forceUpdate();
         }
 
         setInterval(() => {
@@ -697,7 +719,6 @@ export default{
             this.connections = newConnections;            
             this.saveState(false);
 
-
             for(let keyConnect in this.connections){
                 const indexInput = parseInt(this.connections[keyConnect].from.input.split("-")[1]);
                 const indexOutput = parseInt(this.connections[keyConnect].to.input.split("-")[1]);
@@ -758,7 +779,8 @@ export default{
                 connections: this.connections,
                 scale: this.scale,
                 position: this.position,
-                scrollOffset: this.scrollOffset
+                scrollOffset: this.scrollOffset,
+                metadata: this.metadata
             };
         },
 
@@ -796,12 +818,8 @@ export default{
 
         changeDefault(value, input, type){
             switch(type){
-                case "number":
-                    value = parseFloat(value);
-                    break;
-                case "boolean":
-                    value = value === "true";
-                    break;
+                case "number": value = parseFloat(value); break;
+                case "boolean": value = value === "true"; break;
             }
 
             input.value = value;            
@@ -821,13 +839,21 @@ export default{
             }
         },
 
+        changeMetadata(medatada){
+            if(medatada){
+                this.metadata = { ...medatada };
+                this.saveState(false);
+            }
+        },
+
         saveState(emit = false){
             localStorage.setItem(`blueprint-${this.tab.name.replace(/\./, "-")}`, JSON.stringify({
                 items: this.items,
                 connections: this.connections,
                 scale: this.scale,
                 position: this.position,
-                scrollOffset: this.scrollOffset
+                scrollOffset: this.scrollOffset,
+                metadata: this.metadata
             }));
 
             if(emit)
