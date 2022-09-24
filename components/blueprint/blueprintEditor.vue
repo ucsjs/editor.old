@@ -101,7 +101,7 @@
                                     </div> 
 
                                     <div class="flex text-sm" @mousedown.left.stop="" :collaped="item.collaped">
-                                        <div class="mr-2 cursor-pointer px-2" @click.stop="item.collaped = !item.collaped">
+                                        <div class="mr-2 cursor-pointer px-2" @click.stop="toggleComponent(item)">
                                             <client-only>
                                                 <Tooltip :tooltipText="$t('Expand')" position="top">
                                                     <font-awesome-icon icon="fa-solid fa-caret-down" v-if="item.collaped" />
@@ -219,6 +219,7 @@
                                 :scale="scale" 
                                 :scrollOffset="scrollOffset"
                                 :transformPosition="position"
+                                :lineColor="line.lineColor"
                                 ref="lines" 
                                 @clickLine="clickLine"
                             ></blueprint-line-connector>
@@ -230,6 +231,7 @@
                                 :scale="scale"
                                 :scrollOffset="scrollOffset"
                                 :transformPosition="position"
+                                :lineColor="tmpLine.lineColor"
                                 ref="tmpLine"
                             ></blueprint-line-connector>
                         </div>
@@ -551,7 +553,12 @@ export default{
                 }       
                 
                 if(input && output){
-                    this.lines.push({ from: input, to: output, connectionKey: key });
+                    this.lines.push({ 
+                        from: input, 
+                        to: output, 
+                        connectionKey: key,
+                        lineColor: connection.from.lineColor, 
+                    });
                 }                    
                 else{
                     //this.connections.splice(key, 1);
@@ -646,8 +653,12 @@ export default{
             if(this.onCreateLine){
                 this.onCreateLine = false;
                 this.tmpLine = null;
+                const lineColor = this.createLineElem.item.metadata[this.createLineElem.input.type.replace(/\./, "_")]?.color
+                    || this.createLineElem.item.metadata[this.createLineElem.input.default?.realType.replace(/\./, "_")]?.color
+                    || this.getColorByType(this.createLineElem.input.type)
+                    || '#FFFFFF';
 
-                if(this.tmpComponentHover){
+                if(this.tmpComponentHover){                    
                     if(this.createLineElem.id !== this.tmpComponentHover.id){
                         if(
                             (this.createLineElem.input.type === this.tmpComponentHover.input.type) ||
@@ -658,12 +669,14 @@ export default{
                                 from: { 
                                     componentKey: this.createLineElem.item.componentKey,
                                     component: this.createLineElem.item.namespace, 
-                                    input: this.createLineElem.id 
+                                    input: this.createLineElem.id,
+                                    lineColor 
                                 },
                                 to: { 
                                     componentKey: this.tmpComponentHover.item.componentKey,
                                     component: this.tmpComponentHover.item.namespace, 
-                                    input: this.tmpComponentHover.id 
+                                    input: this.tmpComponentHover.id,
+                                    lineColor  
                                 }
                             });
 
@@ -675,7 +688,11 @@ export default{
                     this.$refs.navbar.open(this.mouseHandler);
 
                     if(this.$refs.navbar.$el && this.createLineElem)
-                        this.tmpLine = { from: this.createLineElem.el, to: this.$refs.navbar.$el }; 
+                        this.tmpLine = { 
+                            from: this.createLineElem.el, 
+                            to: this.$refs.navbar.$el,
+                            lineColor 
+                        }; 
                 }                              
             }
 
@@ -857,6 +874,12 @@ export default{
                 this.metadata = { ...medatada };
                 this.saveState(false);
             }
+        },
+
+        toggleComponent(item){
+            item.collaped = !item.collaped;
+            this.refreshLines();
+            this.saveState(true);
         },
 
         saveState(emit = false){
