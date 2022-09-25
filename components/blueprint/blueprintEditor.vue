@@ -209,32 +209,34 @@
                                 </div>                
                             </div>
 
-                            <blueprint-line-connector 
-                                v-for="(line, key) in lines" 
-                                :selected="lineSelected == key" 
-                                :key="key" 
-                                :keyref="line.connectionKey" 
-                                :line="line" 
-                                :offset="linesOffset"
-                                :scale="scale" 
-                                :scrollOffset="scrollOffset"
-                                :transformPosition="position"
-                                :lineColor="line.lineColor"
-                                ref="lines" 
-                                @clickLine="clickLine"
-                            ></blueprint-line-connector>
-
-                            <blueprint-line-connector 
-                                v-if="tmpLine" 
-                                :line="tmpLine" 
-                                :offset="linesOffset" 
-                                :scale="scale"
-                                :scrollOffset="scrollOffset"
-                                :transformPosition="position"
-                                :lineColor="tmpLine.lineColor"
-                                ref="tmpLine"
-                            ></blueprint-line-connector>
+                            
                         </div>
+
+                        <blueprint-line-connector 
+                            v-for="(line, key) in lines" 
+                            :selected="lineSelected == key" 
+                            :key="key" 
+                            :keyref="line.connectionKey" 
+                            :line="line" 
+                            :offset="linesOffset"
+                            :scale="scale" 
+                            :scrollOffset="scrollOffset"
+                            :transformPosition="position"
+                            :lineColor="line.lineColor"
+                            ref="lines" 
+                            @clickLine="clickLine"
+                        ></blueprint-line-connector>
+
+                        <blueprint-line-connector 
+                            v-if="tmpLine" 
+                            :line="tmpLine" 
+                            :offset="linesOffset" 
+                            :scale="scale"
+                            :scrollOffset="scrollOffset"
+                            :transformPosition="position"
+                            :lineColor="tmpLine.lineColor"
+                            ref="tmpLine"
+                        ></blueprint-line-connector>
 
                         <div class="fixed h-11 bg-black/50 m-auto rounded-md flex m-4">
                             <Tooltip :tooltipText="$t('Zoom in')" position="top" class="flex" @click="scaleIn">
@@ -286,7 +288,6 @@
             <div class="relative flex" :style="{width: `${widthLeftbar}px !important`}">
                 <div class="top-0 w-full h-[200px] bg-neutral-800 border-b border-black">
                     <blueprint-metadata 
-                        v-if="metadata"
                         :metadata="metadata"
                         @changeMetadata="changeMetadata" 
                         @openObjectEdit="openObjectEdit"
@@ -437,7 +438,8 @@ export default{
             const metadata = JSON.parse(this.tab.content);
 
             for(let key in metadata)
-                this[key] = metadata[key];
+                if(metadata[key])
+                    this[key] = metadata[key];
         }   
 
         //Resize
@@ -497,7 +499,7 @@ export default{
                 this.linesOffset = this.$refs.editor.getBoundingClientRect();
 
             this.saveState();
-        }, 1000);
+        }, 1);
 
         this.$forceUpdate();
         this.loading = true;

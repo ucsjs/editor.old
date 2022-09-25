@@ -116,18 +116,18 @@ export default{
                 const toPosition = this.line.to.getBoundingClientRect();
 
                 if(fromPosition && toPosition){
-                    let fromX = fromPosition.x - this.offset.x + this.scrollOffset.x - this.transformPosition.x;
+                    let fromX = fromPosition.left - this.offset.x + this.scrollOffset.x;
                     let offsetFromX = fromPosition.width;
-                    let fromY = fromPosition.y - this.offset.y + this.scrollOffset.y - this.transformPosition.y;
+                    let fromY = fromPosition.top - this.offset.y + this.scrollOffset.y;
 
-                    let toX = toPosition.x - this.offset.x + this.scrollOffset.x - this.transformPosition.x;
-                    let toY = toPosition.y - this.offset.y + this.scrollOffset.y - this.transformPosition.y;
+                    let toX = toPosition.x - this.offset.x + this.scrollOffset.x;
+                    let toY = toPosition.y - this.offset.y + this.scrollOffset.y;
 
-                    fromY = fromY + 10;
-                    toY = toY + 15;
+                    fromY = fromY + (10 * this.scale);
+                    toY = toY + (12 * this.scale);
                 
                     const bezierFromX = fromX + offsetFromX;
-                    const bezierToX = toX + 1;
+                    const bezierToX = toX + 10;
                     const bezierIntensity = Math.min(100, Math.max(Math.abs(bezierFromX - bezierToX) / 2, Math.abs(fromY - toY)));                    
                     this.d = 'M' + bezierFromX + ' ' + (fromY) + ' C' + (fromX + this.startOffset + bezierIntensity) + ' ' + fromY + ' ' + (toX - this.endOffset - bezierIntensity) + ' ' + toY + ' ' + bezierToX + ' ' + toY;
                     this.x = fromX;
