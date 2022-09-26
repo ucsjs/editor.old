@@ -73,7 +73,11 @@
                         @contextmenu.prevent="contextmenu" 
                         @mousedown.left="closeContextmenu"
                     >
-                        <div :style="{ transform: `translate(${position.x}px, ${position.y}px) scale(${scale})` }" ref="contentsTransform">
+                        <div 
+                            class="absolute z-40" 
+                            :style="{ transform: `translate(${position.x}px, ${position.y}px) scale(${scale})` }" 
+                            ref="contentsTransform"
+                        >
                             <div 
                                 v-for="(item, keyItem) in items" 
                                 :key="keyItem"
@@ -82,7 +86,7 @@
                                 @mousedown.left.stop="closeContextmenu"
                             >
                                 <div 
-                                    :class="['p-1 rounded-t-lg border-b border-black text-gray-50 font-bold cursor-move flex']"
+                                    :class="['p-1 rounded-t-lg border-b border-black text-gray-50 font-bold cursor-move flex min-w-[140px]']"
                                     :style="{backgroundColor: (item.metadata.headerColor) ? item.metadata.headerColor : headerColor(item.metadata.group)}"
                                     @mousedown.left.stop="handleDragStart(keyItem, $event)"
                                     @dragstart="handleDragStart(keyItem, $event)"
@@ -156,10 +160,10 @@
                                         </div>
                                     </div>
 
-                                    <div class="content-end items-end text-right ml-4">
+                                    <div class="content-end items-end text-right ml-4 w-full">
                                         <div class="text-right w-full items-end h-6 py-1" v-for="(output, key) in item.outputs" :key="key">
                                             <div class="flex flex-row-reverse" :id="`${output.id}-${keyItem}`" ref="inputs">                       
-                                                <div :style="{color: (item.metadata[output?.type.replace(/\./, '_')]) ? item.metadata[output?.type.replace(/\./, '_')].color : getColorByType(output?.type)}" :title="`Type: ${output?.type}`" >
+                                                <div :style="{color: (item.metadata[output?.type.replace(/\./, '_')]) ? item.metadata[output?.type.replace(/\./, '_')].color : getColorByType(output?.type)}" :title="output?.type" >
                                                     <client-only>
                                                         <font-awesome-icon                         
                                                             icon="fa-solid fa-square"   
@@ -184,7 +188,7 @@
                                                         <div 
                                                             :style="{color: (item.metadata[publicVar.default.realType?.replace(/\./, '_')]) ? item.metadata[publicVar.default.realType?.replace(/\./, '_')].color : getColorByType((publicVar.default.realType) ? publicVar.default.realType : 'Any')}" 
                                                             :id="`${publicVar.id}-${publicVar.name}-${key}`" 
-                                                            :title="`Type: ${(publicVar.default.realType) ? publicVar.default.realType : 'Any'}`"
+                                                            :title="(publicVar.default.realType) ? publicVar.default.realType : 'Any'"
                                                             ref="inputs"
                                                         >
                                                             <client-only>
@@ -199,7 +203,7 @@
                                                         </div>
 
                                                         <div>
-                                                            <span class="px-2 text-sm">{{ (publicVaritem.method) ? publicVaritem.method : 'GET' }} [{{ publicVaritem.url }}]</span>
+                                                            <span class="px-2 text-sm inline-block min-w-[100px]">{{ (publicVaritem.method) ? publicVaritem.method : 'GET' }} [{{ publicVaritem.url }}]</span>
                                                         </div>
                                                     </div> 
                                                 </div>
@@ -208,8 +212,6 @@
                                     </div>
                                 </div>                
                             </div>
-
-                            
                         </div>
 
                         <blueprint-line-connector 
@@ -274,11 +276,7 @@
                     :input="objectEdit.input" 
                     :fields="objectEdit.input.default" 
                     :values="objectEdit.input.value"
-                    @save="(value) => {                     
-                        changeDefault(value, objectEdit.input, 'object');
-                        objectEdit.input.value = value; 
-                        objectEdit.open = false; 
-                    }"
+                    @save="objectEditCallback"
                     @close="objectEdit.open = false" 
                 />
 
@@ -858,8 +856,8 @@ export default{
             this.saveState(true);
         },
 
-        openObjectEdit(item, input, keyItem, key){
-            this.objectEdit = { item, input, keyItem, key, open: true };
+        openObjectEdit(item, input, keyItem, key, cb = null){
+            this.objectEdit = { item, input, keyItem, key, cb, open: true };
         },
 
         onDelete(){
@@ -882,6 +880,19 @@ export default{
             item.collaped = !item.collaped;
             this.refreshLines();
             this.saveState(true);
+        },
+
+        objectEditCallback(value) {
+            console.log(this.objectEdit);
+            if(this.objectEdit.cb && typeof this.objectEdit.cb == 'function') {
+                this.objectEdit.cb(value)
+            }   
+            else {
+                this.changeDefault(value, this.objectEdit.input, 'object');
+                this.objectEdit.input.value = value; 
+            }                 
+            
+            this.objectEdit.open = false; 
         },
 
         saveState(emit = false){

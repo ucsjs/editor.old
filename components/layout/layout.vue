@@ -131,6 +131,10 @@ const getLayoutConfig = () => {
     return GLayout.saveLayout();
 };
 
+const getLayout = () => {
+    return GLayout;
+};
+
 onMounted(() => {
     if (GLRoot.value == null)
         throw new Error("Golden Layout can't find the root DOM!");
@@ -270,5 +274,6 @@ defineExpose({
     addGLComponent,
     loadGLLayout,
     getLayoutConfig,
+    getLayout
 });
 </script>

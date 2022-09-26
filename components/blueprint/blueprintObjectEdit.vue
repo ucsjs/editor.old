@@ -1,6 +1,6 @@
 <template>
     <div class="fixed bg-black/80 top-0 left-0 right-0 bottom-0 z-50 flex h-full justify-center items-center text-white" style="z-index: 1001;">
-        <div class="relative bg-neutral-800 w-2/5 m-auto rounded-lg border border-black">
+        <div class="relative bg-neutral-800 w-3/5 m-auto rounded-lg border border-black">
             <div 
                 class="p-2 rounded-t-xl border-b border-black bg-neutral-900 text-gray-50 font-bold flex justify-between"
             >
@@ -27,7 +27,7 @@
                             <div>
                                 <div v-if="component.metadata && component.metadata[field]">
                                     <select 
-                                        class="bg-neutral-800 border border-black text-white px-1 ml-2"
+                                        class="bg-neutral-800 border border-black text-white px-1 min-w-[100px] ml-2"
                                         @change="editList(key, field, $event.target.value)"
                                     >
                                         <option 
@@ -137,7 +137,11 @@ export default{
         fields: { type: Object },
         input: { type: Object }, 
         values: { type: Array },
-        keyItem: { type: String }
+        keyItem: { type: String },
+        generateKey: { 
+            type: Boolean, 
+            default: true 
+        },
     },
 
     data(){
@@ -193,9 +197,11 @@ export default{
         },
 
         save(){
-            if(Array.isArray(this.list)){
-                for(let key in this.list)
-                    this.list[key].key = `${this.input.id}-${this.keyItem}-${key}`;
+            if(this.generateKey){
+                if(Array.isArray(this.list)){
+                    for(let key in this.list)
+                        this.list[key].key = `${this.input.id}-${this.keyItem}-${key}`;
+                }
             }
             
             if(this.list)

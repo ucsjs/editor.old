@@ -1,6 +1,6 @@
 <template>
     <svg 
-        class="z-30 absolute svg" 
+        class="z-10 absolute svg" 
         @click="click" 
         :selected="line.selected"
     >

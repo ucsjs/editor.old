@@ -15,37 +15,42 @@
     </div>
 </template>
 
-<script setup>
+<script>
 import { useStateStore } from "~~/store/state.store";
-const state = useStateStore();
-let selected = ref(0);
 
-watch(state, () => {
-    if(!state.leftbar.open)
-        selected.value = -1;
-});
+export default {
+    data(){
+        return {
+            state: useStateStore(),
+            selected: 0,
+            items: [
+                { icon: "fa-regular fa-copy", title: "Files" },
+                { icon: "fa-solid fa-search", title: "Search" },
+                { icon: "fa-solid fa-code-branch", title: "Git" },
+                { icon: "fa-solid fa-plug", title: "Plugin" },
+                { icon: "fa-solid fa-database", title: "Database" },
+                { icon: "fa-brands fa-docker", title: "Docker" }
+            ]
+        };
+    },
 
-const items = [
-    { icon: "fa-regular fa-copy", title: "Files" },
-    { icon: "fa-solid fa-search", title: "Search" },
-    { icon: "fa-solid fa-code-branch", title: "Git" },
-    { icon: "fa-solid fa-plug", title: "Plugin" },
-    { icon: "fa-solid fa-database", title: "Database" },
-    { icon: "fa-brands fa-docker", title: "Docker" }
-];
+    methods: {
+        selectTab(key) {
+            if(this.selected !== key){
+                this.selected = key;
 
-const selectTab = (key) => {
-    if(selected.value !== key){
-        selected.value = key;
-
-        if(!state.leftbar.open){
-            state.leftbar.width = 300;
-            state.leftbar.open = true;
+                if(!this.state.leftbar.open){
+                    this.state.leftbar.width = 300;
+                    this.state.leftbar.open = true;
+                    this.$emit("leftbar", true);
+                }
+            }
+            else{
+                this.selected = -1;
+                this.state.leftbar.open = false;
+                this.$emit("leftbar", false);
+            }
         }
     }
-    else{
-        selected.value = -1;
-        state.leftbar.open = false;
-    }
-};
+}
 </script>

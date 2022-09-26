@@ -4,7 +4,7 @@
             v-if="isInput" 
             class="text-sm"
             :style="{color: (item.metadata[input?.type.replace(/\./, '_')]) ? item.metadata[input?.type.replace(/\./, '_')].color : getColorByType(input?.type)}" 
-            :title="`Type: ${input?.type}`"
+            :title="input?.type"
         >
             <client-only>
                 <font-awesome-icon 

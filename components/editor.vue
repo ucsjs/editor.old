@@ -12,7 +12,7 @@
 
         <div class="flex flex-col select-none h-full absolute">
             <div class="flex flex-row w-full" style="height: calc(100% - 72px)">
-                <!--<LeftNavbar />-->
+                <LeftNavbar @leftbar="leftbar" />
 
                 <layout
                     ref="layout"
@@ -137,6 +137,7 @@ export default {
                         {
                             type: "component",
                             title: "Files",
+                            componentName: "Files",
                             header: { position: false, show: false, popout: false, close: false },
                             isClosable: false,                        
                             componentType: "filetree/filetreeWindow",
@@ -154,6 +155,7 @@ export default {
                             }, {
                                 type: "component",
                                 title: "Terminals",
+                                name: "Terminals",
                                 header: { show: "top", popout: false },
                                 componentType: "terms/termsView",
                             }]
@@ -227,6 +229,40 @@ export default {
         handleDragEndTop(event){
             this.startDragTopEvent = null;
             this.startDragTop = false;
+        },
+
+        async leftbar(opened){
+            const layout = this.$refs.layout?.getLayout();
+
+            if(layout){
+                console.log(layout.defaultLocationSelectors);
+                //const component = await layout.findFirstContentItemTypeByIdRecursive("Files", layout.rootItem);
+                //console.log(component);
+                /*if(opened)
+                    component.element.hide();
+                else
+                    component.element.show();*/
+            }
+        },
+
+        async getLayoutComponent(root, index){
+            if(root.content){
+                for(let component of root.content){
+                    if(component?.title == index)
+                        return component;
+                    else if(component?.content){
+                        const subcomponent = await this.getLayoutComponent(component, index);
+
+                        if(subcomponent)
+                            return subcomponent;
+
+                        break;
+                    }
+                }
+            }
+            else{
+                return null;
+            }
         },
 
         save(tab){

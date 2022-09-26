@@ -76,7 +76,13 @@
                                 <div class="flex flex-row">
                                     <div>
                                         <Tooltip :tooltipText="$t('Edit')" position="right">
-                                            <button class="ml-2 hover:text-neutral-500" @click="$emit('openObjectEdit', items, item, key)">
+                                            <button 
+                                                class="ml-2 hover:text-neutral-500" 
+                                                @click="$emit('openObjectEdit', { items, metadata: metadataProperty }, { ...item, id: item.name, value: values[item.name] }, key, key, (value) => {
+                                                    values[item.name] = value;
+                                                    changeMetadata();
+                                                })"
+                                            >
                                                 <client-only><font-awesome-icon icon="fa-solid fa-edit" /></client-only>
                                             </button>
                                         </Tooltip>
@@ -137,6 +143,12 @@ export default {
 
     props: ["metadata"],
 
+    watch: {
+        metadata() {
+            this.refreshMetadata();
+        }
+    },
+
     data(){
         return {
             state: useStateStore(),
@@ -145,24 +157,46 @@ export default {
                 { name: "group", type: "String", label: "Group" },
                 { name: "headerColor", type: "Color", label: "Header Color", open: false },
                 { name: "headerIcon", type: "Image", label: "Header Icon" },
-                { name: "publicVars", type: "Object", label: "Public Vars" },
-                { name: "inputs", type: "Object", label: "Inputs" },
-                { name: "outputs", type: "Object", label: "Outputs" },
+                { 
+                    name: "publicVars", 
+                    type: "Object", 
+                    label: "Public Vars",
+                    default: { name: "string", type: "string", value: "string", multi: true } 
+                },
+                { 
+                    name: "inputs", 
+                    type: "Object", 
+                    label: "Inputs",
+                    default: { name: "string", type: "string", value: "string", multi: true } 
+                },
+                { 
+                    name: "outputs", 
+                    type: "Object", 
+                    label: "Outputs",
+                    default: { name: "string", type: "string", value: "string", multi: true } 
+                },
             ],
             values: {
                 group: "Custom",
-                headerColor: { hex: "#FFFFFF" },
+                headerColor: { hex: "#CCCCCC" },
                 headerIcon: ""
+            },
+            metadataProperty: {
+                type: ["string", "int", "float", "double", "boolean"],
             }
         }
     },
 
     mounted(){
-        if(this.metadata)
-            this.values = { ...{ headerColor: {hex: "#FFFFFF"} }, ...this.metadata };
+        this.refreshMetadata();
     },
 
     methods: {
+        refreshMetadata(){
+            if(this.metadata)
+                this.values = { ...{ headerColor: {hex: "#FFFFFF"} }, ...this.metadata };
+        },
+
         closeAllWindowOpened(){
             for(let item of this.items)
                 item.open = false;             
