@@ -17,13 +17,14 @@
         ></div>
 
         <div class="grid-background select-none absolute left-0 right-0 top-0 bottom-11">
-            <div class="flex flex-col h-full">
-                <!--<div class="flex h-10">
-                    <visual-editor-navbar />
-                </div>-->
-                
+            <div class="flex flex-col h-full">                
                 <div class="flex flex-row h-full relative">
-                    <div class="relative flex" :style="{width: `${widthLeftbar}px !important`}">
+                    <div 
+                        class="relative flex" 
+                        :style="{width: `${widthLeftbar}px !important`}"
+                        @mouseover="mouseInCanvas = true"
+                        @mouseleave="mouseInCanvas = false"
+                    >
                         <visual-editor-hierarchy 
                             :tab="tab" 
                             :canvas="canvas"
@@ -46,7 +47,12 @@
                         ></div>
                     </div>
 
-                    <div :style="{width: `calc(100% - ${(widthLeftbar + widthRightbar)}px) !important`}" class="relative">
+                    <div 
+                        :style="{width: `calc(100% - ${(widthLeftbar + widthRightbar)}px) !important`}" 
+                        class="relative"
+                        @mouseover="mouseInCanvas = true"
+                        @mouseleave="mouseInCanvas = false"
+                    >
                         <client-only>
                             <visual-canvas 
                                 ref="canvas" 
@@ -118,6 +124,7 @@ export default {
             widthRightbar: 300,
             startDragRight: false,
             startDragRightEvent: null,
+            mouseInCanvas: false
         }
     },
 
@@ -262,9 +269,11 @@ export default {
         },
 
         async onDelete(){
-            await this.$refs.canvas.onDelete();
-            this.saveState(true);
-            this.$forceUpdate();
+            if(this.mouseInCanvas){
+                await this.$refs.canvas.onDelete();
+                this.saveState(true);
+                this.$forceUpdate();
+            }
         },
 
         saveState(){

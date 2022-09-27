@@ -147,7 +147,7 @@
                                         v-if="property.type == 'BigText'"
                                         class=" w-full h-56 p-1 bg-neutral-900 border-black"
                                         placeholder="Text..."
-                                        @keyup.stop="changeProperty(component)" 
+                                        @keyup="changeProperty(component)" 
                                         @change="changeProperty(component)"
                                     ></textarea>
                                 </div>
@@ -204,12 +204,34 @@
                                                 >{{ option }}</option>
                                             </select>
                                         </div>
+                                        <div v-else-if="proprityPixel.includes(property.name)" class="flex">
+                                            <input 
+                                                class="bg-neutral-900 border border-r-0 border-black text-white px-1 h-7 text-sm w-full rounded-sm" 
+                                                type="text" 
+                                                v-model="subComponent.value[property.name]"
+                                                @keyup="changeProperty(component)" 
+                                                @change="changeProperty(component)"
+                                            />
+                                            <select 
+                                                class="bg-neutral-900 border border-l-0 w-16 border-black text-white px-1 h-7 rounded-t-sm rounded-b-sm"
+                                                v-model="subComponent.value[`${property.name}Sufix`]"
+                                                @keyup="changeProperty(component)" 
+                                                @change="changeProperty(component)"
+                                            >
+                                                <option 
+                                                    v-for="(option, key) in pxSufix" 
+                                                    :key="key" 
+                                                    :value="option" 
+                                                    :selected="(subComponent?.value[`${property.name}Sufix`]) === option"
+                                                >{{ option }}</option>
+                                            </select>
+                                        </div>
                                         <input 
                                             v-else-if="property.type == 'String' || property.type == 'string'" 
                                             class="bg-neutral-900 border border-black text-white px-1 h-7 text-sm w-full rounded-sm" 
                                             type="text" 
                                             v-model="subComponent.value[property.name]"
-                                            @keyup.stop="changeProperty(component)" 
+                                            @keyup="changeProperty(component)" 
                                             @change="changeProperty(component)"
                                         />
                                         <input 
@@ -217,7 +239,7 @@
                                             class="bg-neutral-900 border border-black text-white px-1 h-7 text-sm w-full rounded-sm" 
                                             type="text" 
                                             v-model="subComponent.value[property.name]"
-                                            @keyup.stop="changeProperty(component)" 
+                                            @keyup="changeProperty(component)" 
                                             @change="changeProperty(component)"
                                         />
                                         <div v-else-if="property.type == 'boolean' || property.type == 'Boolean' || property.type == 'Bool'" class="text-white pt-1">
@@ -250,7 +272,7 @@
                                                     v-model="subComponent.value[property.name]" 
                                                     class="bg-neutral-900 border border-black text-white px-1 h-6 text-sm w-full rounded-sm" 
                                                     type="text"
-                                                    @keyup.stop="changeProperty(component)"
+                                                    @keyup="changeProperty(component)"
                                                     @change="changeProperty(component)"
                                                 />
                                             </div>
@@ -286,10 +308,10 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div v-else-if="(property.type == 'image' || property.type == 'Image' || property.type == 'ImageType') && subComponent.value[property.name]">
+                                        <div v-else-if="(property.type == 'image' || property.type == 'Image' || property.type == 'ImageType')">
                                             <div 
                                                 class="border border-black h-full flex justify-end relative text-sm" 
-                                                v-if="subComponent.value[property.name] && subComponent.value[property.name]?.src"                                                                                         
+                                                v-if="subComponent.value[property.name]"                                                                                         
                                             >
                                                 <input 
                                                     type="hidden" 
@@ -299,11 +321,12 @@
                                                 />
 
                                                 <input 
-                                                    v-if="subComponent.value[property.name] && subComponent.value[property.name]?.src"
+                                                    v-if="subComponent.value[property.name]"
                                                     class="bg-neutral-900 border border-black text-white px-1 h-6 text-sm w-full rounded-sm"
                                                     type="text" 
                                                     v-model="subComponent.value[property.name].src"
-                                                    @keyup.stop="() => {}"
+                                                    @change="changeProperty(component)" 
+                                                    @input="changeProperty(component)" 
                                                 />
 
                                                 <button 
@@ -412,7 +435,9 @@ export default {
             components: [],
             componentsCategories: {},
             componentsFiltred: [],
-            events: ["checked", "default", "focus", "disabled", "fullscreen", "hover", "required"]
+            proprityPixel: ["width", "height", "left", "top", "bottom", "right"],
+            events: ["checked", "default", "focus", "disabled", "fullscreen", "hover", "required"],
+            pxSufix: ["px", "em", "%", "auto", "max-content", "min-content", "inherit", "initial", "revert", "revert-layer", "unset"],
         }
     },
 

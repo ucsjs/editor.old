@@ -2,8 +2,10 @@
     <client-only>
         <!-- eslint-disable -->
         <vue-drag-resize  
-            :style="{ position: (transform.position) ? transform.position : '' }"
-            :initW="parseInt(transform.width)" 
+            :style="{ 
+                position: (transform.position) ? transform.position : '' ,
+                width: returnValueWithSuffix('width', transform),
+            }"
             :initH="parseInt(transform.height)"
             :minW="16"
             :minH="16"
@@ -26,13 +28,13 @@
             <div             
                 v-if="resizeData"
                 :class="[
-                    (selectedComponent?.id == settings.id) ? 'border-red-300' : 'border-purple-300 hover:border-purple-500 border-dashed',
+                    (selectedComponent?.id == settings.id) ? 'border-red-300' : 'border-purple-200 hover:border-purple-500 border-dashed',
                     (settings.metadata.moveble && !settings.static) ? 'cursor-move' : '',
-                    'border w-full h-full'
+                    'border w-full h-full relative overflow-hidden'
                 ]"
             >     
                 <div ref="component" class="w-full h-full">
-                    <div class="w-full h-full absolute z-40 text-black"></div>
+                    <div class="w-full h-full absolute z-40 text-black cursor-move"></div>
 
                     <client-only placeholder="Loading...">
                         <dynamic-renderer 
@@ -269,6 +271,18 @@ export default {
                 this.getSubcomponent("Transform").value = this.transform;
                 this.$emit('changeState');
             } 
+        },
+
+        returnValueWithSuffix(namespace, data){
+            const sufix = data[`${namespace}Sufix`] || 'px';
+
+            switch(sufix){
+                case "px":
+                case "em":
+                case "%":
+                case "rem": return `${data[namespace]}${sufix}`;
+                default : return sufix;
+            }
         },
 
         resizeOrMove(newRect, updateComponent) {
