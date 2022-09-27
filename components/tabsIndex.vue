@@ -1,6 +1,12 @@
 <template>
     <div class="overflow-hidden h-full w-full relative">
-        <nav :class="[state.darktheme ? 'text-white bg-neutral-800 border-black' : 'text-gray-800 bg-neutral-200 border-neutral-100', 'flex border-b select-none overflow-auto']" aria-label="Tabs">
+        <nav 
+            :class="[
+                state.darktheme ? 'text-white bg-neutral-800 border-black' : 'text-gray-800 bg-neutral-200 border-neutral-100', 
+                'flex fixed border-b select-none overflow-auto h-11 z-50 shadow-lg w-full'
+            ]" 
+            aria-label="Tabs"
+        >
             <draggable 
                 v-model="state.tabs" 
                 itemKey="sha256"
@@ -44,7 +50,7 @@
             </draggable>
         </nav>
 
-        <div v-for="(tab, key) in state.tabs" :key="key" class="text-white">
+        <div v-for="(tab, key) in state.tabs" :key="key" class="text-white mt-11">
             <div 
                 v-if="key === state.selectedTab" 
                 ref="activeTab" 
@@ -62,7 +68,7 @@
                     <blueprint-editor 
                         ref="editor"
                         :tab="tab" 
-                        @changeState="(contents) => change(key, contents)" 
+                        @changeState="(contents) => change(key, contents)"
                     />
                 </div>
 

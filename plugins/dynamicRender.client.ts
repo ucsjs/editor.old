@@ -1,6 +1,6 @@
 export default defineNuxtPlugin((nuxtApp) => {
     nuxtApp.vueApp.component("dynamic-renderer", {
-        props: ["component", "state"],
+        props: ["component", "state", "default"],
         
         render(){
             return h({

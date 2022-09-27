@@ -53,7 +53,7 @@
                                 :tab="tab" 
                                 :components="components" 
                                 :selectedComponent="selectedComponent"
-                                v-if="components.length > 0"
+                                v-if="components?.length > 0"
                                 @loadedCanvas="loadedCanvas"
                                 @changeState="changeState" 
                                 @selectedItem="selectComponent"
@@ -164,10 +164,12 @@ export default {
         },
 
         changeState(value){
-            this.canvas = value;
-            this.$emit("changeState", value);
-            this.$forceUpdate();
-            this.$refs.canvas.loadCanvasFromLocalStorage();
+            if(value){
+                this.canvas = value;
+                this.$emit("changeState", value);
+                this.$forceUpdate();
+                this.$refs.canvas.loadCanvasFromLocalStorage();
+            }
         },
 
         saveStateContents(){

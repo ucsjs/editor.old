@@ -312,7 +312,7 @@ export default {
                     property.value = property.default;
                 }
             }
-            
+           
             this.hierarchy.push({
                 id: `${item.namespace}_${this.componentIndex}`,
                 ...tmpComponent,

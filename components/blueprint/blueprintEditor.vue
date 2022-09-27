@@ -64,6 +64,7 @@
                     class="grid-contents block" 
                     style="width: 5000px; height: 5000px" 
                     ref="contents"  
+                    @click="selectComponent(null)"
                     @mouseenter="overCanvas = true"
                     @mouseleave="overCanvas = false"
                     @mousedown.left="move"
@@ -82,11 +83,15 @@
                                 v-for="(item, keyItem) in items" 
                                 :key="keyItem"
                                 :style="{ top: `${item.position.top}px`, left: `${item.position.left}px` }"
-                                class="rounded-xl absolute border-black border-2 shadow-black shadow-md bg-neutral-900 bg-opacity-80 hover:border-neutral-800 z-40"
+                                :class="[
+                                    (selectedComponent?.componentKey === item?.componentKey) ? 'border-red-700 hover:border-red-800' : 'border-black hover:border-neutral-800',
+                                    'rounded-xl absolute  border-2 shadow-black shadow-md bg-neutral-900 bg-opacity-80  z-40'
+                                ]"
                                 @mousedown.left.stop="closeContextmenu"
+                                @click.stop="selectComponent(item)"
                             >
                                 <div 
-                                    :class="['p-1 rounded-t-lg border-b border-black text-gray-50 font-bold cursor-move flex min-w-[140px]']"
+                                    :class="['p-1 rounded-t-lg border-b border-black text-gray-50 font-bold cursor-move flex min-w-[200px]']"
                                     :style="{backgroundColor: (item.metadata.headerColor) ? item.metadata.headerColor : headerColor(item.metadata.group)}"
                                     @mousedown.left.stop="handleDragStart(keyItem, $event)"
                                     @dragstart="handleDragStart(keyItem, $event)"
@@ -105,7 +110,7 @@
                                     </div> 
 
                                     <div class="flex text-sm" @mousedown.left.stop="" :collaped="item.collaped">
-                                        <div class="mr-2 cursor-pointer px-2" @click.stop="toggleComponent(item)">
+                                        <div class="ml-2 cursor-pointer px-2" @click.stop="toggleComponent(item)">
                                             <client-only>
                                                 <Tooltip :tooltipText="$t('Expand')" position="top">
                                                     <font-awesome-icon icon="fa-solid fa-caret-down" v-if="item.collaped" />
@@ -113,6 +118,14 @@
 
                                                 <Tooltip :tooltipText="$t('Contract')" position="top">
                                                     <font-awesome-icon icon="fa-solid fa-caret-up" v-if="!item.collaped" />
+                                                </Tooltip>
+                                            </client-only>
+                                        </div>
+
+                                        <div class="mr-2 cursor-pointer" @click.stop="openComponent(item)">
+                                            <client-only>
+                                                <Tooltip :tooltipText="$t('Open')" position="top">
+                                                    <font-awesome-icon icon="fa-solid fa-arrow-up-right-from-square"/>
                                                 </Tooltip>
                                             </client-only>
                                         </div>
@@ -364,6 +377,7 @@
 
 <script>
 import globalMixin from "@/mixins/globalMixin";
+import { useStateStore } from "~~/store/state.store";
 
 export default{
     mixins: [globalMixin],
@@ -382,6 +396,7 @@ export default{
 
     data(){
         return {
+            state: useStateStore(),
             widthLeftbar: 300,
             loading: false,
             dragIndex: 0,
@@ -427,7 +442,8 @@ export default{
             overCanvas: false,
             componentGhost: null,
             componentGhostPosition: { top: 200, left: 200 },
-            metadata: null
+            metadata: null,
+            selectedComponent: null
         }
     },
 
@@ -860,6 +876,14 @@ export default{
             this.objectEdit = { item, input, keyItem, key, cb, open: true };
         },
 
+        async openComponent(item){
+            const content = await useApi(`files/open?filename=${encodeURIComponent(item.filename)}`, {
+                method: "GET"
+            });
+
+            this.state.openTab({ ...content, recent: true });
+        },
+
         onDelete(){
             if(this.lineSelected != -1){
                 this.connections.splice(this.lineSelected, 1);
@@ -883,7 +907,6 @@ export default{
         },
 
         objectEditCallback(value) {
-            console.log(this.objectEdit);
             if(this.objectEdit.cb && typeof this.objectEdit.cb == 'function') {
                 this.objectEdit.cb(value)
             }   
@@ -893,6 +916,12 @@ export default{
             }                 
             
             this.objectEdit.open = false; 
+        },
+
+        selectComponent(item){
+            this.selectedComponent = item;
+            this.$forceUpdate();
+            this.$nextTick();
         },
 
         saveState(emit = false){

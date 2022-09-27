@@ -172,8 +172,8 @@
                                             <client-only placeholder="Loading...">
                                                 <dynamic-renderer 
                                                     v-if="component.editor[subComponent.component][property.name].content && subComponent.value[property.name]"
-                                                    :component="component.editor[subComponent.component][property.name]"
-                                                    :state="subComponent.value[property.name]"
+                                                    :component="{ ...component.editor[subComponent.component][property.name], value: subComponent.value[property.name] }"
+                                                    :default="subComponent.value[property.name]"
                                                     @change="(v) => { 
                                                         subComponent.value[property.name] = v;
                                                         changeProperty(component) 
@@ -209,7 +209,7 @@
                                         <input 
                                             v-else-if="property.type == 'number' || property.type == 'Number' || property.type == 'Int'" 
                                             class="bg-neutral-900 border border-black text-white px-1 h-7 text-sm w-full rounded-sm" 
-                                            type="text" 
+                                            type="number" 
                                             v-model="subComponent.value[property.name]"
                                             @keyup.stop="changeProperty(component)" 
                                             @change="changeProperty(component)"
@@ -386,7 +386,10 @@ export default {
     components: { Menu, MenuButton, MenuItem, MenuItems, TransitionRoot, TransitionChild, Chrome },
 
     props: {
-        component: { type: Object },
+        component: { 
+            type: Object,
+            default: null 
+        },
         width: { 
             type: Number, 
             default: 300 

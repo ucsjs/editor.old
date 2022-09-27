@@ -41,6 +41,8 @@
                                 class="bg-neutral-900 border border-black text-white px-1 h-7 text-sm w-full rounded-sm" 
                                 type="text" 
                                 v-model="values[item.name]"
+                                @change="changeMetadata"
+                                @keyup="changeMetadata"
                             />
                             <div v-else-if="item.type == 'boolean' || item.type == 'Boolean' || item.type == 'Bool'" class="text-white pt-1">
                                 <label :for="item.name" class="relative items-center cursor-pointer">
@@ -49,6 +51,7 @@
                                         v-model="values[item.name]" 
                                         :id="item.name" 
                                         class="sr-only peer"
+                                        @change="changeMetadata"
                                     />
 
                                     <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full p after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
@@ -65,6 +68,8 @@
                                         v-model="values[item.name].hex"                                                 
                                         :style="{backgroundColor: (values[item.name]?.hex || '#FFFFFF')}"
                                         @click.prevent="item.open = true"
+                                        @change="changeMetadata"
+                                        @keyup="changeMetadata"
                                     />
 
                                     <div class="absolute top-6 z-50" v-if="item.open">
@@ -96,6 +101,8 @@
                                     <input 
                                         type="hidden" 
                                         v-model="values[item.name]" 
+                                        @change="changeMetadata"
+                                        @keyup="changeMetadata"
                                     />
 
                                     <input 
@@ -153,6 +160,7 @@ export default {
         return {
             state: useStateStore(),
             items: [
+                { name: "importable", type: "Boolean", label: "Importable" },
                 { name: "namespace", type: "String", label: "Namespace" },
                 { name: "group", type: "String", label: "Group" },
                 { name: "headerColor", type: "Color", label: "Header Color", open: false },

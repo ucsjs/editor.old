@@ -21,18 +21,8 @@
             @resize-end="(d) =>resizeOrMove(d, true)"
             @drag-end="(d) => resizeOrMove(d, true)"
             @click.stop="$emit('selectItem', settings?.id)"
-            v-if="settings"
+            v-if="settings && resizeData"
         > 
-            <!--<div 
-                :class="[
-                    (selectedComponent?.id == settings.id) ? 'bg-orange-500' : 'border-purple-300',
-                    'absolute -top-5 px-2 text-sm rounded-t-md'
-                ]" 
-                style="font-size: 10px"
-            >
-                {{ settings?.label }}
-            </div>-->
-
             <div             
                 v-if="resizeData"
                 :class="[
@@ -42,30 +32,15 @@
                 ]"
             >     
                 <div ref="component" class="w-full h-full">
-                    <div class="w-full h-full absolute z-40"></div>
-                    
+                    <div class="w-full h-full absolute z-40 text-black"></div>
+
                     <client-only placeholder="Loading...">
                         <dynamic-renderer 
-                            v-if="settings" 
+                            v-if="settings && style" 
                             class="w-full h-full"
                             :style="style"
                             :component="settings"
                         >
-                            <template>
-                                <div v-if="settings.hierarchy.length > 0">
-                                    <visual-component 
-                                        v-for="(component, key) in settings.hierarchy" 
-                                        :key="key" 
-                                        :componentIndex="key"
-                                        :settings="component"
-                                        :editorOffset="editorOffset"
-                                        :selectedComponent="selectedComponent"
-                                        :tab="tab"
-                                        @selectItem="$emit('selectItem', component?.id)"
-                                        @saveState="$emit('saveState')"
-                                    ></visual-component>  
-                                </div>
-                            </template>
                         </dynamic-renderer>
                     </client-only>
                 </div>
@@ -86,7 +61,10 @@ export default {
 
     props: {
         tab: { type: Object },
-        selectedComponent: { type: Object },
+        selectedComponent: { 
+            type: Object,
+            default: null 
+        },
         editorOffset: {
             type: Object,
             required: true
@@ -108,7 +86,7 @@ export default {
             moveEvent: false,
             position: { top: 0, left: 0, scale: 1, position: "absolute", zIndex: 1, rotate: 0 },
             componentsIndex: {},
-            resizeData: null,
+            resizeData: { w: 0, h: 0, x: 0, y: 0, active: false },
             style: {},
             transformComponent: null
         }
@@ -130,7 +108,9 @@ export default {
 
     methods: {
         updateComponentStyle(updateSubComponents = true){
-            let finalStyles = null;
+            let finalStyles = {};
+            let ignoreStyles = ['width', 'height', 'top', 'left', 'right', 'bottom'];
+            let stylePixel = ["width", "height", "left", "top", "right", "bottom"]
 
             let defaultStyle = {
                 width: (this.transform.widthAuto) ? 'auto' : `${this.transform.width}px`, 
@@ -168,10 +148,17 @@ export default {
 
                     if(finalStyles[key] == "undefined")
                         finalStyles[key] = null;
+                        
+                    if(ignoreStyles.includes(key) && finalStyles[key])
+                        delete finalStyles[key];
+
+                    if(stylePixel.includes(key) && finalStyles[key] && !finalStyles[key].includes("px"))
+                        finalStyles[key] = finalStyles[key] + "px";
                 }
             }
 
-            this.style = finalStyles;
+            if(finalStyles)
+                this.style = finalStyles;
         },
 
         update(updateStyle = true){
@@ -256,8 +243,8 @@ export default {
                 this.moveStartPosition = { 
                     left: clientX, 
                     top: clientY,
-                    positionX: this.transform.left,
-                    positionY: this.transform.top
+                    positionX: this.transform?.left,
+                    positionY: this.transform?.top
                 };
 
                 this.moveEvent = true;
@@ -284,7 +271,7 @@ export default {
             } 
         },
 
-        resizeOrMove(newRect, updateComponent){
+        resizeOrMove(newRect, updateComponent) {
             if(newRect.x && newRect.y) { 
                 if(updateComponent){
                     this.transformComponent.value.left = newRect.x;
@@ -306,7 +293,7 @@ export default {
                 this.transform.height = newRect.h;
                 this.updateComponentStyle(false);
             }    
-            
+           
             this.$emit('selectItem', this.settings.id);
         }
     }

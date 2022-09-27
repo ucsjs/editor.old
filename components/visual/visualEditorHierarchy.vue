@@ -156,9 +156,12 @@ export default {
 
         handleDrag(event){   
             const { clientX, clientY } = event;
-            const hierarchyOffset = this.$refs.hierarchy.getBoundingClientRect();
-            this.mouseHandler.top = clientY - hierarchyOffset.y - 10;
-            this.mouseHandler.left = clientX - hierarchyOffset.x - 10;                
+
+            if(this.$refs.hierarchy){
+                const hierarchyOffset = this.$refs.hierarchy.getBoundingClientRect();
+                this.mouseHandler.top = clientY - hierarchyOffset.y - 10;
+                this.mouseHandler.left = clientX - hierarchyOffset.x - 10; 
+            }         
         },
 
         createGhost(item){
@@ -288,8 +291,10 @@ export default {
         },
 
         selectItem(item){
-            this.state.hierarchy.selectedItem = item;
-            this.$emit("selectComponent", item);
+            if(item){
+                this.state.hierarchy.selectedItem = item;
+                this.$emit("selectComponent", item);
+            }
         },
 
         unselectComponent(){
