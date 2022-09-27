@@ -188,13 +188,19 @@
                                                 v-model="subComponent.value[property.name]"
                                                 @change="changeProperty(component)"
                                             >
-                                                <option :value="null"></option>
+                                                <option 
+                                                    value="null" 
+                                                    :selected="(
+                                                        subComponent?.value[property.name] == null || 
+                                                        subComponent?.value[property.name] == undefined || 
+                                                        subComponent?.value[property.name] == '')"
+                                                ></option>
                                                 
                                                 <option 
                                                     v-for="(option, key) in subComponent.metadata[property.name]" 
                                                     :key="key" 
                                                     :value="option" 
-                                                    :selected="(subComponent?.value[property.name] || property?.default) == option"
+                                                    :selected="(subComponent?.value[property.name]) === option"
                                                 >{{ option }}</option>
                                             </select>
                                         </div>
@@ -209,7 +215,7 @@
                                         <input 
                                             v-else-if="property.type == 'number' || property.type == 'Number' || property.type == 'Int'" 
                                             class="bg-neutral-900 border border-black text-white px-1 h-7 text-sm w-full rounded-sm" 
-                                            type="number" 
+                                            type="text" 
                                             v-model="subComponent.value[property.name]"
                                             @keyup.stop="changeProperty(component)" 
                                             @change="changeProperty(component)"
@@ -282,7 +288,8 @@
                                         </div>
                                         <div v-else-if="(property.type == 'image' || property.type == 'Image' || property.type == 'ImageType') && subComponent.value[property.name]">
                                             <div 
-                                                class="border border-black h-full flex justify-end relative text-sm"                                                                                          
+                                                class="border border-black h-full flex justify-end relative text-sm" 
+                                                v-if="subComponent.value[property.name] && subComponent.value[property.name]?.src"                                                                                         
                                             >
                                                 <input 
                                                     type="hidden" 
@@ -292,6 +299,7 @@
                                                 />
 
                                                 <input 
+                                                    v-if="subComponent.value[property.name] && subComponent.value[property.name]?.src"
                                                     class="bg-neutral-900 border border-black text-white px-1 h-6 text-sm w-full rounded-sm"
                                                     type="text" 
                                                     v-model="subComponent.value[property.name].src"

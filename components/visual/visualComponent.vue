@@ -2,7 +2,7 @@
     <client-only>
         <!-- eslint-disable -->
         <vue-drag-resize  
-            :style="{ position: transform.position }"
+            :style="{ position: (transform.position) ? transform.position : '' }"
             :initW="parseInt(transform.width)" 
             :initH="parseInt(transform.height)"
             :minW="16"
@@ -127,7 +127,7 @@ export default {
                         if(property.changeStyle){
                             if(property.name == "color")
                                 defaultStyle[property.changeStyle.styleVue] = component.value[property.name].hex;
-                            else if(typeof component.value[property.name] == "object" && component.value[property.name].src)
+                            else if(typeof component.value[property.name] == "object" && component.value[property.name]?.src)
                                 defaultStyle[property.changeStyle.styleVue] =component.value[property.name].src;
                             else
                                 defaultStyle[property.changeStyle.styleVue] = component.value[property.name] + ((property.changeStyle.subfix) ? property.changeStyle.subfix : '');
