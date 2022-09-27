@@ -9,7 +9,7 @@
             :class="[
                 (state.hierarchy.selectedItem?.id === item.id) ? 'border border-[#007fd4] bg-[#04395e] text-white' : 'border border-transparent',
                 state.darktheme ? 'text-white hover:bg-neutral-800' : 'hover:bg-neutral-200', 
-                'p-1 px-4 cursor-default flex select-none'
+                'p-1 cursor-default flex select-none'
             ]" 
             @mousedown.left="createGhost(item, root)"
             @click.left="selectItem(item)"
@@ -28,7 +28,7 @@
                 </div>
                 <div v-else class="pr-2 w-6"></div>
 
-                <div class="pr-2" v-if="item.metadata.icon">
+                <div class="w-8 mr-2 text-center" v-if="item.metadata.icon">
                     <client-only>
                         <font-awesome-icon :icon="item.metadata.icon" />
                     </client-only>
@@ -75,8 +75,8 @@
                     :item="subItem" 
                     :tab="tab"
                     :padding="padding+1" 
-                    @createGhost="createGhost"
-                    @selectItem="selectItem" 
+                    @createGhost="createGhost(subItem, item)"
+                    @selectItem="selectItem(subItem)" 
                 />
             </div>
         </div>

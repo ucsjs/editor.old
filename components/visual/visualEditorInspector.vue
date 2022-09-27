@@ -2,6 +2,7 @@
     <div 
         class="bg-neutral-800/80 h-full w-full overflow-hidden overflow-y-auto border-l-2 border-black" 
         @click="closeAllWindowOpened"
+        @mouseup="dropComponent(null)"
     >
         <div v-if="component">
             <div class="bg-neutral-800 p-2 flex">
@@ -140,6 +141,7 @@
                                 class="flex" 
                                 v-for="(property, keySubcomponent) in subComponent.properties"
                                 :key="keySubcomponent"
+                                @click="selectInput = { property, subComponent }"
                             >
                                 <div v-if="property.type == 'BigText'" class="w-full p-2">
                                     <textarea 
@@ -343,6 +345,32 @@
                                                 </button>
                                             </div>
                                         </div>
+                                        <div v-else>
+                                            <div 
+                                                :class="[
+                                                    (selectInput?.property.id === property.id && subComponent.value[property.name]) ? 'border-blue-700': '',
+                                                    (state.hierarchy.ghost) ? 'hover:border-blue-700 hover:cursor-crosshair' : '',
+                                                    'border border-black h-full flex justify-end relative text-sm rounded-sm'
+                                                ]"  
+                                                @mouseup.stop="dropComponent(subComponent, property.name, property.type)"                                                                                     
+                                            >
+                                                <button class="px-1 bg-neutral-900">
+                                                    <font-awesome-icon icon="fa-solid fa-cube" />
+                                                </button>
+
+                                                <input 
+                                                    :class="[
+                                                        (state.hierarchy.ghost) ? 'hover:cursor-copy' : '',
+                                                        'bg-neutral-900 border-transparent text-white px-1 h-6 text-sm w-full rounded-sm'
+                                                    ]"
+                                                    type="text" 
+                                                    :value="subComponent.value[property.name]?.id"
+                                                    disabled="disabled"
+                                                    @change="changeProperty(component)" 
+                                                    @input="changeProperty(component)" 
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -431,6 +459,7 @@ export default {
         return {
             state: useStateStore(),
             search: null,
+            selectInput: null,
             openedAddComponent: false,
             components: [],
             componentsCategories: {},
@@ -566,6 +595,22 @@ export default {
             this.$emit('changeProperty', this.component);
         },
 
+        dropComponent(subComponent, propertyName, propertyType){
+            if(subComponent){
+                for(let key in this.state.hierarchy.ghost){
+                    if(key === propertyType){
+                        subComponent.value[propertyName] = {
+                            id: this.state.hierarchy.ghost.id,
+                            propertyType,
+                            propertyName
+                        };
+                    }
+                }
+            }   
+            
+            this.state.hierarchy.ghost = null;
+        },  
+
         closeAllWindowOpened(){
             let closeWindow = false;
 
@@ -580,6 +625,11 @@ export default {
 
             if(closeWindow)
                 this.changeProperty(this.component);
+        },
+
+        onDelete(){
+            if(this.selectInput)
+                this.selectInput.subComponent.value[this.selectInput.property.name] = null;
         }
     }
 }

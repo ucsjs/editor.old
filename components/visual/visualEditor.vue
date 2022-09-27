@@ -1,5 +1,10 @@
 <template>
-    <div class="absolute w-full h-full" @contextmenu.prevent="() => {}" ref="editor">
+    <div 
+        class="absolute w-full h-full" 
+        @contextmenu.prevent="() => {}" 
+        @mousemove="handleDrag" 
+        ref="editor"
+    >
         <div 
             ref="moveLeft" 
             class="fixed w-screen h-screen bg-transparent z-50" 
@@ -15,6 +20,17 @@
             @mouseup="handleDragEndRight" 
             v-if="startDragRight"
         ></div>
+
+        <div 
+            id="ghost" 
+            :class="[
+                'absolute border p-1 z-50 border-[#0968a9] bg-[#0968a9]/50 rounded-lg'
+            ]"
+            :style="{ top: `${mouseHandler.top + 5}px`, left: `${mouseHandler.left+20}px`}" 
+            v-if="state.hierarchy.ghost"
+        >
+            {{ state.hierarchy.ghost.id }}
+        </div>
 
         <div class="grid-background select-none absolute left-0 right-0 top-0 bottom-11">
             <div class="flex flex-col h-full">                
@@ -33,13 +49,14 @@
                             @changeState="changeState"
                             @selectComponent="selectComponent"
                             @addComponent="addComponent"
+                            @mouseover="context = 'hierarchy'"
                         />
 
                         <div 
-                            :class="[
-                                (startDragLeft) ? 'bg-blue-500' : '',
-                                'resizeRight w-1 hover:bg-blue-500 h-full absolute right-0 z-40'
-                            ]"
+                            :class="['resizeRight hover:bg-[#444444] w-1 h-full absolute right-0 z-40']"
+                            :style="{ 
+                                'background-color': (startDragLeft) ? '#444444' : ''
+                            }"
                             @mouseup.stop="handleDragEndLeft"
                             @mousedown="handleDragStartLeft"
                             @click="handleDragStartLeft"
@@ -49,7 +66,10 @@
 
                     <div 
                         :style="{width: `calc(100% - ${(widthLeftbar + widthRightbar)}px) !important`}" 
-                        class="relative"
+                        :class="[
+                            (state.hierarchy.ghost) ? 'cursor-not-allowed' : '',
+                            'relative'
+                        ]"
                         @mouseover="mouseInCanvas = true"
                         @mouseleave="mouseInCanvas = false"
                     >
@@ -64,23 +84,32 @@
                                 @changeState="changeState" 
                                 @selectedItem="selectComponent"
                                 @unselectItem="unselectComponent"
+                                @mouseover="context = 'canvas'"
                             />
                         </client-only>
                     </div>
 
-                    <div class="relative flex" :style="{width: `${widthRightbar}px !important`}">
-                        <visual-editor-inspector                            
+                    <div 
+                        :class="[
+                            (state.hierarchy.ghost) ? 'cursor-not-allowed' : '',
+                            'relative flex'
+                        ]"
+                        :style="{width: `${widthRightbar}px !important`}"
+                    >
+                        <visual-editor-inspector          
+                            ref="inspector"                  
                             :component="selectedComponent"
                             @changeProperty="changeProperty"
                             @addComponent="addSubcomponent"
                             @removeComponent="removeSubcomponent"
                             @changeState="saveStateContents"
+                            @mouseover="context = 'inspector'"
                         />
 
                         <div 
                             :class="[
-                                (startDragRight) ? 'bg-blue-500' : '',
-                                'resizeRight w-1 hover:bg-blue-500 h-full absolute left-0 z-40'
+                                (startDragRight) ? 'bg-[#444444]' : '',
+                                'resizeRight w-1 hover:bg-[#444444] h-full absolute left-0 z-40'
                             ]"
                             @mouseup.stop="handleDragEndRight"
                             @mousedown="handleDragStartRight"
@@ -115,6 +144,7 @@ export default {
         return{
             state: useStateStore(),
             components: [],
+            mouseHandler: { top: 200, left: 200 },
             selectedComponent: null,
             content: {},
             canvas: null,
@@ -124,7 +154,8 @@ export default {
             widthRightbar: 300,
             startDragRight: false,
             startDragRightEvent: null,
-            mouseInCanvas: false
+            mouseInCanvas: false,
+            context: null
         }
     },
 
@@ -182,6 +213,16 @@ export default {
         saveStateContents(){
             this.$refs.canvas.saveState(true);
             this.$refs.canvas.loadCanvasFromLocalStorage();
+        },
+
+        handleDrag(event){   
+            const { clientX, clientY } = event;
+
+            if(this.$refs.editor){
+                const editorOffset = this.$refs.editor.getBoundingClientRect();
+                this.mouseHandler.top = clientY - editorOffset.y - 10;
+                this.mouseHandler.left = clientX - editorOffset.x - 10; 
+            }         
         },
 
         handleDragStartLeft(event){
@@ -273,6 +314,9 @@ export default {
                 await this.$refs.canvas.onDelete();
                 this.saveState(true);
                 this.$forceUpdate();
+            }
+            else{
+                this.$refs.inspector.onDelete();
             }
         },
 

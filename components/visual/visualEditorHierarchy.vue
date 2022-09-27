@@ -5,19 +5,8 @@
         ref="hierarchy"
         @contextmenu.prevent="openContextmenu" 
         @mousemove="handleDrag" 
-        @mouseup.left="removeGhost"
-        @mouseleave="removeGhost"
         @click.stop="unselectComponent"
     >
-        <div 
-            id="ghost" 
-            class="absolute border p-1 z-50 border-[#0968a9] bg-[#0968a9]/50 rounded-lg"
-            :style="{ top: `${mouseHandler.top + 5}px`, left: `${mouseHandler.left+20}px`}" 
-            v-if="ghost && state.hierarchy.selectedItem"
-        >
-            {{ state.hierarchy.selectedItem.id }}
-        </div>
-
         <div class="absolute z-40 w-full" v-if="canvas.hierarchy" @click.stop="() => {}">
             <visual-hierarchy-item 
                 v-for="(item, key) in canvas.hierarchy" 
@@ -165,7 +154,7 @@ export default {
         },
 
         createGhost(item){
-            this.ghost = (item.item) ? item.item : item;
+            this.state.hierarchy.ghost = (item.item) ? item.item : item;
         },
 
         removeGhost(){

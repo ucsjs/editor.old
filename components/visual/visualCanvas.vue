@@ -149,6 +149,8 @@
 </style>
 
 <script>
+import { useStateStore } from "~~/store/state.store";
+
 export default {
     props:{
         tab: {
@@ -167,9 +169,8 @@ export default {
 
     data(){
         return {
-            settings: {
-                backgroundColor: "#ffffff",
-            },
+            state: useStateStore(),
+            settings: { backgroundColor: "#ffffff" },
             componentIndex: 0,
             selected: 0,
             viewport: { width: 375, height: 667  },
@@ -360,6 +361,7 @@ export default {
             if(this.moveEvent)
                 this.moveEvent = false;
 
+            this.dropComponent();
             this.saveState(true);
         },
 
@@ -532,6 +534,10 @@ export default {
                 }
             }); 
         },
+
+        dropComponent(){            
+            this.state.hierarchy.ghost = null;
+        }, 
 
         saveState(emit = false){
             localStorage.setItem(`page-${this.tab.name.replace(/\./, "-")}`, JSON.stringify(this.getValue()));

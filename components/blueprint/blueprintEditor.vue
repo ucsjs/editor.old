@@ -19,27 +19,7 @@
             :style="{ top: `${mouseHandlerFull.top}px`, left: `${mouseHandlerFull.left}px`}" 
             ref="mousePointerFull"
         ></div>
-
-        <!--<div class="bg-neutral-900 z-50 flex justify-between flex-row-reverse p-2 h-12 select-none">
-            <div class="flex">
-                <button class="text-white bg-blue-800 hover:bg-blue-900 px-2 py-1 flex align-middle mr-2" @click="resertPosition">
-                    <div>
-                        {{ $t("Reset") }}
-                    </div>                   
-                </button>
-
-                <button class="text-white bg-red-800 hover:bg-red-900 px-2 py-1 flex align-middle">
-                    <div>
-                        {{ $t("Run") }}
-                    </div>
-                    
-                    <div class="ml-2">
-                        <client-only><font-awesome-icon icon="fa-solid fa-play"/></client-only>
-                    </div>                    
-                </button>
-            </div>  
-        </div>-->
-
+        
         <div class="flex flex-row h-full relative">
             <!-- Canvas -->
             <div 

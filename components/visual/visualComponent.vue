@@ -32,6 +32,7 @@
                     (settings.metadata.moveble && !settings.static) ? 'cursor-move' : '',
                     'border w-full h-full relative overflow-hidden'
                 ]"
+                :title="settings.id"
             >     
                 <div ref="component" class="w-full h-full">
                     <div class="w-full h-full absolute z-40 text-black cursor-move"></div>
