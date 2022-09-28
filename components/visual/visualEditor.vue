@@ -177,8 +177,23 @@ export default {
     methods: {
         async loadComponents(){
             this.components = await useApi(`visual`, { method: "GET" });
+            await this.fixDefaultValues();
             this.$forceUpdate();
         },
+
+        async fixDefaultValues(){
+            for(let component of this.components){
+                for(let subComponent of component.components){
+                    if(component.componentsDafaults?.length > 0){
+                        for(let componentDefault of component.componentsDafaults){
+                            if(componentDefault.component == subComponent.component?.toLowerCase()){
+                                subComponent.default[componentDefault.property] = componentDefault.value;
+                            }
+                        }
+                    }
+                }
+            }
+        },  
 
         loadedCanvas(value){
             this.canvas = value;
@@ -310,7 +325,9 @@ export default {
         },
 
         async onDelete(){
-            if(this.mouseInCanvas){
+            console.log("onDelete", this.context)
+            if(this.context == "canvas" || this.context == "hierarchy"){
+                console.log("onDelete")
                 await this.$refs.canvas.onDelete();
                 this.saveState(true);
                 this.$forceUpdate();

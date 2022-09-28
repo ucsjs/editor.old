@@ -3056,6 +3056,11 @@ follow-redirects@^1.0.0:
   resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.1.tgz#0ca6a452306c9b276e4d3127483e29575e207ad5"
   integrity sha512-yLAMQs+k0b2m7cVxpS1VKJVvoz7SS9Td1zss3XRwXj+ZDH00RJgnuLx7E44wx02kQLrdM3aOOy+FpzS7+8OizA==
 
+fontawesome-5-icons-list@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/fontawesome-5-icons-list/-/fontawesome-5-icons-list-1.0.1.tgz#946a74343a132cd7550c3be1a97c3dae51e0745f"
+  integrity sha512-zA/gETfMoiBneyWOD7bRN76gKtfim+kF3llE4vHN/cniHX1iA9yivIsqknau8niE6EODhKU2P01hg6798nE7WA==
+
 formdata-polyfill@^4.0.10:
   version "4.0.10"
   resolved "https://registry.yarnpkg.com/formdata-polyfill/-/formdata-polyfill-4.0.10.tgz#24807c31c9d402e002ab3d8c720144ceb8848423"

@@ -6,6 +6,7 @@
         @contextmenu.prevent="openContextmenu" 
         @mousemove="handleDrag" 
         @click.stop="unselectComponent"
+        @mouseup="removeGhost"
     >
         <div class="absolute z-40 w-full" v-if="canvas.hierarchy" @click.stop="() => {}">
             <visual-hierarchy-item 
@@ -175,6 +176,7 @@ export default {
             }
             
             this.ghost = null;
+            this.state.hierarchy.ghost = null;
 
             setTimeout(async () => {
                 if(tmpItem && tmpItem.item)

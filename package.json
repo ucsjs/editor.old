@@ -43,6 +43,7 @@
     "core-js": "^3.6.5",
     "ejs": "^3.1.8",
     "firebase": "^9.9.4",
+    "fontawesome-5-icons-list": "^1.0.1",
     "golden-layout": "^2.5.0",
     "monaco-editor": "^0.34.0",
     "monaco-editor-vue3": "^0.1.6",

@@ -92,9 +92,12 @@ export default {
                     stop: true,
                     async handler(keys) {
                         try{
+                            console.log(_this.state.editor[0]);
                             if(_this.state.editor[0])
                                 _this.state.editor[0].onDelete();
-                        }catch(e){}
+                        }catch(e){
+                            console.log(e);
+                        }
                     }
                 },
                 {
@@ -235,7 +238,6 @@ export default {
             const layout = this.$refs.layout?.getLayout();
 
             if(layout){
-                console.log(layout.defaultLocationSelectors);
                 //const component = await layout.findFirstContentItemTypeByIdRecursive("Files", layout.rootItem);
                 //console.log(component);
                 /*if(opened)

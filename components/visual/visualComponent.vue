@@ -106,14 +106,20 @@ export default {
     },
 
     mounted(){
-        this.update();
+        this.update(true);
     },
 
     methods: {
         updateComponentStyle(updateSubComponents = true){
             let finalStyles = {};
             let ignoreStyles = ['width', 'height', 'top', 'left', 'right', 'bottom'];
-            let stylePixel = ["width", "height", "left", "top", "right", "bottom"]
+            let stylePixel = [
+                "width", "height", "left", "top", "right", "bottom", 
+                "padding-top", "padding-right", "padding-bottom", "padding-left",
+                "margin-top", "margin-right", "margin-bottom", "margin-left",
+                "border-bottom-width", "border-left-width", "border-right-width", "border-top-width",
+                "border-top-left-radius", "border-top-right-radius", "border-bottom-right-radius", "border-bottom-left-radius"
+            ]
 
             let defaultStyle = {
                 width: (this.transform.widthAuto) ? 'auto' : `${this.transform.width}px`, 
@@ -128,10 +134,22 @@ export default {
                     for(let property of component.properties){
                         
                         if(property.changeStyle){
-                            if(property.name == "color")
+                            if(typeof component.value[property.name] == "object" && component.value[property.name]?.hex)
                                 defaultStyle[property.changeStyle.styleVue] = component.value[property.name].hex;
                             else if(typeof component.value[property.name] == "object" && component.value[property.name]?.src)
-                                defaultStyle[property.changeStyle.styleVue] =component.value[property.name].src;
+                                defaultStyle[property.changeStyle.styleVue] = component.value[property.name].src;
+                            else if(component.value[`${property.name}Sufix`]){
+                                switch(component.value[`${property.name}Sufix`]){
+                                    case "px":
+                                    case "em":
+                                    case "%":
+                                        defaultStyle[property.changeStyle.styleVue] = component.value[property.name] + component.value[`${property.name}Sufix`];
+                                    break;
+                                    default:
+                                        defaultStyle[property.changeStyle.styleVue] = component.value[`${property.name}Sufix`];
+                                    break;
+                                }
+                            }  
                             else
                                 defaultStyle[property.changeStyle.styleVue] = component.value[property.name] + ((property.changeStyle.subfix) ? property.changeStyle.subfix : '');
                         }
@@ -154,9 +172,9 @@ export default {
                         
                     if(ignoreStyles.includes(key) && finalStyles[key])
                         delete finalStyles[key];
-
-                    if(stylePixel.includes(key) && finalStyles[key] && !finalStyles[key].includes("px"))
-                        finalStyles[key] = finalStyles[key] + "px";
+                                          
+                    //if(stylePixel.includes(key) && finalStyles[key] && !finalStyles[key].includes("px"))
+                    //    finalStyles[key] = finalStyles[key] + "px";
                 }
             }
 
@@ -198,7 +216,14 @@ export default {
                 for(let key in this.settings.components){
                     const component = this.settings.components[key];
 
-                    if(component.component === "Class" && !component.open && component.open !== true)
+                    if((
+                        component.component === "Class" ||
+                        component.component === "Transform" ||
+                        component.component === "Border" || 
+                        component.component === "Background" ||
+                        component.component === "Font") && 
+                        !component.open && component.open !== true
+                    )
                         component.open = false;
 
                     if(this.settings.componentsDafaults?.length > 0){
