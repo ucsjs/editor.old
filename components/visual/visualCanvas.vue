@@ -14,7 +14,7 @@
                 ref="mousePointer"
             ></div>
 
-            <div class="grid-contents block relative" @mousedown.left="move">
+            <div class="grid-contents block relative" @mousedown.left="move">                
                 <div class="justify-center items-center flex h-full">
                     <div 
                         class="m-auto overflow-hidden absolute z-40" 
@@ -25,9 +25,10 @@
                             transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`
                         }"
                         ref="canvas"
-                        @mousedown.left.stop="() => {}"
+                        @mousedown.left.stop="() => { selectItem(state.componentOver?.id) }"
                         @contextmenu.prevent="contextmenu" 
                         @mouseup.left="closeContextmenu"
+                        @click.stop="selectItem(state.componentOver?.id)"
                     >
                         <visual-component 
                             v-for="(component, key) in hierarchy" 
@@ -38,7 +39,6 @@
                             :selectedComponent="selectedComponent"
                             :tab="tab"
                             ref="components"
-                            @selectItem="selectItem"
                             @changeState="saveState"
                         ></visual-component>
 

@@ -162,16 +162,16 @@ export default {
             let tmpItem = null;
             let tmpRoot = null;
 
-            if(this.ghost){
-                if(this.ghost.item && this.ghost.root){
-                    tmpItem = this.ghost.item;
-                    tmpRoot = this.ghost.root;
+            if(this.state.hierarchy.ghost){
+                if(this.state.hierarchy.ghost.item && this.state.hierarchy.ghost.root){
+                    tmpItem = this.state.hierarchy.ghost.item;
+                    tmpRoot = this.state.hierarchy.ghost.root;
                 }
-                else if(this.ghost.item){
-                    tmpItem = this.ghost.item;
+                else if(this.state.hierarchy.ghost.item){
+                    tmpItem = this.state.hierarchy.ghost.item;
                 }
-                else if(this.ghost.id){
-                    tmpItem = this.ghost;
+                else if(this.state.hierarchy.ghost.id){
+                    tmpItem = this.state.hierarchy.ghost;
                 }
             }
             
@@ -290,6 +290,7 @@ export default {
 
         unselectComponent(){
             this.state.hierarchy.selectedItem = null;
+            this.state.contextMenu.open = false;
             this.$emit("selectComponent", null);
         }
     }

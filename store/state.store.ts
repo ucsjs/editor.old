@@ -46,7 +46,8 @@ export const useStateStore = defineStore({
         fileDialog: {
             open: false,
             cb: null,
-        }
+        },
+        componentOver: null,
     }),
     getters: {
         isAuthentication: (state) => {

@@ -82,365 +82,367 @@
 
             <div v-if="component.components">
                 <div v-for="(subComponent, key) in component.components" :key="key">
-                    <div class="bg-neutral-900 hover:bg-neutral-700 border-b border-black flex justify-between">
-                        <div class="flex flex-1 p-1 cursor-pointer" @click="toggle(subComponent)">
-                            <div class="pr-1 pl-1 w-6 text-sm">
-                                <client-only>
-                                    <font-awesome-icon icon="fa-solid fa-angle-down" v-if="subComponent.open" />
-                                    <font-awesome-icon icon="fa-solid fa-angle-right" v-if="!subComponent.open" />
-                                </client-only>
-                            </div>
-
-                            <div class="pr-2 text-sm">
-                                <client-only>
-                                    <font-awesome-icon :icon="subComponent.icon || subComponent.metadata.icon" />
-                                </client-only>
-                            </div>
-
-                            <div class="pr-2 text-sm">
-                                {{ subComponent.component || subComponent.metadata.namespace }}
-                            </div>
-                        </div>   
-                        
-                        <div class="flex justify-end">
-                            <!--<button class="mr-1 text-sm px-1 w-6 hover:bg-neutral-600">
-                                <font-awesome-icon icon="fa-solid fa-circle-question" />
-                            </button>-->
-
-                            <Menu as="div" class="relative">
-                                <div>
-                                    <MenuButton class="mr-1 text-sm px-0.5 w-6 h-full pt-1.5 hover:bg-neutral-600">
-                                        <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
-                                    </MenuButton>
+                    <div v-show="!(subComponent.component === 'Class' && component.metadata?.removeClass) && !(subComponent.component === 'Transform' && component.metadata?.removeTransform)">
+                        <div class="bg-neutral-900 hover:bg-neutral-700 border-b border-black flex justify-between">
+                            <div class="flex flex-1 p-1 cursor-pointer" @click="toggle(subComponent)">
+                                <div class="pr-1 pl-1 w-6 text-sm">
+                                    <client-only>
+                                        <font-awesome-icon icon="fa-solid fa-angle-down" v-if="subComponent.open" />
+                                        <font-awesome-icon icon="fa-solid fa-angle-right" v-if="!subComponent.open" />
+                                    </client-only>
                                 </div>
 
-                                <transition enter-active-class="transition ease-out duration-100" enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100" leave-active-class="transition ease-in duration-75" leave-from-class="transform opacity-100 scale-100" leave-to-class="transform opacity-0 scale-95">
-                                    <MenuItems class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-sm shadow-lg bg-neutral-800 text-neutral-100 border border-black py-1 ring-1 ring-black ring-opacity-5 focus:outline-none">
-                                        <MenuItem v-slot="{ active }">
-                                            <button 
-                                                :disabled="subComponent.metadata.fixed || subComponent.fixed" 
-                                                @click="removeComponent(key)" 
-                                                :class="[
-                                                    active && !subComponent.metadata.fixed && !subComponent.fixed ? 'bg-neutral-900' : '', 
-                                                    subComponent.metadata.fixed || subComponent.fixed ? 'text-neutral-500 cursor-default' : '',
-                                                    'block w-full px-4 py-2 text-sm text-neutral-100'
-                                                ]"
-                                            >
-                                                {{ $t("Remove Component") }}
-                                            </button>
-                                        </MenuItem>
-                                    </MenuItems>
-                                </transition>
-                            </Menu>
-                        </div>
-                    </div>
-
-                    <div class="bg-neutral-800 w-full border-b border-black text-sm text-neutral-400" v-if="subComponent.open && subComponent.value">
-                        <div class="py-2">                            
-                            <div 
-                                class="flex" 
-                                v-for="(property, keySubcomponent) in subComponent.properties"
-                                :key="keySubcomponent"
-                                @click="selectInput = { property, subComponent }"
-                            >
-                                <div v-if="property.type == 'BigText'" class="w-full p-2">
-                                    <textarea 
-                                        v-model="subComponent.value[property.name]"
-                                        v-if="property.type == 'BigText'"
-                                        class=" w-full h-56 p-1 bg-neutral-900 border-black"
-                                        placeholder="Text..."
-                                        @keyup="changeProperty(component)" 
-                                        @change="changeProperty(component)"
-                                    ></textarea>
+                                <div class="pr-2 text-sm">
+                                    <client-only>
+                                        <font-awesome-icon :icon="subComponent.icon || subComponent.metadata.icon" />
+                                    </client-only>
                                 </div>
-                                <div v-else class="flex-1 flex p-0.5 ">
-                                    <div class="w-3/6 h-7 flex ml-1">
-                                        <div class="mt-1" v-if="subComponent && subComponent.metadata && subComponent.metadata[`${property.name}Help`]">
-                                            <Tooltip :tooltipText="$t('Help')" position="right">
-                                                <a :href="subComponent.metadata[`${property.name}Help`]" target="_blank" class="text-sm ml-1 hover:bg-neutral-600">
-                                                    <font-awesome-icon icon="fa-solid fa-circle-question" />
-                                                </a>
-                                            </Tooltip>
-                                        </div>
 
-                                        <div class="ml-2 text-sm mt-1">{{ property.label || uppercaseFirstLetter(property.name) }}</div>
+                                <div class="pr-2 text-sm">
+                                    {{ subComponent.component || subComponent.metadata.namespace }}
+                                </div>
+                            </div>   
+                            
+                            <div class="flex justify-end">
+                                <!--<button class="mr-1 text-sm px-1 w-6 hover:bg-neutral-600">
+                                    <font-awesome-icon icon="fa-solid fa-circle-question" />
+                                </button>-->
+
+                                <Menu as="div" class="relative">
+                                    <div>
+                                        <MenuButton class="mr-1 text-sm px-0.5 w-6 h-full pt-1.5 hover:bg-neutral-600">
+                                            <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
+                                        </MenuButton>
                                     </div>
 
-                                    <div 
-                                        class="w-3/6 h-7 pr-2" 
-                                        v-if="subComponent"
-                                    >  
-                                        <div v-if="component?.editor && component.editor[subComponent.component] && component.editor[subComponent.component][property.name]">
-                                            <client-only placeholder="Loading...">
-                                                <dynamic-renderer 
-                                                    v-if="component.editor[subComponent.component][property.name].content && subComponent.value[property.name]"
-                                                    :component="{ ...component.editor[subComponent.component][property.name], value: subComponent.value[property.name] }"
-                                                    :default="subComponent.value[property.name]"
-                                                    @change="(v) => { 
-                                                        subComponent.value[property.name] = v;
-                                                        changeProperty(component) 
-                                                    }"
+                                    <transition enter-active-class="transition ease-out duration-100" enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100" leave-active-class="transition ease-in duration-75" leave-from-class="transform opacity-100 scale-100" leave-to-class="transform opacity-0 scale-95">
+                                        <MenuItems class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-sm shadow-lg bg-neutral-800 text-neutral-100 border border-black py-1 ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                            <MenuItem v-slot="{ active }">
+                                                <button 
+                                                    :disabled="subComponent.metadata.fixed || subComponent.fixed" 
+                                                    @click="removeComponent(key)" 
+                                                    :class="[
+                                                        active && !subComponent.metadata.fixed && !subComponent.fixed ? 'bg-neutral-900' : '', 
+                                                        subComponent.metadata.fixed || subComponent.fixed ? 'text-neutral-500 cursor-default' : '',
+                                                        'block w-full px-4 py-2 text-sm text-neutral-100'
+                                                    ]"
                                                 >
-                                                </dynamic-renderer>
-                                            </client-only>
-                                        </div>   
-                                        <div v-else-if="property.type == 'IconType'" class="text-white pt-1 h-full relative">
-                                            <div 
-                                                class="bg-neutral-900 border border-black text-white px-1 h-7 w-full rounded-sm cursor-pointer flex"
-                                                @keyup="changeProperty(component)" 
-                                                @change="changeProperty(component)"
-                                                @click="subComponent.value[property.name].open = (subComponent.value[property.name].open) ? !subComponent.value[property.name].open : true"
-                                            >
-                                                <div class="pt-0.5 w-4">  
-                                                    <font-awesome-icon :icon="subComponent.value[property.name].icon" /> 
-                                                </div>
+                                                    {{ $t("Remove Component") }}
+                                                </button>
+                                            </MenuItem>
+                                        </MenuItems>
+                                    </transition>
+                                </Menu>
+                            </div>
+                        </div>
 
-                                                <div class="pt-0.5 ml-2 w-24 overflow-hidden">
-                                                    {{ subComponent.value[property.name].icon }}
-                                                </div>
-
-                                                <div class="text-neutral-500">
-                                                    <font-awesome-icon icon="fa-solid fa-angle-down" />
-                                                </div>
+                        <div class="bg-neutral-800 w-full border-b border-black text-sm text-neutral-400" v-if="subComponent.open && subComponent.value">
+                            <div class="py-2">                            
+                                <div 
+                                    class="flex" 
+                                    v-for="(property, keySubcomponent) in subComponent.properties"
+                                    :key="keySubcomponent"
+                                    @click="selectInput = { property, subComponent }"
+                                >
+                                    <div v-if="property.type == 'BigText'" class="w-full p-2">
+                                        <textarea 
+                                            v-model="subComponent.value[property.name].content"
+                                            v-if="property.type == 'BigText'"
+                                            class=" w-full h-56 p-1 bg-neutral-900 border-black"
+                                            placeholder="Text..."
+                                            @keyup="changeProperty(component)" 
+                                            @change="changeProperty(component)"
+                                        ></textarea>
+                                    </div>
+                                    <div v-else class="flex-1 flex p-0.5 ">
+                                        <div class="w-3/6 h-7 flex ml-1">
+                                            <div class="mt-1" v-if="subComponent && subComponent.metadata && subComponent.metadata[`${property.name}Help`]">
+                                                <Tooltip :tooltipText="$t('Help')" position="right">
+                                                    <a :href="subComponent.metadata[`${property.name}Help`]" target="_blank" class="text-sm ml-1 hover:bg-neutral-600">
+                                                        <font-awesome-icon icon="fa-solid fa-circle-question" />
+                                                    </a>
+                                                </Tooltip>
                                             </div>
 
-                                            <div class="w-72 bg-neutral-800 border border-black shadow-lg right-0 absolute p-2 rounded-md mt-1" v-if="subComponent.value[property.name].open">
-                                                <div>
-                                                    <input v-model="search" class="w-full p-2 bg-neutral-900 rounded-md" :placeholder="$t('Search')" />
+                                            <div class="ml-2 text-sm mt-1">{{ property.label || uppercaseFirstLetter(property.name) }}</div>
+                                        </div>
+
+                                        <div 
+                                            class="w-3/6 h-7 pr-2" 
+                                            v-if="subComponent"
+                                        >  
+                                            <div v-if="component?.editor && component.editor[subComponent.component] && component.editor[subComponent.component][property.name]">
+                                                <client-only placeholder="Loading...">
+                                                    <dynamic-renderer 
+                                                        v-if="component.editor[subComponent.component][property.name].content && subComponent.value[property.name]"
+                                                        :component="{ ...component.editor[subComponent.component][property.name], value: subComponent.value[property.name] }"
+                                                        :default="subComponent.value[property.name]"
+                                                        @change="(v) => { 
+                                                            subComponent.value[property.name] = v;
+                                                            changeProperty(component) 
+                                                        }"
+                                                    >
+                                                    </dynamic-renderer>
+                                                </client-only>
+                                            </div>   
+                                            <div v-else-if="property.type == 'IconType'" class="text-white pt-1 h-full relative">
+                                                <div 
+                                                    class="bg-neutral-900 border border-black text-white px-1 h-7 w-full rounded-sm cursor-pointer flex"
+                                                    @keyup="changeProperty(component)" 
+                                                    @change="changeProperty(component)"
+                                                    @click="subComponent.value[property.name].open = (subComponent.value[property.name].open) ? !subComponent.value[property.name].open : true"
+                                                >
+                                                    <div class="pt-0.5 w-4">  
+                                                        <font-awesome-icon :icon="subComponent.value[property.name].icon" /> 
+                                                    </div>
+
+                                                    <div class="pt-0.5 ml-2 w-24 overflow-hidden">
+                                                        {{ subComponent.value[property.name].icon }}
+                                                    </div>
+
+                                                    <div class="text-neutral-500">
+                                                        <font-awesome-icon icon="fa-solid fa-angle-down" />
+                                                    </div>
                                                 </div>
 
-                                                <div class="bg-neutral-900 mt-2 h-72 p-2 rounded-md overflow-auto">
-                                                    <div class="grid grid-cols-5 gap-2 pr-2">
-                                                        <div 
-                                                            class="h-9 bg-neutral-800 hover:bg-neutral-700 rounded-lg p-2 text-center text-sm cursor-pointer"
-                                                            title="Empty"
-                                                            @click="() => {
-                                                                subComponent.value[property.name].icon = null;
-                                                                changeProperty(component);
-                                                                subComponent.value[property.name].open = false;
-                                                            }"
-                                                        ></div>
+                                                <div class="w-72 bg-neutral-800 border border-black shadow-lg right-0 absolute p-2 rounded-md mt-1" v-if="subComponent.value[property.name].open">
+                                                    <div>
+                                                        <input v-model="search" class="w-full p-2 bg-neutral-900 rounded-md" :placeholder="$t('Search')" />
+                                                    </div>
 
-                                                        <div 
-                                                            class="h-9 bg-neutral-800 hover:bg-neutral-700 rounded-lg p-2 text-center text-sm cursor-pointer"
-                                                            v-for="(item, key) of iconsFontAwesome.filter((item) => (search?.length > 2) ? ((new RegExp(search, 'i').test(item.search.join(','))) ? item : false) : item)"
-                                                            :key="key"
-                                                            :title="item"
-                                                            @click="() => {
-                                                                subComponent.value[property.name].icon = item.classes[0];
-                                                                changeProperty(component);
-                                                                subComponent.value[property.name].open = false;
-                                                            }"
-                                                        >
-                                                            <font-awesome-icon :icon="item.classes[0]" />
+                                                    <div class="bg-neutral-900 mt-2 h-72 p-2 rounded-md overflow-auto">
+                                                        <div class="grid grid-cols-5 gap-2 pr-2">
+                                                            <div 
+                                                                class="h-9 bg-neutral-800 hover:bg-neutral-700 rounded-lg p-2 text-center text-sm cursor-pointer"
+                                                                title="Empty"
+                                                                @click="() => {
+                                                                    subComponent.value[property.name].icon = null;
+                                                                    changeProperty(component);
+                                                                    subComponent.value[property.name].open = false;
+                                                                }"
+                                                            ></div>
+
+                                                            <div 
+                                                                class="h-9 bg-neutral-800 hover:bg-neutral-700 rounded-lg p-2 text-center text-sm cursor-pointer"
+                                                                v-for="(item, key) of iconsFontAwesome.filter((item) => (search?.length > 2) ? ((new RegExp(search, 'i').test(item.search.join(','))) ? item : false) : item)"
+                                                                :key="key"
+                                                                :title="item"
+                                                                @click="() => {
+                                                                    subComponent.value[property.name].icon = item.classes[0];
+                                                                    changeProperty(component);
+                                                                    subComponent.value[property.name].open = false;
+                                                                }"
+                                                            >
+                                                                <font-awesome-icon :icon="item.classes[0]" />
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div v-else-if="subComponent.metadata && subComponent.metadata[property.name]">
-                                            <select 
-                                                class="bg-neutral-900 border border-black text-white px-1 h-7 w-full rounded-sm"
-                                                v-model="subComponent.value[property.name]"
-                                                @change="changeProperty(component)"
-                                            >
-                                                <option 
-                                                    value="null" 
-                                                    :selected="(
-                                                        subComponent?.value[property.name] == null || 
-                                                        subComponent?.value[property.name] == undefined || 
-                                                        subComponent?.value[property.name] == '')"
-                                                ></option>
-                                                
-                                                <option 
-                                                    v-for="(option, key) in subComponent.metadata[property.name]" 
-                                                    :key="key" 
-                                                    :value="option" 
-                                                    :selected="(subComponent?.value[property.name]) === option"
-                                                >{{ option }}</option>
-                                            </select>
-                                        </div>
-                                        <div v-else-if="proprityPixel.includes(property.name)" class="flex">                                            
+                                            <div v-else-if="subComponent.metadata && subComponent.metadata[property.name]">
+                                                <select 
+                                                    class="bg-neutral-900 border border-black text-white px-1 h-7 w-full rounded-sm"
+                                                    v-model="subComponent.value[property.name]"
+                                                    @change="changeProperty(component)"
+                                                >
+                                                    <option 
+                                                        value="null" 
+                                                        :selected="(
+                                                            subComponent?.value[property.name] == null || 
+                                                            subComponent?.value[property.name] == undefined || 
+                                                            subComponent?.value[property.name] == '')"
+                                                    ></option>
+                                                    
+                                                    <option 
+                                                        v-for="(option, key) in subComponent.metadata[property.name]" 
+                                                        :key="key" 
+                                                        :value="option" 
+                                                        :selected="(subComponent?.value[property.name]) === option"
+                                                    >{{ option }}</option>
+                                                </select>
+                                            </div>
+                                            <div v-else-if="proprityPixel.includes(property.name)" class="flex">                                            
+                                                <input 
+                                                    class="bg-neutral-900 border border-r-0 border-black text-white px-1 h-7 text-sm w-full rounded-sm" 
+                                                    type="text" 
+                                                    v-model="subComponent.value[property.name]"
+                                                    @keyup="changeProperty(component)" 
+                                                    @change="changeProperty(component)"
+                                                />
+
+                                                <div v-if="property.name.includes('border')">
+                                                    <select 
+                                                        class="bg-neutral-900 border border-l-0 w-16 border-black text-white px-1 h-7 rounded-t-sm rounded-b-sm"
+                                                        v-model="subComponent.value[`${property.name}Sufix`]"
+                                                        @keyup="changeProperty(component)" 
+                                                        @change="changeProperty(component)"
+                                                    >
+                                                        <option 
+                                                            v-for="(option, key) in pxSufixBorder" 
+                                                            :key="key" 
+                                                            :value="option" 
+                                                            :selected="(subComponent?.value[`${property.name}Sufix`]) === option"
+                                                        >{{ option }}</option>
+                                                    </select>
+                                                </div>
+                                                <div v-else>
+                                                    <select 
+                                                        class="bg-neutral-900 border border-l-0 w-16 border-black text-white px-1 h-7 rounded-t-sm rounded-b-sm"
+                                                        v-model="subComponent.value[`${property.name}Sufix`]"
+                                                        @keyup="changeProperty(component)" 
+                                                        @change="changeProperty(component)"
+                                                    >
+                                                        <option 
+                                                            v-for="(option, key) in pxSufix" 
+                                                            :key="key" 
+                                                            :value="option" 
+                                                            :selected="(subComponent?.value[`${property.name}Sufix`]) === option"
+                                                        >{{ option }}</option>
+                                                    </select>
+                                                </div>                                            
+                                            </div>
                                             <input 
-                                                class="bg-neutral-900 border border-r-0 border-black text-white px-1 h-7 text-sm w-full rounded-sm" 
+                                                v-else-if="property.type == 'String' || property.type == 'string'" 
+                                                class="bg-neutral-900 border border-black text-white px-1 h-7 text-sm w-full rounded-sm" 
                                                 type="text" 
                                                 v-model="subComponent.value[property.name]"
                                                 @keyup="changeProperty(component)" 
                                                 @change="changeProperty(component)"
                                             />
-
-                                            <div v-if="property.name.includes('border')">
-                                                <select 
-                                                    class="bg-neutral-900 border border-l-0 w-16 border-black text-white px-1 h-7 rounded-t-sm rounded-b-sm"
-                                                    v-model="subComponent.value[`${property.name}Sufix`]"
-                                                    @keyup="changeProperty(component)" 
-                                                    @change="changeProperty(component)"
-                                                >
-                                                    <option 
-                                                        v-for="(option, key) in pxSufixBorder" 
-                                                        :key="key" 
-                                                        :value="option" 
-                                                        :selected="(subComponent?.value[`${property.name}Sufix`]) === option"
-                                                    >{{ option }}</option>
-                                                </select>
+                                            <input 
+                                                v-else-if="property.type == 'number' || property.type == 'Number' || property.type == 'Int'" 
+                                                class="bg-neutral-900 border border-black text-white px-1 h-7 text-sm w-full rounded-sm" 
+                                                type="text" 
+                                                v-model="subComponent.value[property.name]"
+                                                @keyup="changeProperty(component)" 
+                                                @change="changeProperty(component)"
+                                            />
+                                            <div v-else-if="property.type == 'boolean' || property.type == 'Boolean' || property.type == 'Bool'" class="text-white pt-1">
+                                                <label :for="property.name" class="relative items-center cursor-pointer">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        v-model="subComponent.value[property.name]" 
+                                                        :id="property.name" 
+                                                        class="sr-only peer"
+                                                        @change="changeProperty(component)"
+                                                    >
+                                                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full p after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                                </label>
                                             </div>
+                                            <div v-else-if="property.type == 'range' || property.type == 'Range'" class="flex h-6">
+                                                <div class="w-4/6 mr-2">
+                                                    <input      
+                                                        v-model="subComponent.value[property.name]"                                   
+                                                        id="default-range" 
+                                                        type="range" 
+                                                        :min="property.default?.min" 
+                                                        :max="property.default?.max"
+                                                        :step="property.default?.step"
+                                                        class="w-full h-1 bg-gray-200 rounded-lg appearance-none range-sm cursor-pointer dark:bg-gray-700"
+                                                        @change="changeProperty(component)"
+                                                    >
+                                                </div>
+                                                <div class="w-2/6">
+                                                    <input 
+                                                        v-model="subComponent.value[property.name]" 
+                                                        class="bg-neutral-900 border border-black text-white px-1 h-6 text-sm w-full rounded-sm" 
+                                                        type="text"
+                                                        @keyup="changeProperty(component)"
+                                                        @change="changeProperty(component)"
+                                                    />
+                                                </div>
+                                            </div>                                  
+                                            <div v-else-if="property.type == 'object' || property.type == 'Object' || property.type == 'JSON'">
+                                                <div class="flex flex-row">
+                                                    <div>
+                                                        <Tooltip :tooltipText="$t('Edit')" position="right">
+                                                            <button class="ml-2 hover:text-neutral-500" @click="$emit('openObjectEdit', subComponent, property, keyItem)">
+                                                                <client-only><font-awesome-icon icon="fa-solid fa-edit" /></client-only>
+                                                            </button>
+                                                        </Tooltip>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div v-else-if="property.type == 'color' || property.type == 'Color'" class="text-white pt-1 h-full relative" @click.stop="() => {}">
+                                                <div 
+                                                    class="border border-black h-full flex justify-end relative text-sm" 
+                                                    :style="{backgroundColor: subComponent.value[property.name].hex || property.default?.hex || '#FFFFFF'}"                                                                                             
+                                                >
+                                                    <input 
+                                                        class="border-0 w-full text-sm" 
+                                                        type="text" 
+                                                        v-model="subComponent.value[property.name].hex"                                                 
+                                                        :style="{backgroundColor: (subComponent.value[property.name].hex || property.default?.hex || '#FFFFFF')}"
+                                                        @change="changeProperty(component)" 
+                                                        @input="changeProperty(component)" 
+                                                        @click.prevent="property.open = true"
+                                                    />
+
+                                                    <div class="absolute top-6 z-50" v-if="property.open">
+                                                        <Chrome v-model="subComponent.value[property.name]"></Chrome>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div v-else-if="(property.type == 'image' || property.type == 'Image' || property.type == 'ImageType')">
+                                                <div 
+                                                    class="border border-black h-full flex justify-end relative text-sm" 
+                                                    v-if="subComponent.value[property.name]"                                                                                         
+                                                >
+                                                    <input 
+                                                        type="hidden" 
+                                                        v-model="subComponent.value[property.name]" 
+                                                        @change="changeProperty(component)" 
+                                                        @input="changeProperty(component)" 
+                                                    />
+
+                                                    <input 
+                                                        v-if="subComponent.value[property.name]"
+                                                        class="bg-neutral-900 border border-black text-white px-1 h-6 text-sm w-full rounded-sm"
+                                                        type="text" 
+                                                        v-model="subComponent.value[property.name].src"
+                                                        @change="changeProperty(component)" 
+                                                        @input="changeProperty(component)" 
+                                                    />
+
+                                                    <button 
+                                                        class="px-1 hover:bg-neutral-900" 
+                                                        @click="state.fileDialogOpen((path) => { 
+                                                            subComponent.value[property.name].src = path;
+                                                            changeProperty(component)
+                                                            $forceUpdate() 
+                                                        })"
+                                                    >
+                                                        <Tooltip :tooltipText="$t('Upload')" position="left">
+                                                            <font-awesome-icon icon="fa-solid fa-cloud-arrow-up" />
+                                                        </Tooltip>
+                                                    </button>
+                                                </div>
+                                            </div>                                        
                                             <div v-else>
-                                                <select 
-                                                    class="bg-neutral-900 border border-l-0 w-16 border-black text-white px-1 h-7 rounded-t-sm rounded-b-sm"
-                                                    v-model="subComponent.value[`${property.name}Sufix`]"
-                                                    @keyup="changeProperty(component)" 
-                                                    @change="changeProperty(component)"
-                                                >
-                                                    <option 
-                                                        v-for="(option, key) in pxSufix" 
-                                                        :key="key" 
-                                                        :value="option" 
-                                                        :selected="(subComponent?.value[`${property.name}Sufix`]) === option"
-                                                    >{{ option }}</option>
-                                                </select>
-                                            </div>                                            
-                                        </div>
-                                        <input 
-                                            v-else-if="property.type == 'String' || property.type == 'string'" 
-                                            class="bg-neutral-900 border border-black text-white px-1 h-7 text-sm w-full rounded-sm" 
-                                            type="text" 
-                                            v-model="subComponent.value[property.name]"
-                                            @keyup="changeProperty(component)" 
-                                            @change="changeProperty(component)"
-                                        />
-                                        <input 
-                                            v-else-if="property.type == 'number' || property.type == 'Number' || property.type == 'Int'" 
-                                            class="bg-neutral-900 border border-black text-white px-1 h-7 text-sm w-full rounded-sm" 
-                                            type="text" 
-                                            v-model="subComponent.value[property.name]"
-                                            @keyup="changeProperty(component)" 
-                                            @change="changeProperty(component)"
-                                        />
-                                        <div v-else-if="property.type == 'boolean' || property.type == 'Boolean' || property.type == 'Bool'" class="text-white pt-1">
-                                            <label :for="property.name" class="relative items-center cursor-pointer">
-                                                <input 
-                                                    type="checkbox" 
-                                                    v-model="subComponent.value[property.name]" 
-                                                    :id="property.name" 
-                                                    class="sr-only peer"
-                                                    @change="changeProperty(component)"
-                                                >
-                                                <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full p after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                                            </label>
-                                        </div>
-                                        <div v-else-if="property.type == 'range' || property.type == 'Range'" class="flex h-6">
-                                            <div class="w-4/6 mr-2">
-                                                <input      
-                                                    v-model="subComponent.value[property.name]"                                   
-                                                    id="default-range" 
-                                                    type="range" 
-                                                    :min="property.default?.min" 
-                                                    :max="property.default?.max"
-                                                    :step="property.default?.step"
-                                                    class="w-full h-1 bg-gray-200 rounded-lg appearance-none range-sm cursor-pointer dark:bg-gray-700"
-                                                    @change="changeProperty(component)"
-                                                >
-                                            </div>
-                                            <div class="w-2/6">
-                                                <input 
-                                                    v-model="subComponent.value[property.name]" 
-                                                    class="bg-neutral-900 border border-black text-white px-1 h-6 text-sm w-full rounded-sm" 
-                                                    type="text"
-                                                    @keyup="changeProperty(component)"
-                                                    @change="changeProperty(component)"
-                                                />
-                                            </div>
-                                        </div>                                  
-                                        <div v-else-if="property.type == 'object' || property.type == 'Object' || property.type == 'JSON'">
-                                            <div class="flex flex-row">
-                                                <div>
-                                                    <Tooltip :tooltipText="$t('Edit')" position="right">
-                                                        <button class="ml-2 hover:text-neutral-500" @click="$emit('openObjectEdit', subComponent, property, keyItem)">
-                                                            <client-only><font-awesome-icon icon="fa-solid fa-edit" /></client-only>
-                                                        </button>
-                                                    </Tooltip>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div v-else-if="property.type == 'color' || property.type == 'Color'" class="text-white pt-1 h-full relative" @click.stop="() => {}">
-                                            <div 
-                                                class="border border-black h-full flex justify-end relative text-sm" 
-                                                :style="{backgroundColor: subComponent.value[property.name].hex || property.default?.hex || '#FFFFFF'}"                                                                                             
-                                            >
-                                                <input 
-                                                    class="border-0 w-full text-sm" 
-                                                    type="text" 
-                                                    v-model="subComponent.value[property.name].hex"                                                 
-                                                    :style="{backgroundColor: (subComponent.value[property.name].hex || property.default?.hex || '#FFFFFF')}"
-                                                    @change="changeProperty(component)" 
-                                                    @input="changeProperty(component)" 
-                                                    @click.prevent="property.open = true"
-                                                />
-
-                                                <div class="absolute top-6 z-50" v-if="property.open">
-                                                    <Chrome v-model="subComponent.value[property.name]"></Chrome>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div v-else-if="(property.type == 'image' || property.type == 'Image' || property.type == 'ImageType')">
-                                            <div 
-                                                class="border border-black h-full flex justify-end relative text-sm" 
-                                                v-if="subComponent.value[property.name]"                                                                                         
-                                            >
-                                                <input 
-                                                    type="hidden" 
-                                                    v-model="subComponent.value[property.name]" 
-                                                    @change="changeProperty(component)" 
-                                                    @input="changeProperty(component)" 
-                                                />
-
-                                                <input 
-                                                    v-if="subComponent.value[property.name]"
-                                                    class="bg-neutral-900 border border-black text-white px-1 h-6 text-sm w-full rounded-sm"
-                                                    type="text" 
-                                                    v-model="subComponent.value[property.name].src"
-                                                    @change="changeProperty(component)" 
-                                                    @input="changeProperty(component)" 
-                                                />
-
-                                                <button 
-                                                    class="px-1 hover:bg-neutral-900" 
-                                                    @click="state.fileDialogOpen((path) => { 
-                                                        subComponent.value[property.name].src = path;
-                                                        changeProperty(component)
-                                                        $forceUpdate() 
-                                                    })"
-                                                >
-                                                    <Tooltip :tooltipText="$t('Upload')" position="left">
-                                                        <font-awesome-icon icon="fa-solid fa-cloud-arrow-up" />
-                                                    </Tooltip>
-                                                </button>
-                                            </div>
-                                        </div>                                        
-                                        <div v-else>
-                                            <div 
-                                                :class="[
-                                                    (selectInput?.property.id === property.id && subComponent.value[property.name]) ? 'border-blue-700': '',
-                                                    (state.hierarchy.ghost) ? 'hover:border-blue-700 hover:cursor-copy' : '',
-                                                    'border border-black h-full flex justify-end relative text-sm rounded-sm'
-                                                ]"  
-                                                @mouseup.stop="dropComponent(subComponent, property.name, property.type, component)"                                                                                     
-                                            >
-                                                <div class="px-1 mt-0.5 bg-neutral-900 cursor-default">
-                                                    <font-awesome-icon icon="fa-solid fa-cube" />
-                                                </div>
-
-                                                <input 
+                                                <div 
                                                     :class="[
-                                                        (state.hierarchy.ghost) ? 'hover:cursor-copy' : '',
-                                                        'bg-neutral-900 border-transparent text-white px-1 h-6 text-sm w-full rounded-sm'
-                                                    ]"
-                                                    type="text" 
-                                                    :value="subComponent.value[property.name]?.id"
-                                                    disabled="disabled"
-                                                    @change="changeProperty(component)" 
-                                                    @input="changeProperty(component)" 
-                                                />
+                                                        (selectInput?.property.id === property.id && subComponent.value[property.name]) ? 'border-blue-700': '',
+                                                        (state.hierarchy.ghost) ? 'hover:border-blue-700 hover:cursor-copy' : '',
+                                                        'border border-black h-full flex justify-end relative text-sm rounded-sm'
+                                                    ]"  
+                                                    @mouseup.stop="dropComponent(subComponent, property.name, property.type, component)"                                                                                     
+                                                >
+                                                    <div class="px-1 mt-0.5 bg-neutral-900 cursor-default">
+                                                        <font-awesome-icon icon="fa-solid fa-cube" />
+                                                    </div>
+
+                                                    <input 
+                                                        :class="[
+                                                            (state.hierarchy.ghost) ? 'hover:cursor-copy' : '',
+                                                            'bg-neutral-900 border-transparent text-white px-1 h-6 text-sm w-full rounded-sm'
+                                                        ]"
+                                                        type="text" 
+                                                        :value="subComponent.value[property.name]?.id"
+                                                        disabled="disabled"
+                                                        @change="changeProperty(component)" 
+                                                        @input="changeProperty(component)" 
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
