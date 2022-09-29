@@ -1,30 +1,95 @@
 <template>
-    <client-only>
-        <!-- eslint-disable -->
-        <vue-drag-resize  
-            :style="{ 
-                position: (transform.position) ? transform.position : '' ,
-                width: returnValueWithSuffix('width', transform),
-            }"
-            :initH="parseInt(transform.height)"
-            :minW="16"
-            :minH="16"
-            v-model:x="resizeData.x"
-            v-model:y="resizeData.y"
-            v-model:w="resizeData.w"
-            v-model:h="resizeData.h"
-            v-model:active="resizeData.active"                  
-            :draggable="!settings.static && selectedComponent?.id == settings.id"
-            :resizable="!settings.static && selectedComponent?.id == settings.id"
-            :parent="settings.lockBox"            
-            @dragging="(d) => resizeOrMove(d, false)"
-            @resizing="(d) =>resizeOrMove(d, false)"
-            @resize-end="(d) =>resizeOrMove(d, true)"
-            @drag-end="(d) => resizeOrMove(d, true)"            
-            v-if="settings && resizeData"
-        > 
-            <div             
-                v-if="resizeData"
+    <div :class="[
+        (settings.visibility) ? 'visible' : 'invisible',
+        (!settings.smView && viewport?.type == 'mobile') ? 'opacity-50' : '',
+        (!settings.mdView && viewport?.type == 'tablet') ? 'opacity-50' : '',
+        (!settings.lgView && viewport?.type == 'desktop') ? 'opacity-50' : '',
+    ]">
+        <client-only>
+            <!-- eslint-disable -->
+            <vue-drag-resize  
+                :style="{ 
+                    position: (transform.position) ? transform.position : '' ,
+                    width: returnValueWithSuffix('width', transform),
+                }"
+                :initH="parseInt(transform.height)"
+                :minW="16"
+                :minH="16"
+                v-model:x="resizeData.x"
+                v-model:y="resizeData.y"
+                v-model:w="resizeData.w"
+                v-model:h="resizeData.h"
+                v-model:active="resizeData.active"                  
+                :draggable="!settings.static && selectedComponent?.id == settings.id"
+                :resizable="!settings.static && selectedComponent?.id == settings.id"
+                @dragging="(d) => resizeOrMove(d, false)"
+                @resizing="(d) =>resizeOrMove(d, false)"
+                @resize-end="(d) =>resizeOrMove(d, true)"
+                @drag-end="(d) => resizeOrMove(d, true)"            
+                v-if="settings && resizeData && selectedComponent?.id == settings.id"
+            > 
+                <div             
+                    v-if="resizeData"
+                    :class="[
+                        (selectedComponent?.id == settings.id) ? 'border-red-300' : 'border-purple-200 hover:border-purple-500 border-dashed',
+                        (settings.metadata.moveble && !settings.static) ? 'cursor-move' : '',
+                        'border w-full h-full absolute overflow-hidden'
+                    ]"
+                    :title="settings.id"
+                    @mouseenter="() => { state.componentOver  = settings }"
+                    @mouseleave="() => { state.componentOver = null }"
+                    @click="$emit('selectItem', settings?.id)"
+                >     
+                    <div 
+                        :class="[
+                            (settings.metadata.moveble && !settings.static) ? 'cursor-move' : '',
+                            'bg-transparent w-full h-full absolute top-0 left-0 bottom-0 right-0 z-50'
+                        ]" 
+                        v-if="settings.hierarchy.length <= 0"
+                    ></div>
+
+                    <div 
+                        ref="component" 
+                        class="w-full h-full absolute"
+                    >
+                        <client-only placeholder="Loading...">
+                            <dynamic-renderer 
+                                v-if="settings && style" 
+                                class="w-full h-full absolute"
+                                :style="style"
+                                :component="settings"
+                            >
+                                <template v-if="settings?.hierarchy">  
+                                    <div>                     
+                                        <visual-component 
+                                            v-for="(subcomponent, key) in settings?.hierarchy" 
+                                            :key="key" 
+                                            :componentIndex="key"
+                                            :settings="subcomponent"
+                                            :editorOffset="editorOffset"
+                                            :selectedComponent="selectedComponent"
+                                            :tab="tab"
+                                            :viewport="viewport"
+                                            @selectItem="$emit('selectItem', subcomponent?.id)"
+                                            @saveState="$emit('saveState')"
+                                            @click.stop="$emit('selectItem', subcomponent?.id)"
+                                        ></visual-component>
+                                    </div>  
+                                </template>
+                            </dynamic-renderer>
+                        </client-only>
+                    </div>
+                </div>
+            </vue-drag-resize>
+            <div 
+                v-else
+                :style="{
+                    position: (transform.position) ? transform.position : '' ,
+                    width: (this.settings.metadata.removeTransform) ? '100%' : returnValueWithSuffix('width', transform),
+                    height: (this.settings.metadata.removeTransform) ? '100%': returnValueWithSuffix('height', transform),
+                    top: (this.settings.metadata.removeTransform) ? '0px' : returnValueWithSuffix('top', transform),
+                    left: (this.settings.metadata.removeTransform) ? '0px' : returnValueWithSuffix('left', transform)
+                }"            
                 :class="[
                     (selectedComponent?.id == settings.id) ? 'border-red-300' : 'border-purple-200 hover:border-purple-500 border-dashed',
                     (settings.metadata.moveble && !settings.static) ? 'cursor-move' : '',
@@ -34,12 +99,10 @@
                 @mouseenter="() => { state.componentOver  = settings }"
                 @mouseleave="() => { state.componentOver = null }"
                 @click="$emit('selectItem', settings?.id)"
-            >     
-                <div class="bg-transparent w-full h-full absolute top-0 left-0 bottom-0 right-0 z-50" v-if="settings.hierarchy.length <= 0"></div>
-
+            >
                 <div 
                     ref="component" 
-                    class="w-full h-full relative"
+                    class="w-full h-full absolute"
                 >
                     <client-only placeholder="Loading...">
                         <dynamic-renderer 
@@ -58,6 +121,7 @@
                                         :editorOffset="editorOffset"
                                         :selectedComponent="selectedComponent"
                                         :tab="tab"
+                                        :viewport="viewport"
                                         @selectItem="$emit('selectItem', subcomponent?.id)"
                                         @saveState="$emit('saveState')"
                                         @click.stop="$emit('selectItem', subcomponent?.id)"
@@ -68,8 +132,8 @@
                     </client-only>
                 </div>
             </div>
-        </vue-drag-resize>
-    </client-only>
+        </client-only>
+    </div>
 </template>
 
 <style>
@@ -86,6 +150,7 @@ export default {
 
     props: {
         tab: { type: Object },
+        viewport: { type: Object },
         selectedComponent: { 
             type: Object,
             default: null 
@@ -206,7 +271,6 @@ export default {
                     this.style = finalStyles;
             }
             catch(e){}
-            
         },
 
         update(updateStyle = true){
@@ -218,6 +282,9 @@ export default {
                     if(!this.settings.visibility && this.settings.visibility != false)
                         this.settings.visibility = true;
 
+                    if(!this.settings.static && this.settings.metadata.static)
+                        this.settings.static = this.settings.metadata.static;
+
                     if(!this.settings.static && this.settings.static != false)
                         this.settings.static = false;
 
@@ -226,7 +293,23 @@ export default {
 
                     for(let key in this.settings.components)
                         this.componentsIndex[this.settings.components[key].component] = key;
-                                
+                        
+                    //Views
+                    if(!this.settings.smView && this.settings.smView != false)
+                        this.settings.smView = true;
+
+                    if(!this.settings.mdView && this.settings.mdView != false)
+                        this.settings.mdView = true;
+
+                    if(!this.settings.lgView && this.settings.lgView != false)
+                        this.settings.lgView = true;
+                    
+                    if(!this.settings.xlView && this.settings.xlView != false)
+                        this.settings.xlView = true;
+
+                    if(!this.settings['2xlView'] && this.settings['2xlView'] != false)
+                        this.settings['2xlView'] = true;
+
                     //Transform
                     this.transformComponent = this.getSubcomponent("Transform");
 
@@ -269,10 +352,10 @@ export default {
                     }
 
                     this.resizeData = {
-                        w: parseInt(this.transform.width),
-                        h: parseInt(this.transform.height),
-                        x: parseInt(this.transform.left),
-                        y: parseInt(this.transform.top),
+                        w: (this.settings.metadata.removeTransform) ? 0 : parseInt(this.transform.width),
+                        h: (this.settings.metadata.removeTransform) ? 0 : parseInt(this.transform.height),
+                        x: (this.settings.metadata.removeTransform) ? 0 : parseInt(this.transform.left),
+                        y: (this.settings.metadata.removeTransform) ? 0 : parseInt(this.transform.top),
                         active: (this.selectedComponent?.id == this.settings.id)
                     }
 
@@ -331,18 +414,16 @@ export default {
 
         returnValueWithSuffix(namespace, data){
             const sufix = data[`${namespace}Sufix`] || 'px';
+            const lengths = ["px", "cm", "mm", "in", "pt", "pc", "em", "ex", "ch", "rem", "vw", "vh", "vmin", "vmax"]
 
-            switch(sufix){
-                case "px":
-                case "em":
-                case "%":
-                case "rem": return `${data[namespace]}${sufix}`;
-                default : return sufix;
-            }
+            if(lengths.includes(sufix))
+                return `${data[namespace]}${sufix}`;
+            else
+                return sufix;
         },
 
         resizeOrMove(newRect, updateComponent) {
-            if(newRect.x && newRect.y) { 
+            if(newRect.x && newRect.y && this.settings.metadata.moveble) { 
                 if(updateComponent){
                     this.transformComponent.value.left = newRect.x;
                     this.transformComponent.value.top = newRect.y;
@@ -353,7 +434,7 @@ export default {
                 this.updateComponentStyle(false);
             }                
              
-            if(newRect.w && newRect.h){       
+            if(newRect.w && newRect.h && this.settings.metadata.resizable){       
                 if(updateComponent){         
                     this.transformComponent.value.width = newRect.w;
                     this.transformComponent.value.height = newRect.h;

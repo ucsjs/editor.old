@@ -46,7 +46,13 @@ export default {
     },
 
     mounted(){
-        this.colors = this.modelValue;
+        if(!this.modelValue){
+            this.$emit('update:modelValue', { hex: "#FFFFFF" });
+            this.colors = { hex: "#FFFFFF" };
+        }
+        else{
+            this.colors = this.modelValue;
+        }
     },
 
     methods: {

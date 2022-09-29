@@ -5,7 +5,7 @@
         @mouseup="dropComponent(null)"
     >
         <div v-if="component">
-            <div class="bg-neutral-800 p-2 flex">
+            <div class="bg-neutral-800 p-2 flex" v-if="component.namespace !== 'Body'">
                 <div class="mr-2">
                     <div class="h-10 w-10 text-3xl align-middle text-center">
                         <client-only>
@@ -16,12 +16,13 @@
 
                 <div class="flex flex-col w-full">
                     <div class="flex flex-1">
-                        <div class="mr-2">
+                        <div class="mr-2" v-if="component.namespace !== 'Body'">
                             <input 
                                 id="visibility" 
                                 type="checkbox" 
                                 v-model="component.visibility"
                                 class="w-4 h-4 text-blue-600 rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+                                @change="changeProperty"
                             >
                         </div>
 
@@ -30,13 +31,14 @@
                                 class="bg-neutral-900 border border-black text-white px-1 h-6 text-sm w-full rounded-sm" 
                                 type="text" 
                                 v-model="component.label"
+                                :disabled="component.namespace == 'Body'"
                                 @keyup="changeProperty" 
                                 @change="changeProperty"
                             />
                         </div>
                     </div>
 
-                    <div class="flex">
+                    <div class="flex" v-if="component.namespace !== 'Body'">
                         <div class="mr-3 flex pt-1.5">
                             <input 
                                 id="static" 
@@ -58,11 +60,14 @@
 
                             <label for="lockBox" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Lock Viewport</label>
                         </div>
-                    </div>                    
+                    </div>  
                 </div>
             </div>
 
-            <div class="bg-neutral-700 p-1 text-sm border-t border-b border-black">
+            <div 
+                v-if="component.namespace !== 'Body'"
+                class="bg-neutral-700 p-1 text-sm border-t border-b border-black"
+            >
                 <select 
                     id="events" 
                     v-model="component.events" 
@@ -78,6 +83,81 @@
                         :selected="component.events == tab"
                     >{{ uppercaseFirstLetter(tab) }}</option>
                 </select>  
+            </div>
+
+            <div 
+                v-if="component.namespace !== 'Body'"
+                class="bg-neutral-900 p-1 text-sm border-t border-b border-black flex justify-center"
+            >
+                <div class="flex">
+                    <div class="mr-3 flex">
+                        <input 
+                            id="mobile" 
+                            type="checkbox" 
+                            v-model="component.smView"
+                            class="w-4 h-4 text-blue-600 rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+                            @change="changeProperty"
+                        >
+
+                        <label for="mobile" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">SM</label>
+                    </div>
+                </div>
+
+                <div class="flex">
+                    <div class="mr-3 flex">
+                        <input 
+                            id="tablet" 
+                            type="checkbox" 
+                            v-model="component.mdView"
+                            class="w-4 h-4 text-blue-600 rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+                            @change="changeProperty"
+                        >
+
+                        <label for="tablet" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">MD</label>
+                    </div>
+                </div>
+
+                <div class="flex">
+                    <div class="mr-3 flex">
+                        <input 
+                            id="desktop" 
+                            type="checkbox" 
+                            v-model="component.lgView"
+                            class="w-4 h-4 text-blue-600 rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+                            @change="changeProperty"
+                        >
+
+                        <label for="desktop" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">LG</label>
+                    </div>
+                </div>
+
+                <div class="flex">
+                    <div class="mr-3 flex">
+                        <input 
+                            id="xl" 
+                            type="checkbox" 
+                            v-model="component['xlView']"
+                            class="w-4 h-4 text-blue-600 rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+                            @change="changeProperty"
+                        >
+
+                        <label for="xl" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">XL</label>
+                    </div>
+                </div>
+
+                <div class="flex">
+                    <div class="mr-3 flex">
+                        <input 
+                            id="2xl" 
+                            type="checkbox" 
+                            v-model="component['2xlView']"
+                            class="w-4 h-4 text-blue-600 rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+                            @change="changeProperty"
+                        >
+
+                        <label for="2xl" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">2XL</label>
+                    </div>
+                </div>
             </div>
 
             <div v-if="component.components">
@@ -99,7 +179,7 @@
                                 </div>
 
                                 <div class="pr-2 text-sm">
-                                    {{ subComponent.component || subComponent.metadata.namespace }}
+                                    {{ subComponent.metadata.label || subComponent.component || subComponent.metadata.namespace }}
                                 </div>
                             </div>   
                             
@@ -274,10 +354,6 @@ export default {
     },
 
     methods: {
-        printf(){
-            console.log(arguments)
-        },
-
         async loadComponents(){
             this.components = await useApi(`visual/subcomponents`, { method: "GET" });
             this.sortComponentsCategories();

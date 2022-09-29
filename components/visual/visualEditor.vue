@@ -212,7 +212,7 @@ export default {
         },
 
         unselectComponent(){
-            this.selectedComponent = null;
+            this.selectedComponent = this.$refs.canvas.body;
             this.$forceUpdate();
         },
 
@@ -283,14 +283,21 @@ export default {
         },
 
         async changeProperty(component){
-            await this.$refs.canvas.updateComponent(component);
-            const componentUpdated = await this.$refs.canvas?.getComponent(component.id, this.$refs.canvas);
+            if(component.namespace == "Body"){
+                this.$refs.canvas.body = component;
+                this.$refs.canvas.style = this.$refs.canvas.getStyle(this.$refs.canvas.body);
+                this.$refs.canvas.saveState(true);
+            }
+            else{
+                await this.$refs.canvas.updateComponent(component);
+                const componentUpdated = await this.$refs.canvas?.getComponent(component.id, this.$refs.canvas);
 
-            if(componentUpdated)
-                this.selectedComponent = componentUpdated;
+                if(componentUpdated)
+                    this.selectedComponent = componentUpdated;
 
-            this.$refs.canvas.saveState(true);
-            this.$forceUpdate();
+                this.$refs.canvas.saveState(true);
+                this.$forceUpdate();
+            }
         },
 
         addComponent(component){
@@ -326,7 +333,6 @@ export default {
 
         async onDelete(){
             if(this.context == "canvas" || this.context == "hierarchy"){
-                console.log("onDelete")
                 await this.$refs.canvas.onDelete();
                 this.saveState(true);
                 this.$forceUpdate();
@@ -343,6 +349,5 @@ export default {
             }));
         }
     }
-
 }
 </script>

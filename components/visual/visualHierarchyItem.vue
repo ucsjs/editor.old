@@ -11,9 +11,6 @@
                 state.darktheme ? 'text-white hover:bg-neutral-800' : 'hover:bg-neutral-200', 
                 'p-1 cursor-default flex select-none'
             ]" 
-            @mousedown.left="createGhost(item, root)"
-            @click.left="selectItem(item)"
-            @click.right="selectItem(item)"
         >
             <div :style="{ paddingLeft: `${padding*20}px` }" class="flex">
                 <div 
@@ -75,8 +72,7 @@
                     :item="subItem" 
                     :tab="tab"
                     :padding="padding+1" 
-                    @createGhost="createGhost(subItem, item)"
-                    @selectItem="selectItem(subItem)" 
+                    @createGhost="createGhost(subItem, item)" 
                 />
             </div>
         </div>
@@ -91,7 +87,8 @@ export default {
         padding: { type: Number },
         item: { type: Object },
         tab: { type: Object },
-        root: { type: Object }
+        root: { type: Object },
+        startDragHandle: { type: Boolean }
     },
 
     data(){
@@ -114,8 +111,8 @@ export default {
     },  
 
     methods: {
-        selectItem(item){
-            this.$emit("selectItem", (item) ? item : this.item);
+        selectItem(){
+            this.$emit("selectItem", this.state.hierarchy.overElement);
         },
 
         toggle(){

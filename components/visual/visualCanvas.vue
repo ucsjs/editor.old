@@ -24,8 +24,9 @@
                         :style="{
                             backgroundColor: settings.backgroundColor,
                             width: `${viewport.width}px`, 
-                            height: `${viewport.height}px`, 
-                            transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`
+                            minHeight: `${viewport.height}px`, 
+                            transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+                            ...style
                         }"
                         ref="canvas"
                         @mousedown.left.stop="() => { selectItem(state.componentOver?.id) }"
@@ -41,6 +42,7 @@
                             :editorOffset="editorOffset"
                             :selectedComponent="selectedComponent"
                             :tab="tab"
+                            :viewport="viewport"
                             ref="components"
                             @changeState="saveState"
                             @click.left.stop="() => {}"
@@ -177,7 +179,7 @@ export default {
             settings: { backgroundColor: "#ffffff" },
             componentIndex: 0,
             selected: 0,
-            viewport: { width: 375, height: 667  },
+            viewport: { width: 375, height: 667, type: "mobile" },
             scale: 1,
             position: { x: 0, y: 0 },
             mouseHandler: { top: 200, left: 200 },
@@ -185,11 +187,13 @@ export default {
             canvasOffset: {},
             editorOffset: {},
             devices: {
-                mobile: { width: 375, height: 667 },
-                tablet: { width: 768, height: 1024 },
-                desktop: { width: 1920, height: 1080 }
+                mobile: { width: 375, height: 667, type: "mobile" },
+                tablet: { width: 768, height: 1024, type: "tablet" },
+                desktop: { width: 1024, height: 768, type: "desktop" }
             },
-            hierarchy: []
+            hierarchy: [],
+            body: {},
+            style: {}
         }
     },
 
@@ -212,14 +216,23 @@ export default {
             this.loadCanvasFromLocalStorage();
         } 
 
-        /*setInterval(() => {
-            if(this.$refs.editor && this.$refs.editor?.getBoundingClientRect)
-                this.editorOffset = this.$refs.editor?.getBoundingClientRect();
+        if(!this.body.id){
+            for(let component of this.components){
+                if(component.namespace == "Body"){
+                    this.body = component;
+                    break;
+                }
+            }
+        }
 
-            if(this.$refs.canvas && this.$refs.canvas?.getBoundingClientRect)
-                this.canvasOffset = this.$refs.canvas?.getBoundingClientRect();
-        }, 100);*/
+        for(let key in this.body.components){
+            if(!this.body.components[key].value)
+                this.body.components[key].value = this.body.components[key].default;
+        }
 
+        this.body.label = this.body.id;
+        this.style = this.getStyle(this.body);
+        this.unselectItem();
         this.editorOffset = this.$refs.editor?.getBoundingClientRect();
         this.canvasOffset = this.$refs.canvas?.getBoundingClientRect();
         this.$emit("loadedCanvas", this.getValue());
@@ -284,6 +297,69 @@ export default {
             }
         },
 
+        getStyle(root){
+            try{
+                let finalStyles = {};
+                let ignoreStyles = ['width', 'height', 'top', 'left', 'right', 'bottom'];
+                let stylePixel = [
+                    "width", "height", "left", "top", "right", "bottom", 
+                    "padding-top", "padding-right", "padding-bottom", "padding-left",
+                    "margin-top", "margin-right", "margin-bottom", "margin-left",
+                    "border-bottom-width", "border-left-width", "border-right-width", "border-top-width",
+                    "border-top-left-radius", "border-top-right-radius", "border-bottom-right-radius", "border-bottom-left-radius"
+                ]
+
+                let defaultStyle = {};
+
+                for(let component of root.components){
+                    for(let property of component.properties){
+                        
+                        if(property.changeStyle){
+                            if(typeof component.value[property.name] == "object" && component.value[property.name]?.hex)
+                                defaultStyle[property.changeStyle.styleVue] = component.value[property.name].hex;
+                            else if(typeof component.value[property.name] == "object" && component.value[property.name]?.src)
+                                defaultStyle[property.changeStyle.styleVue] = component.value[property.name].src;
+                            else if(component.value[`${property.name}Sufix`]){
+                                switch(component.value[`${property.name}Sufix`]){
+                                    case "px":
+                                    case "em":
+                                    case "%":
+                                        defaultStyle[property.changeStyle.styleVue] = component.value[property.name] + component.value[`${property.name}Sufix`];
+                                    break;
+                                    default:
+                                        defaultStyle[property.changeStyle.styleVue] = component.value[`${property.name}Sufix`];
+                                    break;
+                                }
+                            } 
+                            else if(!component.value[`${property.name}Sufix`] && stylePixel.includes(property.changeStyle.style)){
+                                defaultStyle[property.changeStyle.styleVue] = component.value[property.name] + "px";
+                            } 
+                            else
+                                defaultStyle[property.changeStyle.styleVue] = component.value[property.name] + ((property.changeStyle.subfix) ? property.changeStyle.subfix : '');
+                        }
+                    }
+                }
+
+                finalStyles = defaultStyle;
+
+                if(finalStyles){
+                    for(let key in finalStyles){
+                        if(typeof finalStyles[key] == "string" && finalStyles[key].includes("http") && !finalStyles[key].includes("url("))
+                            finalStyles[key] = `url(${finalStyles[key]})`;
+
+                        if(finalStyles[key] == "undefined")
+                            finalStyles[key] = null;
+                            
+                        if(ignoreStyles.includes(key) && finalStyles[key])
+                            delete finalStyles[key];
+                    }
+                }
+
+                return finalStyles;
+            }
+            catch(e){}
+        },
+
         update(){
             if(this.$refs.components){
                 for(let component of this.$refs.components){
@@ -300,7 +376,15 @@ export default {
             this.$refs.navbar.close();
         },
 
-        addComponent(item, position){
+        async addComponent(item, position){
+            let defaultPosition = {}
+
+            for(let componentsDafault of item.componentsDafaults){
+                if(componentsDafault.property == "left" || componentsDafault.property == "top"){
+                    defaultPosition[componentsDafault.property] = parseInt(componentsDafault.value);
+                }
+            }
+
             this.componentIndex++;
             const offsetX = this.editorOffset.x - this.canvasOffset.x;
             const offsetY = this.editorOffset.y - this.canvasOffset.y; 
@@ -310,23 +394,33 @@ export default {
             for(let property of tmpComponent.components){
                 if(property.component == "Transform"){
                     property.value = property.default;
-                    property.value.left = position.left + offsetX;
-                    property.value.top = position.top + offsetY;
+                    property.value.left = (typeof defaultPosition.left == "number") ? defaultPosition.left : (position.left + offsetX);
+                    property.value.top = (typeof defaultPosition.top == "number") ? defaultPosition.top : (position.top + offsetY);
                 }
                 else{
                     property.value = property.default;
                 }
             }
-           
-            this.hierarchy.push({
-                id: `${item.namespace}_${this.componentIndex}`,
-                ...tmpComponent,
-                position: {
-                    left: position.left + offsetX,
-                    top: position.top + offsetY
-                },
-                hierarchy: []
-            });
+
+            if(this.state.componentOver){
+                await this.addSubcomponent(this.state.componentOver.id, {
+                    id: `${item.namespace}_${this.componentIndex}`,
+                    ...tmpComponent,
+                    position: { left: 0, top: 0 },
+                    hierarchy: []
+                }, this);
+            }
+            else{
+                this.hierarchy.push({
+                    id: `${item.namespace}_${this.componentIndex}`,
+                    ...tmpComponent,
+                    position: {
+                        left: (typeof defaultPosition.left == "number") ? defaultPosition.left : (position.left + offsetX),
+                        top: (typeof defaultPosition.top == "number") ? defaultPosition.top : (position.top + offsetY)
+                    },
+                    hierarchy: []
+                });
+            }
 
             this.saveState(true);
             this.selectItem(`${item.namespace}_${this.componentIndex}`);
@@ -359,6 +453,33 @@ export default {
                 const diffX = this.mouseHandler.left - clientX;       
                 this.position = { x: positionX + diffX, y: positionY + diffY };
             }
+
+            if(this.$refs.editor && this.$refs.editor.getBoundingClientRect)
+                this.editorOffset = this.$refs.editor.getBoundingClientRect();
+
+            if(this.$refs.canvas && this.$refs.canvas.getBoundingClientRect)
+                this.canvasOffset = this.$refs.canvas.getBoundingClientRect();
+        },
+
+        async addSubcomponent(elementId, component, root){
+            return new Promise(async (resolve, reject) => {
+                if(root.hierarchy.length > 0){
+                    for(let key in root.hierarchy){
+                        if(root.hierarchy[key]){
+                            if(root.hierarchy[key].id === elementId){
+                                root.hierarchy[key].open = true;
+                                root.hierarchy[key].hierarchy.push(component);
+                                break;
+                            }                            
+                            else{
+                                this.addSubcomponent(elementId, component, root.hierarchy[key]);
+                            }
+                        }
+                    }
+
+                    resolve();
+                }
+            });
         },
 
         handleDragEnd(event){
@@ -406,12 +527,11 @@ export default {
         },
 
         centralize(){
-            this.transform = { x: 0, y: 0 };
+            this.position = { x: 0, y: 0 };
             this.saveState();
         },
 
         async selectItem(id){
-            console.log(id);
             if(id){
                 const component = await this.getComponent(id, this);
 
@@ -428,8 +548,9 @@ export default {
             return {
                 settings: this.settings,
                 scale: this.scale,
-                position: this.transform,
+                position: this.position,
                 viewport: this.viewport,
+                body: this.body,
                 hierarchy: this.hierarchy.filter((item) => item),
                 componentIndex: this.componentIndex
             }
