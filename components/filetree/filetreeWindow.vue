@@ -1,5 +1,7 @@
 <template>
     <div class="w-full h-full absolute"> 
-        <filetree-view />
+        <filetree-view 
+            path="./src/workspace"
+        />
     </div>
 </template>

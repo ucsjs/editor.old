@@ -1,10 +1,12 @@
 <template>
-    <div class="text-white  h-full relative">
+    <div class="text-white ml-0.5 h-full relative">
+        <div class="fixed bg-transparent w-full h-full top-0 left-0 right-0 bottom-0 z-50" v-if="open" @click.stop="open = false"></div>
+
         <div 
             class="bg-neutral-900 border border-black text-white px-1 h-7 w-full rounded-sm cursor-pointer flex"
             @click="open = (open) ? !open : true"
         >
-            <div class="pt-0.5 w-4">  
+            <div class="pt-0.5 ml-1 w-4">  
                 <font-awesome-icon :icon="modelValue?.icon" /> 
             </div>
 
@@ -17,7 +19,7 @@
             </div>
         </div>
 
-        <div class="w-72 bg-neutral-800 border border-black shadow-lg right-0 absolute p-2 rounded-md mt-1" v-if="open">
+        <div class="w-64 bg-neutral-800 border border-black shadow-lg right-0 absolute p-2 rounded-md mt-1 z-50" v-if="open">
             <div>
                 <input v-model="search" class="w-full p-2 bg-neutral-900 rounded-md" :placeholder="$t('Search')" />
             </div>
@@ -34,7 +36,7 @@
                         class="h-9 bg-neutral-800 hover:bg-neutral-700 rounded-lg p-2 text-center text-sm cursor-pointer"
                         v-for="(item, key) of iconsFontAwesome.filter((item) => (search?.length > 2) ? ((new RegExp(search, 'i').test(item.search.join(','))) ? item : false) : item)"
                         :key="key"
-                        :title="item"
+                        :title="item.classes[0]"
                         @click="changeIcon(item.classes[0])"
                     >
                         <font-awesome-icon :icon="item.classes[0]" />

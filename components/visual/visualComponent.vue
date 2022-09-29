@@ -337,8 +337,8 @@ export default {
                         )
                             component.open = false;
 
-                        if(this.settings.componentsDafaults?.length > 0){
-                            for(let componentDefault of this.settings.componentsDafaults){
+                        if(this.settings.componentsDefaults?.length > 0){
+                            for(let componentDefault of this.settings.componentsDefaults){
                                 if(componentDefault.component == component.component?.toLowerCase()){
                                     component.default[componentDefault.property] = componentDefault.value;
                                 }
@@ -414,7 +414,7 @@ export default {
 
         returnValueWithSuffix(namespace, data){
             const sufix = data[`${namespace}Sufix`] || 'px';
-            const lengths = ["px", "cm", "mm", "in", "pt", "pc", "em", "ex", "ch", "rem", "vw", "vh", "vmin", "vmax"]
+            const lengths = ["px", "cm", "mm", "in", "pt", "pc", "em", "ex", "ch", "rem", "vw", "vh", "vmin", "vmax", "%"]
 
             if(lengths.includes(sufix))
                 return `${data[namespace]}${sufix}`;

@@ -1,11 +1,15 @@
 <template>
     <div 
-        class="bg-neutral-800/80 h-full w-full overflow-hidden overflow-y-auto border-l-2 border-black" 
+        class="bg-neutral-800/80 h-full w-full overflow-hidden overflow-y-auto border-l-2 relative border-black" 
         @click="closeAllWindowOpened"
         @mouseup="dropComponent(null)"
     >
-        <div v-if="component">
-            <div class="bg-neutral-800 p-2 flex" v-if="component.namespace !== 'Body'">
+        <div v-if="component" class="relative min-h-screen">
+            <div class="bg-neutral-900 border-b border-black text-lg font-bold p-2 uppercase text-center" v-if="eventSelectedLabel && event">
+                {{ eventSelectedLabel }}
+            </div>
+            
+            <div class="bg-neutral-800 p-2 flex" v-if="component.namespace !== 'Body' && !event">
                 <div class="mr-2">
                     <div class="h-10 w-10 text-3xl align-middle text-center">
                         <client-only>
@@ -45,6 +49,7 @@
                                 type="checkbox" 
                                 v-model="component.static"
                                 class="w-4 h-4 text-blue-600 rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+                                @change="changeProperty"
                             >
 
                             <label for="static" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Static</label>
@@ -56,6 +61,7 @@
                                 type="checkbox" 
                                 v-model="component.lockBox"
                                 class="w-4 h-4 text-blue-600 rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+                                @change="changeProperty"
                             >
 
                             <label for="lockBox" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Lock Viewport</label>
@@ -64,29 +70,92 @@
                 </div>
             </div>
 
+            <!-- Events -->
             <div 
-                v-if="component.namespace !== 'Body'"
-                class="bg-neutral-700 p-1 text-sm border-t border-b border-black"
+                v-if="component.namespace !== 'Body' && !event"
+                class="bg-neutral-900 border-t border-black text-sm justify-center flex"
             >
-                <select 
-                    id="events" 
-                    v-model="component.events" 
-                    class="bg-neutral-900 border border-black text-neutral-300 px-1 h-6 rounded-sm w-full text-sm "
-                    :placeholder="$t('Events')"
-                >
-                    <option :value="null"></option>
+                <div class="flex mt-1 mr-2">
+                    {{ $t('Events') }}
+                </div>
 
-                    <option 
-                        v-for="tab in events" 
-                        :key="tab" 
-                        :value="tab"
-                        :selected="component.events == tab"
-                    >{{ uppercaseFirstLetter(tab) }}</option>
-                </select>  
+                <div class="h-8">
+                    <Tooltip tooltipText="Hover" position="top" class="h-8">
+                        <button 
+                            type="button" 
+                            class="bg-neutral-800 h-8 relative inline-flex items-center border border-black px-2 text-sm font-medium text-neutral-100 hover:bg-neutral-700 focus:z-10 focus:outline-none"
+                            :title="$t('Hover')"
+                            @click="changeEvent('hover')"
+                        >
+                            <client-only><font-awesome-icon icon="fa-solid fa-hand-pointer" /></client-only>
+                        </button>
+                    </Tooltip>
+                    <Tooltip tooltipText="Checked" position="top" class="h-8">
+                        <button 
+                            type="button" 
+                            class="bg-neutral-800 -ml-px h-8 relative inline-flex items-center border border-black px-2 text-sm font-medium text-neutral-100 hover:bg-neutral-700 focus:z-10 focus:outline-none"
+                            :title="$t('Checked')"
+                            @click="changeEvent('checked')"
+                        >
+                            <client-only><font-awesome-icon icon="fa-regular fa-circle-dot" /></client-only>
+                        </button>
+                    </Tooltip>
+                    <Tooltip tooltipText="Disabled" position="top" class="h-8">
+                        <button 
+                            type="button" 
+                            class="bg-neutral-800 -ml-px h-8 relative inline-flex items-center border border-black px-2 text-sm font-medium text-neutral-100 hover:bg-neutral-700 focus:z-10 focus:outline-none"
+                            :title="$t('Disabled')"
+                            @click="changeEvent('disabled')"
+                        >
+                            <client-only><font-awesome-icon icon="fa-solid fa-ban" /></client-only>
+                        </button>
+                    </Tooltip>
+                    <Tooltip tooltipText="Enabled" position="top" class="h-8">
+                        <button 
+                            type="button" 
+                            class="bg-neutral-800 -ml-px h-8 relative inline-flex items-center border border-black px-2 text-sm font-medium text-neutral-100 hover:bg-neutral-700 focus:z-10 focus:outline-none"
+                            :title="$t('Enabled')"
+                            @click="changeEvent('enabled')"
+                        >
+                            <client-only><font-awesome-icon icon="fa-solid fa-check" /></client-only>
+                        </button>
+                    </Tooltip>
+                    <Tooltip tooltipText="Focus" position="top" class="h-8">
+                        <button 
+                            type="button" 
+                            class="bg-neutral-800 -ml-px h-8 relative inline-flex items-center border border-black px-2 text-sm font-medium text-neutral-100 hover:bg-neutral-700 focus:z-10 focus:outline-none"
+                            :title="$t('Focus')"
+                            @click="changeEvent('focus')"
+                        >
+                            <client-only><font-awesome-icon icon="fa-solid fa-arrows-to-circle" /></client-only>
+                        </button>
+                    </Tooltip>
+                    <Tooltip tooltipText="After" position="top" class="h-8">
+                        <button 
+                            type="button" 
+                            class="bg-neutral-800 -ml-px h-8 relative inline-flex items-center border border-black px-2 text-sm font-medium text-neutral-100 hover:bg-neutral-700 focus:z-10 focus:outline-none"
+                            :title="$t('After')"
+                            @click="changeEvent('after')"
+                        >
+                            <client-only><font-awesome-icon icon="fa-solid fa-diagram-predecessor" /></client-only>
+                        </button>
+                    </Tooltip>
+                    <Tooltip tooltipText="Before" position="top" class="h-8">
+                        <button 
+                            type="button" 
+                            class="bg-neutral-800 -ml-px h-8 relative inline-flex items-center border border-black px-2 text-sm font-medium text-neutral-100 hover:bg-neutral-700 focus:z-10 focus:outline-none"
+                            :title="$t('Before')"
+                            @click="changeEvent('before')"
+                        >
+                            <client-only><font-awesome-icon icon="fa-solid fa-diagram-successor" /></client-only>
+                        </button>
+                    </Tooltip>
+                </div>
             </div>
 
+            <!-- Viewport -->
             <div 
-                v-if="component.namespace !== 'Body'"
+                v-if="component.namespace !== 'Body' && !event"
                 class="bg-neutral-900 p-1 text-sm border-t border-b border-black flex justify-center"
             >
                 <div class="flex">
@@ -160,6 +229,7 @@
                 </div>
             </div>
 
+            <!-- Subcomponents -->
             <div v-if="component.components">
                 <div v-for="(subComponent, key) in component.components" :key="key">
                     <div v-show="!(subComponent.component === 'Class' && component.metadata?.removeClass) && !(subComponent.component === 'Transform' && component.metadata?.removeTransform)">
@@ -221,6 +291,7 @@
                                 :component="component"
                                 :subComponent="subComponent"
                                 :selectInput="selectInput"
+                                :eventSelectedVariation="eventSelectedVariation"
                                 @changeProperty="changeProperty"
                                 @selectInput="(v) => { selectInput = v }"
                                 @dropComponent="(subComponent, propertyName, propertyType, component) => dropComponent(subComponent, propertyName, propertyType, component)"
@@ -230,7 +301,8 @@
                 </div>
             </div>
 
-            <div class="m-auto mt-2 w-full text-center text-sm text-neutral-400 mb-16">
+            <!-- Add Component -->
+            <div class="m-auto mt-2 w-full text-center text-sm text-neutral-400 mb-16" v-if="!eventSelectedVariation && !event">
                 <button
                     class="bg-neutral-800 hover:bg-neutral-700 p-1 px-6 border border-black rounded-sm"
                     @click="toggleAddComponent"
@@ -254,6 +326,41 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Event Inspector -->
+            <div class="bg-transparent fixed top-0 left-0 bottom-0 right-0 z-50" v-if="eventSelectedVariation" @click="eventSelectedVariation = null"></div>
+
+            <div 
+                :class="[
+                    (eventSelectedVariation) ? 'right-0' : '-right-96',
+                    'bg-black/50 transition-all duration-500 w-full h-full absolute top-0  z-50'
+                ]" 
+                v-show="eventSelectedVariation"
+            >
+                <div 
+                    class="absolute bg-black h-full top-0 right-0" 
+                    :style="{width: `calc(100% - 20px)`, 'z-index': 1000}"
+                >
+                    <visual-editor-inspector 
+                        ref="inspector"    
+                        :componentsDefaults="components"               
+                        :component="eventSelectedVariation"    
+                        :event="true"    
+                        :eventSelectedLabel="eventSelected"      
+                        @changeProperty="() => {
+                            eventsVariant[eventSelected] = { ...eventSelectedVariation };
+
+                            if(!component.eventsVariant)
+                                component.eventsVariant = {};
+
+                            component.eventsVariant[eventSelected] = { ...eventSelectedVariation };
+                            changeProperty();
+                        }"          
+                        @changeState="saveStateContents"                    
+                    />
+                </div>
+            </div>
+            
         </div>
     </div>
 </template>
@@ -287,11 +394,12 @@ input{
 
 <script>
 import globalMixin from "@/mixins/globalMixin";
+import ComponentsMixin from "@/mixins/components";
 import { Menu, MenuButton, MenuItem, MenuItems, TransitionRoot, TransitionChild } from "@headlessui/vue";
 import { useStateStore } from "~/store/state.store";
 
 export default {
-    mixins : [globalMixin],
+    mixins : [globalMixin, ComponentsMixin],
     components: { Menu, MenuButton, MenuItem, MenuItems, TransitionRoot, TransitionChild },
 
     props: {
@@ -299,9 +407,21 @@ export default {
             type: Object,
             default: null 
         },
+        componentsDefaults: { 
+            type: Object,
+            default: null 
+        },
         width: { 
             type: Number, 
             default: 300 
+        },
+        event: {
+            type: Boolean,
+            default: false
+        },
+        eventSelectedLabel: {
+            type: String,
+            default: null
         }
     },
 
@@ -315,6 +435,9 @@ export default {
             componentsCategories: {},
             componentsFiltred: [],            
             events: ["checked", "default", "focus", "disabled", "fullscreen", "hover", "required"],
+            eventsVariant: {},
+            eventSelected: null,
+            eventSelectedVariation: null
         }
     },
 
@@ -341,6 +464,9 @@ export default {
                     }
                 }
             }
+
+            if(this.component?.eventsVariant)
+                this.eventsVariant = this.component?.eventsVariant;
         },
 
         search(){
@@ -399,7 +525,9 @@ export default {
                             if(
                                 this.component.components[key].namespace === "Class" ||
                                 this.component.components[key].namespace === "Border" ||
-                                this.component.components[key].namespace === "Background"
+                                this.component.components[key].namespace === "Background" ||
+                                this.component.components[key].namespace === "Margin" ||
+                                this.component.components[key].namespace === "Transform"
                             )
                                 this.component.components[key].open = false;
                             else
@@ -433,7 +561,15 @@ export default {
         },
 
         changeProperty(){
-            this.$emit('changeProperty', this.component);   
+            if(this.component.events){
+                const diff = this.diffComponents(this.eventSelectedVariation.components, 
+                this.component.components);
+
+                console.log(diff);
+            }
+            else{
+                this.$emit('changeProperty', this.component);  
+            }
         },
 
         addComponent(component){
@@ -491,6 +627,38 @@ export default {
                 this.selectInput.subComponent.value[this.selectInput.property.name] = value;
 
             this.changeProperty();
+        },
+
+        getDefaultComponent(namespace){
+            for(let component of this.componentsDefaults){
+                if(component.namespace === namespace)
+                    return { ...this.parseComponent(component, this.componentsDefaults) };
+            }
+
+            return null;
+        },
+
+        getComponentsByEvent(){
+            if(this.eventSelectedVariation)
+                return this.eventSelectedVariation.components;
+            else
+                return this.component.components
+        },
+
+        changeEvent(eventSelected){
+            if(eventSelected){
+                const defaultComponent = this.getDefaultComponent(this.component.namespace);
+                this.eventSelected = eventSelected;
+
+                if(defaultComponent && !this.eventsVariant[eventSelected])
+                    this.eventsVariant[eventSelected] = { ...defaultComponent };
+
+                if(this.eventsVariant[eventSelected])
+                    this.eventSelectedVariation = { ...this.eventsVariant[eventSelected] };
+            }
+            else{
+                this.eventSelectedVariation = null;
+            }            
         }
     }
 }

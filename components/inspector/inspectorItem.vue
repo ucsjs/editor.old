@@ -14,7 +14,7 @@
                     />
                 </div>
                 <div v-else class="flex-1 flex p-0.5">
-                    <div class="w-3/6 h-7 flex ml-1">
+                    <div class="w-3/6 h-7 flex ml-1 z-10">
                         <div class="mt-1" v-if="subComponent && subComponent.metadata && subComponent.metadata[`${property.name}Help`]">
                             <Tooltip :tooltipText="$t('Help')" position="right">
                                 <a :href="subComponent.metadata[`${property.name}Help`]" target="_blank" class="text-sm ml-1 hover:bg-neutral-600">
@@ -26,7 +26,7 @@
                         <div class="ml-2 text-sm mt-1">{{ property.label.replace('Border ', '') || uppercaseFirstLetter(property.name) }}</div>
                     </div>
 
-                    <div class="w-3/6 h-7 pr-2">
+                    <div class="h-7 pr-2 w-3/6">
                         <inspector-dynamic-type
                             v-if="component?.editor && component.editor[subComponent.component] && component.editor[subComponent.component][property.name]"
                             :component="{ ...component.editor[subComponent.component][property.name], value: subComponent.value[property.name] }"
@@ -126,7 +126,7 @@
 
 <script>
 export default {
-    props: ["component", "subComponent", "selectInput"],
+    props: ["component", "subComponent", "selectInput", "eventSelectedVariation"],
 
     data(){
         return {

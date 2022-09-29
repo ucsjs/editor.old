@@ -4,13 +4,13 @@
 
         <div 
             class="border border-black h-full flex justify-end relative text-sm" 
-            :style="{ backgroundColor: colors.hex || defaultValue || '#FFFFFF' }"                                                                                             
+            :style="{ backgroundColor: colors.hex || defaultValue }"                                                                                             
         >
             <input 
                 class="border-0 w-full text-sm" 
                 type="text" 
                 v-model="colors.hex"                                                 
-                :style="{ backgroundColor: (colors.hex || defaultValue || '#FFFFFF') }"
+                :style="{ backgroundColor: (colors.hex || defaultValue) }"
                 @keyup="changeValue"
                 @change="changeValue"
                 @input="changeValue"
@@ -35,20 +35,28 @@ export default {
     watch: {
         colors(){
             this.changeValue();
+        },
+
+        modelValue(){
+            this.notEmit = true;
+            
+            if(this.colors.hex != this.modelValue.hex)
+                this.colors = this.modelValue;
         }
     },
 
     data(){
         return {
+            notEmit: false,
             open: false,
-            colors: { hex: "#FFFFFF" }
+            colors: { hex: "" }
         }
     },
 
     mounted(){
         if(!this.modelValue){
-            this.$emit('update:modelValue', { hex: "#FFFFFF" });
-            this.colors = { hex: "#FFFFFF" };
+            this.$emit('update:modelValue', { hex: "" });
+            this.colors = { hex: "" };
         }
         else{
             this.colors = this.modelValue;
@@ -57,7 +65,10 @@ export default {
 
     methods: {
         changeValue(){
-            this.$emit('changeValue', this.colors);
+            if(!this.notEmit)
+                this.$emit('changeValue', this.colors);
+            
+            this.notEmit = false;
         }
     }
 }

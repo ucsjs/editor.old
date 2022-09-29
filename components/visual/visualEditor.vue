@@ -97,7 +97,8 @@
                         :style="{width: `${widthRightbar}px !important`}"
                     >
                         <visual-editor-inspector          
-                            ref="inspector"                  
+                            ref="inspector"    
+                            :componentsDefaults="components"               
                             :component="selectedComponent"
                             @changeProperty="changeProperty"
                             @addComponent="addSubcomponent"

@@ -5,7 +5,7 @@
             ref="editor"
             @mousemove="handleDrag" 
             @mouseup="handleDragEnd"
-            @click.stop="unselectItem" 
+            @click.stop="unselectItem"             
         > 
             <div 
                 id="canvas-mouse-pointer"
@@ -16,9 +16,9 @@
 
             <div 
                 class="grid-contents block relative" 
-                @mousedown.left="move" 
+                @mousedown.left="move"
             > 
-                <div class="justify-center items-center flex h-full">
+                <div class="justify-center items-center flex h-full relative z-40">
                     <div 
                         class="m-auto overflow-hidden absolute z-40" 
                         :style="{
@@ -104,7 +104,7 @@
                     <visual-context-menu :components="components" ref="navbar" @addComponent="addComponent" />
                 </div>
 
-                <div id="grid-margin" class="w-full h-full top-0 left-0 absolute z-20">
+                <div id="grid-margin" class="w-full h-full top-0 left-0 absolute z-10">
                     <div class="border border-dashed border-sky-500/50 h-full w-[1px] absolute z-30" :style="{ left: `${canvasOffset.x - editorOffset.x}px`}"></div>
                     <div class="border border-dashed border-sky-500/50 h-full w-[1px] absolute z-30" :style="{ left: `${(canvasOffset.x - editorOffset.x) + viewport.width}px`}"></div>
                 
@@ -198,24 +198,15 @@ export default {
     },
 
     async mounted(){
-        if(this.tab && this.tab.recent && this.tab.content){
-            this.tab.recent = false;
+        if(this.tab.content){
             const metadata = JSON.parse(this.tab.content);
 
             for(let key in metadata)
                 this[key] = metadata[key];
-        }
-        else{
-            if(this.tab.content){
-                const metadata = JSON.parse(this.tab.content);
-
-                for(let key in metadata)
-                    this[key] = metadata[key];
-            } 
-
-            this.loadCanvasFromLocalStorage();
         } 
 
+        await this.loadCanvasFromLocalStorage();
+        
         if(!this.body.id){
             for(let component of this.components){
                 if(component.namespace == "Body"){
@@ -239,7 +230,7 @@ export default {
     },
 
     methods: {
-        loadCanvasFromLocalStorage(){
+        async loadCanvasFromLocalStorage(){
             const cachePage = localStorage.getItem(`page-${this.tab.name.replace(/\./, "-")}`);
 
             if(cachePage){
@@ -255,6 +246,8 @@ export default {
                         this.updateComponentByDefault(component);
                 }
             }
+
+            return true;
         },
 
         updateComponentByDefault(component){
@@ -368,7 +361,8 @@ export default {
             }
         },
 
-        contextmenu(){            
+        contextmenu(){    
+            console.log("contextmenu")        
             this.$refs.navbar.open(this.mouseHandler);
         },
 
@@ -541,6 +535,7 @@ export default {
         },
 
         unselectItem(){
+            this.closeContextmenu();
             this.$emit("unselectItem");
         },
 
