@@ -1,11 +1,11 @@
 <template>
-    <div class="relative w-full h-full">
+    <div class="relative w-full h-full select-none">
         <div 
             class="bg-neutral-700 w-full h-full grid-background absolute"
+            ref="editor"
             @mousemove="handleDrag" 
             @mouseup="handleDragEnd"
-            @click.stop="unselectItem"
-            ref="editor"
+            @click.stop="unselectItem" 
         > 
             <div 
                 id="canvas-mouse-pointer"
@@ -14,7 +14,10 @@
                 ref="mousePointer"
             ></div>
 
-            <div class="grid-contents block relative" @mousedown.left="move">                
+            <div 
+                class="grid-contents block relative" 
+                @mousedown.left="move" 
+            > 
                 <div class="justify-center items-center flex h-full">
                     <div 
                         class="m-auto overflow-hidden absolute z-40" 
@@ -28,7 +31,7 @@
                         @mousedown.left.stop="() => { selectItem(state.componentOver?.id) }"
                         @contextmenu.prevent="contextmenu" 
                         @mouseup.left="closeContextmenu"
-                        @click.stop="selectItem(state.componentOver?.id)"
+                        @click.left.stop="selectItem(state.componentOver?.id)"
                     >
                         <visual-component 
                             v-for="(component, key) in hierarchy" 
@@ -40,6 +43,7 @@
                             :tab="tab"
                             ref="components"
                             @changeState="saveState"
+                            @click.left.stop="() => {}"
                         ></visual-component>
 
                         <!--<div class="bg-blue-500/50 absolute bottom-0 p-1">
@@ -208,13 +212,13 @@ export default {
             this.loadCanvasFromLocalStorage();
         } 
 
-        setInterval(() => {
+        /*setInterval(() => {
             if(this.$refs.editor && this.$refs.editor?.getBoundingClientRect)
                 this.editorOffset = this.$refs.editor?.getBoundingClientRect();
 
             if(this.$refs.canvas && this.$refs.canvas?.getBoundingClientRect)
                 this.canvasOffset = this.$refs.canvas?.getBoundingClientRect();
-        }, 100);
+        }, 100);*/
 
         this.editorOffset = this.$refs.editor?.getBoundingClientRect();
         this.canvasOffset = this.$refs.canvas?.getBoundingClientRect();
@@ -407,10 +411,13 @@ export default {
         },
 
         async selectItem(id){
-            const component = await this.getComponent(id, this);
+            console.log(id);
+            if(id){
+                const component = await this.getComponent(id, this);
 
-            if(component)
-                this.$emit("selectedItem", component);
+                if(component)
+                    this.$emit("selectedItem", component);
+            }
         },
 
         unselectItem(){

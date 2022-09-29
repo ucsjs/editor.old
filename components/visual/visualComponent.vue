@@ -16,9 +16,7 @@
             v-model:active="resizeData.active"                  
             :draggable="!settings.static && selectedComponent?.id == settings.id"
             :resizable="!settings.static && selectedComponent?.id == settings.id"
-            :parent="settings.lockBox"
-            @mouseover.stop="() => { state.componentOver  = settings }"
-            @mouseleave="() => { state.componentOver = null }"
+            :parent="settings.lockBox"            
             @dragging="(d) => resizeOrMove(d, false)"
             @resizing="(d) =>resizeOrMove(d, false)"
             @resize-end="(d) =>resizeOrMove(d, true)"
@@ -30,11 +28,19 @@
                 :class="[
                     (selectedComponent?.id == settings.id) ? 'border-red-300' : 'border-purple-200 hover:border-purple-500 border-dashed',
                     (settings.metadata.moveble && !settings.static) ? 'cursor-move' : '',
-                    'border w-full h-full relative overflow-hidden'
+                    'border w-full h-full absolute overflow-hidden'
                 ]"
                 :title="settings.id"
+                @mouseenter="() => { state.componentOver  = settings }"
+                @mouseleave="() => { state.componentOver = null }"
+                @click="$emit('selectItem', settings?.id)"
             >     
-                <div ref="component" class="w-full h-full relative">
+                <div class="bg-transparent w-full h-full absolute top-0 left-0 bottom-0 right-0 z-50" v-if="settings.hierarchy.length <= 0"></div>
+
+                <div 
+                    ref="component" 
+                    class="w-full h-full relative"
+                >
                     <client-only placeholder="Loading...">
                         <dynamic-renderer 
                             v-if="settings && style" 
@@ -54,6 +60,7 @@
                                         :tab="tab"
                                         @selectItem="$emit('selectItem', subcomponent?.id)"
                                         @saveState="$emit('saveState')"
+                                        @click.stop="$emit('selectItem', subcomponent?.id)"
                                     ></visual-component>
                                 </div>  
                             </template>

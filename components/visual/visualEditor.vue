@@ -325,7 +325,6 @@ export default {
         },
 
         async onDelete(){
-            console.log("onDelete", this.context)
             if(this.context == "canvas" || this.context == "hierarchy"){
                 console.log("onDelete")
                 await this.$refs.canvas.onDelete();
