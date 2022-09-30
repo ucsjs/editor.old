@@ -4,6 +4,7 @@
         (!settings.smView && viewport?.type == 'mobile') ? 'opacity-50' : '',
         (!settings.mdView && viewport?.type == 'tablet') ? 'opacity-50' : '',
         (!settings.lgView && viewport?.type == 'desktop') ? 'opacity-50' : '',
+        'cursor-default'
     ]">
         <client-only>
             <!-- eslint-disable -->
@@ -26,7 +27,7 @@
                 @resizing="(d) =>resizeOrMove(d, false)"
                 @resize-end="(d) =>resizeOrMove(d, true)"
                 @drag-end="(d) => resizeOrMove(d, true)"            
-                v-if="settings && resizeData && selectedComponent?.id == settings.id"
+                v-if="!settings.static && settings && resizeData && selectedComponent?.id == settings.id"
             > 
                 <div             
                     v-if="resizeData"
@@ -73,6 +74,7 @@
                                             @selectItem="$emit('selectItem', subcomponent?.id)"
                                             @saveState="$emit('saveState')"
                                             @click.stop="$emit('selectItem', subcomponent?.id)"
+                                            class="cursor-default"
                                         ></visual-component>
                                     </div>  
                                 </template>
@@ -88,12 +90,14 @@
                     width: (this.settings.metadata.removeTransform) ? '100%' : returnValueWithSuffix('width', transform),
                     height: (this.settings.metadata.removeTransform) ? '100%': returnValueWithSuffix('height', transform),
                     top: (this.settings.metadata.removeTransform) ? '0px' : returnValueWithSuffix('top', transform),
-                    left: (this.settings.metadata.removeTransform) ? '0px' : returnValueWithSuffix('left', transform)
+                    left: (this.settings.metadata.removeTransform) ? '0px' : returnValueWithSuffix('left', transform),
+                    bottom: returnValueWithSuffix('bottom', transform),
+                    right: returnValueWithSuffix('right', transform)
                 }"            
                 :class="[
                     (selectedComponent?.id == settings.id) ? 'border-red-300' : 'border-purple-200 hover:border-purple-500 border-dashed',
                     (settings.metadata.moveble && !settings.static) ? 'cursor-move' : '',
-                    'border w-full h-full absolute overflow-hidden'
+                    'border w-full h-full absolute overflow-hidden cursor-default'
                 ]"
                 :title="settings.id"
                 @mouseenter="() => { state.componentOver  = settings }"

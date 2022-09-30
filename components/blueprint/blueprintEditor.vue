@@ -287,7 +287,7 @@
 
                 <!-- Components -->
                 <div 
-                    class="absolute top-[200px] left-0 w-full bg-neutral-800 border-r border-black" 
+                    class="absolute top-[200px] left-0 w-full bg-neutral-800 border-r border-t border-black" 
                     :style="{ height: 'calc(100% - 200px)'}"
                 >
                     <div class="p-2 bg-neutral-900 border-b border-black">{{ $t("Blueprints") }}</div>

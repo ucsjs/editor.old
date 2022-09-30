@@ -49,6 +49,7 @@ export const useStateStore = defineStore({
         },
         componentOver: null,
     }),
+
     getters: {
         isAuthentication: (state) => {
             return state.user !== null;
@@ -64,6 +65,7 @@ export const useStateStore = defineStore({
             }
         }
     },
+
     actions: {
         login(user) {
             this.user = user;
@@ -129,6 +131,7 @@ export const useStateStore = defineStore({
         closeTab(index){
             this.tabs.splice(index, 1);
             this.selectedTab = (this.tabs.length > index) ? index : 0;
+            this.saveState();
         },
 
         use(state){
@@ -185,9 +188,27 @@ export const useStateStore = defineStore({
 
         saveState(){
             try{
-                localStorage.setItem("state", JSON.stringify(this));
+                const replacerFunc = () => {
+                    const visited = new WeakSet();
+
+                    return (key, value) => {
+                        if (typeof value === "object" && value !== null) {
+                            if (visited.has(value)) {
+                                return;
+                            }
+
+                            visited.add(value);
+                        }
+
+                        return value;
+                    };
+                };
+
+                localStorage.setItem("state", JSON.stringify(this, replacerFunc()));
             }
-            catch(e){}
+            catch(e){
+                console.log(e);
+            }
         }
     }
 });

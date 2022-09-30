@@ -179,6 +179,7 @@ export default {
 
         closeFile(key){
             this.state.closeTab(key);
+            this.saveState();
         },
 
         saveState(){

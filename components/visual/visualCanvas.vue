@@ -29,10 +29,10 @@
                             ...style
                         }"
                         ref="canvas"
-                        @mousedown.left.stop="() => { selectItem(state.componentOver?.id) }"
+                        @mousedown.left.stop="() => { selectItem(state.componentOver) }"
                         @contextmenu.prevent="contextmenu" 
                         @mouseup.left="closeContextmenu"
-                        @click.left.stop="selectItem(state.componentOver?.id)"
+                        @click.left.stop="selectItem(state.componentOver)"
                     >
                         <visual-component 
                             v-for="(component, key) in hierarchy" 
@@ -48,9 +48,6 @@
                             @click.left.stop="() => {}"
                         ></visual-component>
 
-                        <!--<div class="bg-blue-500/50 absolute bottom-0 p-1">
-                            Viewport: {{ editorOffset.x - canvasOffset.x }} X / {{ editorOffset.y - canvasOffset.y }} Y
-                        </div>-->
                     </div> 
 
                     <div class="absolute h-11 bg-black/50 bottom-3 rounded-md flex z-40">
@@ -373,8 +370,8 @@ export default {
         async addComponent(item, position){
             let defaultPosition = {}
 
-            for(let componentsDafault of item.componentsDafaults){
-                if(componentsDafault.property == "left" || componentsDafault.property == "top"){
+            for(let componentsDafault of item.componentsDefaults) {
+                if(componentsDafault.property == "left" || componentsDafault.property == "top") {
                     defaultPosition[componentsDafault.property] = parseInt(componentsDafault.value);
                 }
             }
@@ -525,9 +522,9 @@ export default {
             this.saveState();
         },
 
-        async selectItem(id){
-            if(id){
-                const component = await this.getComponent(id, this);
+        async selectItem(idOrComponent){
+            if(idOrComponent){
+                const component =(typeof idOrComponent == "string") ? await this.getComponent(idOrComponent, this) : idOrComponent;
 
                 if(component)
                     this.$emit("selectedItem", component);

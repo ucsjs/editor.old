@@ -1,19 +1,12 @@
 export default defineNuxtPlugin((nuxtApp) => {
-    nuxtApp.vueApp.component("dynamic-renderer", {
-        props: ["component", "state", "default"],
+    nuxtApp.vueApp.component("dynamic-renderer", defineComponent({
+        props: ["component", "state", "slot"],
 
-        methods: {
-            getDefaultSlotValue() {
-                if (this.$slots.default && this.$slots.default()[0]) 
-                    return this.$slots.default()[0].children;
-            }
-        },
-        
-        render(){
-            return h({
-                template: this.component?.content,
-                props: { component: this.component, state: this.state },
-            }, { component: this.component, state: this.state }, this.getDefaultSlotValue());
+        setup(state, { slots }){
+            return () => h({
+                template: state.component?.content,
+                props: { component: state.component, state: state.state },
+            }, { component: state.component, state: state.state }, () => slots.default()[0].children)
         }
-    });
+    }));
 });

@@ -15,14 +15,14 @@ export default {
     mounted(){
         if(this.modelValue && !this.modelValue?.content){
             this.$emit('update:modelValue', { content : "" });
-            this.$emit('changeValue');
+            this.$emit('changeValue', { content : "" });
         } 
     },
 
     methods: {
         changeValue(v){
             this.$emit('update:modelValue', { content : v });
-            this.$emit('changeValue');
+            this.$emit('changeValue', { content : v });
         }
     }
 }

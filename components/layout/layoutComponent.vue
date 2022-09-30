@@ -1,6 +1,6 @@
 <template>
     <div ref="GLComponent" style="position: absolute; overflow: hidden">
-        <slot></slot>
+        <slot />
     </div>
 </template>
 

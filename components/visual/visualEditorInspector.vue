@@ -355,8 +355,7 @@
 
                             component.eventsVariant[eventSelected] = { ...eventSelectedVariation };
                             changeProperty();
-                        }"          
-                        @changeState="saveStateContents"                    
+                        }"                     
                     />
                 </div>
             </div>

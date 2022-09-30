@@ -14,21 +14,40 @@ body{
 }
 </style>
 
-<script setup>
-import { useStateStore } from "~~/store/state.store";
-import { useI18n } from 'vue-i18n';
+<script>
+import { useStateStore } from "~/store/state.store";
 
-const state = useStateStore();
-const { t } = useI18n();
-  
-if(process.client){
-    const stateCache = localStorage.getItem("state");
+export default {
+    data(){
+        return {
+            state: useStateStore()
+        }
+    },
 
-    if(stateCache)
-        state.use(stateCache);
+    created () {   
+        if(process.client) 
+            window.addEventListener('beforeunload', this.beforeunload)  
+    },
+
+    mounted(){
+        if(process.client){
+            const stateCache = localStorage.getItem("state");
+
+            if(stateCache)
+                this.state.use(stateCache);
+        }
+
+        setInterval(() => {
+            this.state.saveState();
+        }, 10000)
+    },
+
+    methods: {
+        beforeunload(event){
+            this.state.saveState();
+            event.returnValue = "event seems to need to be set";
+            return "event seems to need to be set";
+        }
+    }
 }
-
-watch(state, () => {
-    state.saveState();
-});
 </script>
