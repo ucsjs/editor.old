@@ -224,7 +224,7 @@
                             @change="changeProperty"
                         >
 
-                        <label for="2xl" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">2XL</label>
+                        <label for="2xl" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">2X</label>
                     </div>
                 </div>
             </div>

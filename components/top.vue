@@ -1,8 +1,8 @@
 <template>
     <div>
-        <div class="fixed w-screen h-screen z-40 mt-14" @click="resetSelected" v-if="selected != -1"></div>
+        <div class="fixed w-screen h-screen z-50 mt-14" @click="resetSelected" v-if="selected != -1"></div>
 
-        <div :class="[state.darktheme ? 'bg-neutral-800 border-black' : 'bg-neutral-100', 'w-screen border-b flex justify-between px-2 select-none']" @click="resetSelected">
+        <div :class="[state.darktheme ? 'bg-neutral-800 border-black' : 'bg-neutral-100', 'w-screen border-b flex justify-between px-2 select-none z-50']" @click="resetSelected">
             <div class="flex flex-1">
                 <div class="mt-2 mr-2">
                     <a href="https://ucsjs.io" target="_blank">
@@ -16,18 +16,22 @@
                         @click="(selected == -1) ? selected = key : selected = -1" 
                         @mouseenter="forceClick(key)"
                     >
-                        {{ item.key }}
+                        {{ $t(item.key) }}
                     </MenuButton>
 
                     <transition enter-active-class="transition ease-out duration-100" enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100" leave-active-class="transition ease-in duration-75" leave-from-class="transform opacity-100 scale-100" leave-to-class="transform opacity-0 scale-95">
                         <MenuItems 
                             v-if="selected === key"
-                            :class="[state.darktheme ? 'bg-neutral-800 text-neutral-200 ring-black border-black' : 'bg-white','absolute left-0 z-40 mt-2 origin-top-left rounded-md py-1 shadow-lg shadow-neutral-900 ring-1 ring-opacity-60 focus:outline-none text-neutral-100 min-w-[300px]']" 
+                            :class="[state.darktheme ? 'bg-neutral-800 text-neutral-200 ring-black border-black' : 'bg-white','absolute left-0 z-50 pb-2 pt-2 origin-top-left rounded-md py-1 shadow-lg shadow-neutral-900 ring-1 ring-opacity-60 focus:outline-none text-neutral-100 min-w-[300px]']" 
                             static
                         >
                             <MenuItem v-for="(item, key) in item.items" :key="key" v-slot="{ active }" class="cursor-pointer">
-                                <div v-if="!item.separete && !item.items" class="flex flex-row px-5 py-1 hover:bg-[#04395e] hover:text-white">
-                                    <div class="flex flex-1">{{ item.name }}</div>
+                                <div 
+                                    v-if="!item.separete && !item.items" 
+                                    class="flex flex-row px-5 py-1 hover:bg-[#04395e] hover:text-white"
+                                    @click="item.event"
+                                >
+                                    <div class="flex flex-1">{{ $t(item.name) }}</div>
                                     
                                     <div v-if="item.shortcut" class="flex justify-end">{{ item.shortcut }}</div>
                                 </div>
@@ -36,7 +40,7 @@
                                     class="flex flex-row px-5 py-1 hover:bg-[#04395e] hover:text-white"
                                     @mouseover="item.open = true" 
                                 >
-                                    <div class="flex flex-1">{{ item.name }}</div>
+                                    <div class="flex flex-1">{{ $t(item.name) }}</div>
 
                                     <div class="flex justify-end mt-1 relative" >
                                         <client-only><font-awesome-icon icon="fa-solid fa-caret-right" /></client-only>
@@ -140,9 +144,12 @@ const resetSelected = () => {
 </script>
 
 <script>
+import { useStateStore } from "~/store/state.store";
+
 export default {
     data(){
         return {
+            state: useStateStore(),
             navbar: [
                 {
                     key: 'File',
@@ -150,12 +157,10 @@ export default {
                         {
                             name: 'New File',
                             shortcut: 'Ctrl+N',
-                            event: () => { },
-                        },
-                        {
-                            name: 'New Component',
-                            shortcut: 'Ctrl+Shift+N',
-                            event: () => { },
+                            event: () => { 
+                                this.state.newFile.open = true; 
+                                this.selected = -1;
+                            },
                         },
                         { separete: true },
                         {
@@ -176,6 +181,11 @@ export default {
                         {
                             name: 'Save as',
                             shortcut: 'Ctrl+Shift+S',
+                            event: () => { },
+                        },
+                        { separete: true },
+                        {
+                            name: 'Preferences',
                             event: () => { },
                         },
                     ]
@@ -227,15 +237,30 @@ export default {
                             event: () => { }
                         },
                         {
-                            name: 'Replace In File',
+                            name: 'Replace In Files',
                             shortcut: 'Ctrl+Shift+H',
                             event: () => { }
-                        },
-                        { separete: true },
+                        }
+                    ]
+                },
+                {
+                    key: "Select",
+                    items: [
                         {
                             name: 'Select all',
                             event: () => {
-                                this.$store.commit('editor/SET_SELECT_ALL', true);
+                                
+                            }
+                        },
+                    ]
+                },
+                {
+                    key: "View",
+                    items: [
+                        {
+                            name: 'File Explorer',
+                            event: () => {
+                                this.state.newFileExplorer();
                             }
                         },
                     ]
@@ -244,9 +269,9 @@ export default {
                     key: "Terminal",
                     items: [
                         {
-                            name: 'Novo Terminal',
-                            event: () => {
-                                this.$store.commit('terminal/NEW_TERINAL', true);
+                            name: 'New Terminal',
+                            event: async () => {
+                                await this.state.newTerminal();
                             }
                         },
                     ]

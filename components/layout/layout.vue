@@ -51,8 +51,9 @@ let GLayout: VirtualLayout;
 const GlcKeyPrefix = readonly(ref("glc_"));
 const MapComponents = new Map<
     ComponentContainer,
-    { refId: number; glc: GlComponent}
+    { refId: number; glc: GlComponent }
 >();
+const IndexComponents = {};
 const AllComponents = ref(new Map<number, any>());
 const UnusedIndexes: number[] = [];
 let CurIndex = 0;
@@ -133,6 +134,21 @@ const getLayoutConfig = () => {
 
 const getLayout = () => {
     return GLayout;
+};
+
+const getContainer = async (id: string) => {
+    if(IndexComponents[id]){
+        const refId = IndexComponents[id].refId;
+
+        return new Promise((resolve, reject) => {
+            MapComponents.forEach((item, index) => {
+                if(item.refId == refId) resolve(index);
+            });
+        });
+    }
+    else{
+        return null;
+    }
 };
 
 onMounted(() => {
@@ -218,6 +234,7 @@ onMounted(() => {
         const component = instance?.refs[ref] as GlComponent;
 
         MapComponents.set(container, { refId: refId, glc: component });
+        IndexComponents[itemConfig.id] = { refId: refId };
 
         container.virtualRectingRequiredEvent = (container, width, height) =>
             handleContainerVirtualRectingRequiredEvent(
@@ -274,6 +291,7 @@ defineExpose({
     addGLComponent,
     loadGLLayout,
     getLayoutConfig,
-    getLayout
+    getLayout,
+    getContainer
 });
 </script>

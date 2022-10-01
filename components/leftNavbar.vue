@@ -1,5 +1,5 @@
 <template>
-    <div :class="[state.darktheme ? 'bg-neutral-800 border-black' : 'bg-neutral-200 border-neutral-300', 'h-full w-16 border-r select-none z-40']">
+    <div :class="[state.darktheme ? 'bg-neutral-800 border-black' : 'bg-neutral-200 border-neutral-300', 'h-full w-16 border-r select-none z-30']">
         <div v-for="(item, key) in items" :key="key">
             <Tooltip :tooltipText="item.title" position="right">
                 <button 

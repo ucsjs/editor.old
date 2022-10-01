@@ -11,9 +11,12 @@
             @selectItem="selectItem" 
             @openFile="openFile" 
             @createFile="createFile" 
+            @createDir="createDir"
         />
 
-        <ModalDialog ref="modalDialogDelete" @confirm="deleteFile(true)" />
+        <ModalDialog ref="modalDialogDeleteFile" @confirm="deleteFile(true)" />
+        <ModalDialog ref="modalDialogDeleteDir" @confirm="deleteDir(true)" />
+        <Notifications ref="notifications" :closeTimeout="2000" />
     </div>
 </template>
 
@@ -80,37 +83,44 @@ export default {
                 ],
                 directory: [
                     { label: "New File", action: this.newFile },
-                    { label: "New Directory", action: "newFolder" },
+                    { label: "New Directory", action: this.newDir },
                     { separete: true },
                     { label: "Cut", action: "cutFolder", shortcut: "Ctrl+X" },
                     { label: "Copy", action: "copyFolder", shortcut: "Ctrl+C" },
                     { label: "Paste", action: "pasteFolder", shortcut: "Ctrl+V" },
+                    { separete: true },
+                    { label: "Rename", action: "cutFolder", shortcut: "F2" },
+                    { label: "Delete", action: this.deleteDir, shortcut: "Delete" },
                 ]
             }
         }
     },
 
     async mounted(){
-        let uri = "files";
-        let query = []
-
-        if(this.path)
-            query.push(`path=${encodeURIComponent(this.path)}`);
-
-        if(this.onlyDir)
-            query.push(`onlyDir=${this.onlyDir}`);
-
-        if(query.length > 0)
-            uri += "?" + query.join("&");
-        
-        this.items = await useApi(uri, { method: "GET" });
-
-        for(let item of this.items)
-            if(item && item.pathHash)
-                this.state.fileTree.items[item.pathHash] = { ...this.state.fileTree.items[item.pathHash], ...item};
+        await this.listFiles();
     },
 
     methods: {
+        async listFiles(){
+            let uri = "files";
+            let query = []
+
+            if(this.path)
+                query.push(`path=${encodeURIComponent(this.path)}`);
+
+            if(this.onlyDir)
+                query.push(`onlyDir=${this.onlyDir}`);
+
+            if(query.length > 0)
+                uri += "?" + query.join("&");
+            
+            this.items = await useApi(uri, { method: "GET" });
+
+            for(let item of this.items)
+                if(item && item.pathHash)
+                    this.state.fileTree.items[item.pathHash] = { ...this.state.fileTree.items[item.pathHash], ...item };
+        },
+
         openContextmenu(event){
             const { clientX, clientY } = event;
             this.state.contextMenu.position = { left: clientX, top: clientY };
@@ -125,9 +135,11 @@ export default {
             this.state.contextMenu.open = true;
         },
 
-        selectItem(item){
+        selectItem(item, root){
+            console.log(item, root);
+            this.state.fileTree.selectedRoot = root;
             this.state.fileTree.selectedItem = item;
-            this.$emit("selectItem", item);
+            this.$emit("selectItem", item, root);
         },
 
         async openFileContext(){
@@ -135,11 +147,11 @@ export default {
         },
 
         async openFile(item) {
-            const content = await useApi(`files/stream?filename=${encodeURIComponent(item.filename)}`, {
+            const content = await useApi(`files/open?filename=${encodeURIComponent(item.filename)}`, {
                 method: "GET"
             });
 
-            this.state.openTab({ ...item, content: await content.text(), recent: true });
+            this.state.openTab({ ...content, recent: true });
         },
 
         async createFile(name, item, ref){
@@ -151,7 +163,21 @@ export default {
                 if(ref.listFiles)
                     await ref.listFiles();
 
-                this.openFile(this.state.fileTree.items[createResult.pathHash]);
+                this.openFile(createResult);
+                this.$refs?.notifications.open("File created successfully!");
+            }
+        },
+
+        async createDir(name, item, ref){
+            const createResult = await useApi(`files/dir?path=${encodeURIComponent(item.path)}&name=${encodeURIComponent(name)}`, {
+                method: "POST"
+            });
+
+            if(createResult.pathHash){
+                if(ref.listFiles)
+                    await ref.listFiles();
+
+                this.$refs?.notifications.open("Directory created successfully!");
             }
         },
 
@@ -164,16 +190,40 @@ export default {
             }
         },
 
+        async newDir(){
+            if(this.state.fileTree.selectedItem){
+                if(this.state.fileTree.items[this.state.fileTree.selectedItem.pathHash].isDirectory){
+                    this.state.fileTree.items[this.state.fileTree.selectedItem.pathHash].open = true;
+                    this.state.fileTree.items[this.state.fileTree.selectedItem.pathHash].newDir = true;
+                }
+            }
+        },
+
         async deleteFile(confirm = false){
-            if(!confirm)
-                this.$refs.modalDialogDelete.openDialog('Delete', `Deseja realmente remove o arquivo ${this.state.fileTree.items[this.state.fileTree.selectedItem.pathHash].name} ?`);
-            else {
-                const createResult = await useApi(`files/create?filename=${encodeURIComponent(this.state.fileTree.items[this.state.fileTree.selectedItem.pathHash].filename)}`, {
+            if(confirm === true){
+                await useApi(`files?filename=${encodeURIComponent(this.state.fileTree.items[this.state.fileTree.selectedItem.pathHash].filename)}`, {
                     method: "DELETE"
                 });
 
-                //if(ref.listFiles)
-                //    await ref.listFiles();
+                this.state.fileTree.selectedRoot.listFiles();
+                this.$refs?.notifications.open("File removed successfully!");
+            }
+            else {
+                this.$refs.modalDialogDeleteFile.openDialog('Delete', `Deseja realmente remove o arquivo '${this.state.fileTree.items[this.state.fileTree.selectedItem.pathHash].filename}' ?`);
+            }
+        },
+
+        async deleteDir(confirm = false){
+            if(confirm === true){
+                await useApi(`files/dir?dirname=${encodeURIComponent(this.state.fileTree.items[this.state.fileTree.selectedItem.pathHash].path)}`, {
+                    method: "DELETE"
+                });
+
+                this.state.fileTree.selectedRoot.listFiles();
+                this.$refs?.notifications.open("Directory removed successfully!");
+            }
+            else {
+                this.$refs.modalDialogDeleteDir.openDialog('Delete', `Deseja realmente remove o diretorio '${this.state.fileTree.items[this.state.fileTree.selectedItem.pathHash].name}' ?`);
             }
         }
     }

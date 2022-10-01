@@ -184,11 +184,13 @@ export default {
 
         async fixDefaultValues(){
             for(let component of this.components){
-                for(let subComponent of component.components){
-                    if(component.componentsDafaults?.length > 0){
-                        for(let componentDefault of component.componentsDafaults){
-                            if(componentDefault.component == subComponent.component?.toLowerCase()){
-                                subComponent.default[componentDefault.property] = componentDefault.value;
+                if(component && component.components){
+                    for(let subComponent of component.components){
+                        if(component.componentsDafaults?.length > 0){
+                            for(let componentDefault of component.componentsDafaults){
+                                if(componentDefault.component == subComponent.component?.toLowerCase()){
+                                    subComponent.default[componentDefault.property] = componentDefault.value;
+                                }
                             }
                         }
                     }
@@ -251,7 +253,7 @@ export default {
                 const diffX = event.clientX - this.startDragLeftEvent.event.clientX;
                 const newWidth = this.startDragLeftEvent.width + diffX;
 
-                if(newWidth > 200  && newWidth <= 1000)
+                if(newWidth > 250  && newWidth <= 1000)
                     this.widthLeftbar = newWidth;
             }
         },
@@ -272,7 +274,7 @@ export default {
                 const diffX = event.clientX - this.startDragRightEvent.event.clientX;
                 const newWidth = this.startDragRightEvent.width - diffX;
 
-                if(newWidth > 200  && newWidth <= 1000)
+                if(newWidth > 300  && newWidth <= 1000)
                     this.widthRightbar = newWidth;
             }
         },

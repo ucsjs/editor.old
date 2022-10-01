@@ -3,9 +3,10 @@
         <nav 
             :class="[
                 state.darktheme ? 'text-white bg-neutral-800 border-black' : 'text-gray-800 bg-neutral-200 border-neutral-100', 
-                'flex fixed border-b select-none overflow-auto h-11 z-50 shadow-lg w-full'
+                'flex border-b select-none overflow-auto h-11 z-30 shadow-lg w-full'
             ]" 
             aria-label="Tabs"
+            v-if="state.tabs.length > 0"
         >
             <draggable 
                 v-model="state.tabs" 
@@ -50,7 +51,7 @@
             </draggable>
         </nav>
 
-        <div v-for="(tab, key) in state.tabs" :key="key" class="text-white mt-11">
+        <div v-for="(tab, key) in state.tabs" :key="key" class="text-white">
             <div 
                 v-if="key === state.selectedTab" 
                 ref="activeTab" 

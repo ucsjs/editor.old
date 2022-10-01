@@ -12,6 +12,8 @@
                 :style="{ 
                     position: (transform.position) ? transform.position : '' ,
                     width: returnValueWithSuffix('width', transform),
+                    margin: style?.margin,
+                    padding: style?.padding,
                 }"
                 :initH="parseInt(transform.height)"
                 :minW="16"
@@ -27,14 +29,14 @@
                 @resizing="(d) =>resizeOrMove(d, false)"
                 @resize-end="(d) =>resizeOrMove(d, true)"
                 @drag-end="(d) => resizeOrMove(d, true)"            
-                v-if="!settings.static && settings && resizeData && selectedComponent?.id == settings.id"
+                v-if="!settings.static && settings && resizeData && style?.margin !== 'auto' && selectedComponent?.id == settings.id"
             > 
                 <div             
                     v-if="resizeData"
                     :class="[
                         (selectedComponent?.id == settings.id) ? 'border-red-300' : 'border-purple-200 hover:border-purple-500 border-dashed',
                         (settings.metadata.moveble && !settings.static) ? 'cursor-move' : '',
-                        'border w-full h-full absolute overflow-hidden'
+                        'border w-full h-full overflow-hidden'
                     ]"
                     :title="settings.id"
                     @mouseenter="() => { state.componentOver  = settings }"
@@ -44,19 +46,19 @@
                     <div 
                         :class="[
                             (settings.metadata.moveble && !settings.static) ? 'cursor-move' : '',
-                            'bg-transparent w-full h-full absolute top-0 left-0 bottom-0 right-0 z-50'
+                            'bg-transparent absolute w-full h-full top-0 left-0 bottom-0 right-0 z-50'
                         ]" 
                         v-if="settings.hierarchy.length <= 0"
                     ></div>
 
                     <div 
                         ref="component" 
-                        class="w-full h-full absolute"
+                        class="w-full h-full"
                     >
                         <client-only placeholder="Loading...">
                             <dynamic-renderer 
                                 v-if="settings && style" 
-                                class="w-full h-full absolute"
+                                class="w-full h-full"
                                 :style="style"
                                 :component="settings"
                             >
@@ -92,12 +94,14 @@
                     top: (this.settings.metadata.removeTransform) ? '0px' : returnValueWithSuffix('top', transform),
                     left: (this.settings.metadata.removeTransform) ? '0px' : returnValueWithSuffix('left', transform),
                     bottom: returnValueWithSuffix('bottom', transform),
-                    right: returnValueWithSuffix('right', transform)
+                    right: returnValueWithSuffix('right', transform),
+                    margin: style?.margin,
+                    padding: style?.padding,
                 }"            
                 :class="[
-                    (selectedComponent?.id == settings.id) ? 'border-red-300' : 'border-purple-200 hover:border-purple-500 border-dashed',
+                    (selectedComponent?.id == settings.id) ? 'border-purple-800 outline-dotted outline-2 outline-purple-800' : 'outline-purple-200 hover:outline-purple-500 border-dashed',
                     (settings.metadata.moveble && !settings.static) ? 'cursor-move' : '',
-                    'border w-full h-full absolute overflow-hidden cursor-default'
+                    'w-full h-full overflow-hidden cursor-default outline-dotted outline-1'
                 ]"
                 :title="settings.id"
                 @mouseenter="() => { state.componentOver  = settings }"
@@ -106,12 +110,12 @@
             >
                 <div 
                     ref="component" 
-                    class="w-full h-full absolute"
+                    class="w-full h-full"
                 >
                     <client-only placeholder="Loading...">
                         <dynamic-renderer 
                             v-if="settings && style" 
-                            class="w-full h-full absolute"
+                            class="w-full h-full"
                             :style="style"
                             :component="settings"
                         >
@@ -211,7 +215,8 @@ export default {
                     "padding-top", "padding-right", "padding-bottom", "padding-left",
                     "margin-top", "margin-right", "margin-bottom", "margin-left",
                     "border-bottom-width", "border-left-width", "border-right-width", "border-top-width",
-                    "border-top-left-radius", "border-top-right-radius", "border-bottom-right-radius", "border-bottom-left-radius"
+                    "border-top-left-radius", "border-top-right-radius", "border-bottom-right-radius", "border-bottom-left-radius",
+                    "margin", "padding", "border-width", "border-radius"
                 ]
 
                 let defaultStyle = {
@@ -224,29 +229,16 @@ export default {
 
                 if(updateSubComponents){
                     for(let component of this.settings.components){
-                        for(let property of component.properties){
+                        for(let property of component.properties){ 
                             
                             if(property.changeStyle){
-                                if(typeof component.value[property.name] == "object" && component.value[property.name]?.hex)
+                                if(component.value[property.name]?.hex)
                                     defaultStyle[property.changeStyle.styleVue] = component.value[property.name].hex;
-                                else if(typeof component.value[property.name] == "object" && component.value[property.name]?.src)
+                                else if(component.value[property.name]?.src)
                                     defaultStyle[property.changeStyle.styleVue] = component.value[property.name].src;
-                                else if(component.value[`${property.name}Sufix`]){
-                                    switch(component.value[`${property.name}Sufix`]){
-                                        case "px":
-                                        case "em":
-                                        case "%":
-                                            defaultStyle[property.changeStyle.styleVue] = component.value[property.name] + component.value[`${property.name}Sufix`];
-                                        break;
-                                        default:
-                                            defaultStyle[property.changeStyle.styleVue] = component.value[`${property.name}Sufix`];
-                                        break;
-                                    }
-                                } 
-                                else if(!component.value[`${property.name}Sufix`] && stylePixel.includes(property.changeStyle.style)){
-                                    defaultStyle[property.changeStyle.styleVue] = component.value[property.name] + "px";
-                                } 
-                                else
+                                else if(stylePixel.includes(property.changeStyle.style))
+                                    defaultStyle[property.changeStyle.styleVue] = this.returnValueWithSuffix(property.name, component.value);                            
+                                else if(typeof component.value[property.name] !== "object")
                                     defaultStyle[property.changeStyle.styleVue] = component.value[property.name] + ((property.changeStyle.subfix) ? property.changeStyle.subfix : '');
                             }
                         }
@@ -271,8 +263,14 @@ export default {
                     }
                 }
 
-                if(finalStyles)
-                    this.style = finalStyles;
+                let finalStylesRemoveNull = {};
+                for(let key in finalStyles){
+                    if(finalStyles[key] !== undefined && finalStyles[key] !== null && finalStyles[key] !== "")
+                        finalStylesRemoveNull[key] = finalStyles[key];
+                }
+
+                if(finalStylesRemoveNull)
+                    this.style = finalStylesRemoveNull;
             }
             catch(e){}
         },
@@ -420,10 +418,21 @@ export default {
             const sufix = data[`${namespace}Sufix`] || 'px';
             const lengths = ["px", "cm", "mm", "in", "pt", "pc", "em", "ex", "ch", "rem", "vw", "vh", "vmin", "vmax", "%"]
 
-            if(lengths.includes(sufix))
-                return `${data[namespace]}${sufix}`;
-            else
+            if(data[namespace] != undefined){
+                if(typeof data[namespace] == "string" && data[namespace].includes("px"))
+                    data[namespace] = data[namespace].replace("px", "");
+
+                if(lengths.includes(sufix))
+                    return `${data[namespace]}${sufix}`;
+                else
+                    return sufix;
+            }
+            else if(lengths.includes(sufix))
+                return `0${sufix}`;
+            else if(sufix)
                 return sufix;
+            else
+                return null;
         },
 
         resizeOrMove(newRect, updateComponent) {

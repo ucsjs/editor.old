@@ -12,6 +12,13 @@
 export default {
     props: ["modelValue"],
 
+    mounted(){
+        if(!this.modelValue){
+            this.$emit('update:modelValue', "");
+            this.$emit('changeValue', "");
+        }
+    },
+
     methods: {
         changeValue(v){
             this.$emit('update:modelValue', v);

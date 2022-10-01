@@ -11,6 +11,7 @@ export const useStateStore = defineStore({
         dragging: false,
         loading: false,
         inSaveProcess: false,
+        layout: null,
         themes: {
             light: {
                 bgBody: "bg-conic-to-tr from-gray-900 via-gray-100 to-gray-900",
@@ -36,6 +37,7 @@ export const useStateStore = defineStore({
         },
         fileTree: {
             selectedItem: null,
+            selectedRoot: null,
             items: {}
         },
         hierarchy: {
@@ -46,6 +48,9 @@ export const useStateStore = defineStore({
         fileDialog: {
             open: false,
             cb: null,
+        },
+        newFile: {
+            open: false,
         },
         componentOver: null,
     }),
@@ -186,6 +191,16 @@ export const useStateStore = defineStore({
             });
         },
 
+        async newTerminal(){
+            if(this.layout)
+                this.layout.addGLComponent("terms/termsView", "Terminals");
+        },
+
+        async newFileExplorer(){
+            if(this.layout)
+                this.layout.addGLComponent("filetree/filetreeWindow", "Files");
+        },
+
         saveState(){
             try{
                 const replacerFunc = () => {
@@ -206,9 +221,7 @@ export const useStateStore = defineStore({
 
                 localStorage.setItem("state", JSON.stringify(this, replacerFunc()));
             }
-            catch(e){
-                console.log(e);
-            }
+            catch(e){}
         }
     }
 });

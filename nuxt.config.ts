@@ -57,7 +57,7 @@ export default defineNuxtConfig({
             'composables',
             'modules/**'
         ]
-    },
+    },    
     runtimeConfig: {
         public: {
             api: {
@@ -105,6 +105,12 @@ export default defineNuxtConfig({
                 ...configs[0].resolve.alias,
                 "vscode": path.resolve(__dirname, "./node_modules/monaco-languageclient/lib/vscode-compatibility")
             }
+        },
+        'components:dirs'(dirs) {
+            dirs.push({
+              path: path.join(__dirname, 'components'),
+              prefix: 'awesome'
+            })
         }
     }
 })

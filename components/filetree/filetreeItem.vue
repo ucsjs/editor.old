@@ -7,7 +7,7 @@
                 'p-1 px-4 cursor-pointer flex select-none'
             ]" 
             @click.left="toggleItem(item)"
-            @click.right="selectItem(item)"
+            @click.right="selectItem(item, root)"
         >
             <div :style="{ paddingLeft: `${padding*20}px` }" class="flex">
                 <div class="pr-2 w-6" v-if="item.isDirectory">
@@ -29,7 +29,8 @@
             </div>
         </div>
 
-        <div v-if="state.fileTree.items[item.pathHash].open">            
+        <div v-if="state.fileTree.items[item.pathHash].open">  
+            <!-- New File -->          
             <div 
                 :class="[
                     state.darktheme ? 'text-white hover:bg-neutral-800' : 'hover:bg-neutral-200', 
@@ -57,15 +58,47 @@
                 </div>
             </div>
 
+            <!-- New Diretory -->
+            <div 
+                :class="[
+                    state.darktheme ? 'text-white hover:bg-neutral-800' : 'hover:bg-neutral-200', 
+                    'p-1 px-4 cursor-pointer flex select-none'
+                ]" 
+                v-if="state.fileTree.items[item.pathHash].newDir"
+            >
+                <div :style="{ paddingLeft: `${(padding+1)*20}px` }" class="flex">
+                    <div class="pr-2">
+                        <client-only>
+                            <font-awesome-icon icon="fa-regular fa-folder-open" />
+                        </client-only>
+                    </div>
+
+                    <div style="white-space:nowrap; text-overflow: ellipsis; overflow:hidden; ">
+                        <input 
+                            type="text" 
+                            class="w-full bg-neutral-800 border-[#007fd4] border outline-none h-6" 
+                            @keydown.enter="createDir"
+                            @blur="closeNewDir"
+                            @keydown.esc="closeNewDir"
+                            ref="inputNewDir"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Files and Dirs -->
+
             <filetree-item 
-                v-for="(item, key) in items" 
+                v-for="(subitem, key) in items" 
                 :key="key" 
-                :item="item" 
+                :item="subitem" 
+                :root="this"
                 :padding="padding+1"
                 :onlyDir="onlyDir"
                 @selectItem="selectItem"
                 @openFile="openFile" 
                 @createFile="createFile"
+                @createDir="createDir"
             />
         </div>
     </div>
@@ -79,16 +112,15 @@ export default {
     mixins: [globalMixin],
 
     props: {
+        root: { type: Object },
         item: {
             type: Object,
             default: ""
         },
-
         padding: {
             type: Number,
             default: 0
         },
-
         onlyDir: {
             type: Boolean,
             default: false
@@ -112,6 +144,13 @@ export default {
                             this.$refs.inputNewFile.focus();
                     });
                 }
+
+                if(this.state.fileTree.items[this.item.pathHash].newDir){
+                    this.$nextTick(() => {
+                        if(this.$refs.inputNewDir)
+                            this.$refs.inputNewDir.focus();
+                    });
+                }
             }, 100);
         }
     },  
@@ -125,10 +164,10 @@ export default {
                 if(this.state.fileTree.items[this.item.pathHash].open)
                     await this.listFiles();
                 
-                this.$emit("selectItem", item);
+                this.$emit("selectItem", item, this.root);
             }
             else{
-                this.$emit("selectItem", item);
+                this.$emit("selectItem", item, this.root);
                 this.$emit("openFile", item);
             }       
         },
@@ -150,11 +189,12 @@ export default {
 
             for(let item of this.items)
                 if(item && item.pathHash)
-                    this.state.fileTree.items[item.pathHash] = { ...this.state.fileTree.items[item.pathHash], ...item};
+                    this.state.fileTree.items[item.pathHash] = { ...this.state.fileTree.items[item.pathHash], ...item };
         },
 
-        async selectItem(item){
-            this.$emit("selectItem", item);
+        async selectItem(item, root){
+            this.state.fileTree.selectedRoot = root;
+            this.$emit("selectItem", item, root);
         },
 
         createFile(event, item, ref){            
@@ -168,6 +208,17 @@ export default {
             }
         },
 
+        createDir(event, item, ref){
+            if(event.target){
+                this.$emit("createDir", event.target.value, this.state.fileTree.selectedItem, this);   
+                event.target.value = "";      
+                this.state.fileTree.items[this.item.pathHash].newDir = false;
+            }
+            else{
+                this.$emit("createDir", event, item, ref);   
+            }
+        },
+
         async openFile(item){
             this.$emit("openFile", item);
         },
@@ -175,6 +226,11 @@ export default {
         closeNewFile(event){
             event.target.value = "";
             this.state.fileTree.items[this.item.pathHash].newFile = false
+        },
+
+        closeNewDir(event){
+            event.target.value = "";
+            this.state.fileTree.items[this.item.pathHash].newDir = false
         }
     }
 }

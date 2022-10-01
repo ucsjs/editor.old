@@ -1,7 +1,7 @@
 <template>
     <div class="relative w-full h-full select-none">
         <div 
-            class="bg-neutral-700 w-full h-full grid-background absolute"
+            class="bg-neutral-700 w-full h-full grid-background"
             ref="editor"
             @mousemove="handleDrag" 
             @mouseup="handleDragEnd"
@@ -20,7 +20,7 @@
             > 
                 <div class="justify-center items-center flex h-full relative z-40">
                     <div 
-                        class="m-auto overflow-hidden absolute z-40" 
+                        class="m-auto overflow-hidden z-40" 
                         :style="{
                             backgroundColor: settings.backgroundColor,
                             width: `${viewport.width}px`, 

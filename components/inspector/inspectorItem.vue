@@ -136,7 +136,8 @@ export default {
                 "paddingTop", "paddingRight", "paddingBottom", "paddingLeft",
                 "marginTop", "marginRight", "marginBottom", "marginLeft",
                 "borderBottomWidth", "borderLeftWidth", "borderRightWidth", "borderTopWidth",
-                "radiusTopLeft", "radiusTopRight", "radiusBottomLeft", "radiusBottomRight"
+                "radiusTopLeft", "radiusTopRight", "radiusBottomLeft", "radiusBottomRight",
+                "margin", "padding"
             ],
             hiddenBodyProperty: [
                 "left", "top", "right", "bottom", "width", "height", "size",

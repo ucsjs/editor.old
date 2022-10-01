@@ -12,7 +12,7 @@
 
         <div class="flex flex-col select-none h-full absolute">
             <div class="flex flex-row w-full" style="height: calc(100% - 72px)">
-                <LeftNavbar @leftbar="leftbar" />
+                <!--<LeftNavbar @leftbar="leftbar" />-->
 
                 <layout
                     ref="layout"
@@ -29,6 +29,8 @@
         <context-menu />
 
         <file-dialog />
+
+        <new-file-dialog />
 
         <Notifications ref="notifications" />
     </div>
@@ -135,24 +137,25 @@ export default {
                     type: ItemType.row,
                     content: [
                         {
+                            id: "files",
                             type: "component",
                             title: "Files",
                             componentName: "Files",
-                            header: { position: false, show: false, popout: false, close: false },
-                            isClosable: false,                        
+                            header: { popout: false, maximise: false, minimise: false },                       
                             componentType: "filetree/filetreeWindow",
                             width: 10,
                         },
                         {
                             type: "column",
                             content: [{
+                                id: "content",
                                 type: "component",
                                 title: "Content",
-                                header: { position: false, show: false, popout: false, close: false },
-                                isClosable: false,  
-                                hasHeaders: false,
+                                header: { position: false, popout: false, close: false },
+                                isClosable: false,                                
                                 componentType: "tabsIndex",
                             }, {
+                                id: "terminals",
                                 type: "component",
                                 title: "Terminals",
                                 name: "Terminals",
@@ -166,6 +169,11 @@ export default {
         }
 
         this.$refs.layout.loadGLLayout(layout);
+        this.state.layout = this.$refs.layout;
+
+        setTimeout(() => {
+            this.state.layout = this.$refs.layout;
+        }, 100)
 
         setInterval(() => {
             if(this.$refs.layout && this.$refs.layout?.getLayoutConfig){
@@ -235,12 +243,9 @@ export default {
             const layout = this.$refs.layout?.getLayout();
 
             if(layout){
-                //const component = await layout.findFirstContentItemTypeByIdRecursive("Files", layout.rootItem);
-                //console.log(component);
-                /*if(opened)
-                    component.element.hide();
-                else
-                    component.element.show();*/
+                const container = await this.$refs.layout?.getContainer("files");
+                console.log(container)
+
             }
         },
 
