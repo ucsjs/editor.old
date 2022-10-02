@@ -136,7 +136,6 @@ export default {
         },
 
         selectItem(item, root){
-            console.log(item, root);
             this.state.fileTree.selectedRoot = root;
             this.state.fileTree.selectedItem = item;
             this.$emit("selectItem", item, root);

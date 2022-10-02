@@ -358,8 +358,7 @@ export default {
             }
         },
 
-        contextmenu(){    
-            console.log("contextmenu")        
+        contextmenu(){          
             this.$refs.navbar.open(this.mouseHandler);
         },
 

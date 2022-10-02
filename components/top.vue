@@ -188,6 +188,10 @@ export default {
                             name: 'Preferences',
                             event: () => { },
                         },
+                        {
+                            name: 'Environment Variables',
+                            event: () => { },
+                        },
                     ]
                 },
                 {
@@ -263,15 +267,40 @@ export default {
                                 this.state.newFileExplorer();
                             }
                         },
-                    ]
-                },
-                {
-                    key: "Terminal",
-                    items: [
+                        {
+                            name: 'Database Explorer',
+                            event: () => {
+                                //this.state.newFileExplorer();
+                            }
+                        },
                         {
                             name: 'New Terminal',
                             event: async () => {
                                 await this.state.newTerminal();
+                            }
+                        },
+                    ]
+                },
+                {
+                    key: 'Packages',
+                    items: [
+                        {
+                            name: 'Marketplace',
+                            event: async () => {
+                                //await this.state.newTerminal();
+                            }
+                        },
+                        { separete: true },
+                        {
+                            name: 'Import Package',
+                            event: async () => {
+                                //await this.state.newTerminal();
+                            }
+                        },
+                        {
+                            name: 'Create Package',
+                            event: async () => {
+                                //await this.state.newTerminal();
                             }
                         },
                     ]

@@ -9,7 +9,9 @@
                         :component="items"
                         :subComponent="items"
                         @changeProperty="changeMetadata"
-                        @openObjectEdit="(subComponent, property, keyItem) => $emit('openObjectEdit', items, { ...property, value: items.value[property.name] }, keyItem)"
+                        @openObjectEdit="(subComponent, property, keyItem) => $emit('openObjectEdit', items, property, keyItem, null, (v) => {
+                            items.value[property.name] = v;
+                        }, items.value[property.name])"
                     />
                 </div>
             </div>
@@ -79,23 +81,45 @@ export default {
                         default: { name: "string", type: "string", multi: true } 
                     },
                 ],
-                value: null,  
-                values: {}            
+                value: null,
+                values: {},           
             }
         }
     },
 
     mounted(){
-        this.items.values = this.metadata;
+        if(this.metadata){
+            this.items.value = this.metadata;
 
-        for(let key in this.metadata)
-            this.items.properties.value = this.metadata[key];
+            for(let key in this.metadata)
+                this.items.properties.value = this.metadata[key];
+        }
+        else{
+            this.items.value = {
+                importable: true,
+                namespace: "",
+                group: "Custom",
+                headerColor: { hex: "#664aba" },
+                headerIcon: { src: "" },
+                publicVars: [],
+                inputs: [],
+                outputs: [],
+                events: []
+            }
+        }
     },
 
     methods: {
         changeMetadata(){
             this.$emit('changeMetadata', this.items.value)
         },
+
+        concatProperty(property, plus){
+            for(let key in plus)
+                property[key] = plus[key];
+            
+            return property;
+        }
     }
 }
 </script>

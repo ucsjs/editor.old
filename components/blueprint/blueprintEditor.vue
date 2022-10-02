@@ -57,7 +57,7 @@
                         <div 
                             class="absolute z-40" 
                             :style="{ transform: `translate(${position.x}px, ${position.y}px) scale(${scale})` }" 
-                            ref="contentsTransform"
+                            ref="contentsTransform"                            
                         >
                             <div 
                                 v-for="(item, keyItem) in itemsShow" 
@@ -69,9 +69,10 @@
                                 ]"
                                 @mousedown.left.stop="closeContextmenu"
                                 @click.stop="selectComponent(item)"
+                                @dblclick.left="openComponent(item)"
                             >
                                 <div 
-                                    :class="['p-1 rounded-t-lg border-b border-black text-gray-50 font-bold cursor-move flex min-w-[200px]']"
+                                    :class="['p-1 rounded-t-lg border-b border-black text-gray-50 font-bold cursor-move flex min-w-[230px]']"
                                     :style="{backgroundColor: (item.metadata.headerColor) ? item.metadata.headerColor : headerColor(item.metadata.group)}"
                                     @mousedown.left.stop="handleDragStart(keyItem, $event)"
                                     @dragstart="handleDragStart(keyItem, $event)"
@@ -106,6 +107,14 @@
                                             <client-only>
                                                 <Tooltip :tooltipText="$t('Open')" position="top">
                                                     <font-awesome-icon icon="fa-solid fa-arrow-up-right-from-square"/>
+                                                </Tooltip>
+                                            </client-only>
+                                        </div>
+
+                                        <div class="mr-2 cursor-pointer" v-if="item.metadata?.help" @click.stop="openWindow(item.metadata?.help)">
+                                            <client-only>
+                                                <Tooltip :tooltipText="$t('Help')" position="top">
+                                                    <font-awesome-icon icon="fa-solid fa-circle-question"/>
                                                 </Tooltip>
                                             </client-only>
                                         </div>
@@ -342,7 +351,7 @@
                     :component="objectEdit.item" 
                     :input="objectEdit.input" 
                     :fields="objectEdit.input.default" 
-                    :values="objectEdit.input.value"
+                    :values="objectEdit.explicitedValues || objectEdit.input.value"
                     @save="objectEditCallback"
                     @close="objectEdit.open = false" 
                 />
@@ -494,6 +503,8 @@ export default{
             lineSelected: -1,
             ro: null,
             position: { x: 0, y: 0 },
+            positionBackend: { x: 0, y: 0 },
+            positionFrontend: { x: 0, y: 0 },
             scrollOffset: { x: 0, y: 0 },
             scale: 1,
             moveStartPosition: null,
@@ -594,6 +605,10 @@ export default{
             if(this.$refs.editor)
                 this.linesOffset = this.$refs.editor.getBoundingClientRect();
         }, 1);
+
+        setInterval(() => {
+            this.saveState(true);
+        }, 1000);
 
         this.selectLayer(this.selectedLayer);
         this.$forceUpdate();
@@ -745,6 +760,11 @@ export default{
                 const diffY = this.mouseHandler.top - clientY;
                 const diffX = this.mouseHandler.left - clientX;       
                 this.position = { x: positionX + diffX, y: positionY + diffY };
+
+                if(this.selectedLayer == "Backend")
+                    this.positionBackend = this.position;
+                else
+                    this.positionFrontend = this.position;
             }
 
             if(this.tmpLine !== null && this.tmpLine != undefined)
@@ -786,7 +806,7 @@ export default{
                             }
                         });
 
-                        if(this.selectLayer == "Backend")
+                        if(this.selectedLayer == "Backend")
                             this.connections = this.connectionsShow;
                         else
                             this.connectionsFrontend = this.connectionsShow;
@@ -814,7 +834,7 @@ export default{
                                 }
                             });
 
-                            if(this.selectLayer == "Backend")
+                            if(this.selectedLayer == "Backend")
                                 this.connections = this.connectionsShow;
                             else
                                 this.connectionsFrontend = this.connectionsShow;
@@ -914,7 +934,7 @@ export default{
                 }
             }
 
-            if(this.selectLayer == "Backend")
+            if(this.selectedLayer == "Backend")
                 this.connections = this.connectionsShow;
             else
                 this.connectionsClient = this.connectionsShow;
@@ -964,7 +984,9 @@ export default{
                 scale: this.scale,
                 position: this.position,
                 scrollOffset: this.scrollOffset,
-                metadata: this.metadata
+                metadata: this.metadata,
+                positionBackend: this.positionBackend,
+                positionFrontend: this.positionFrontend
             };
         },
 
@@ -1006,8 +1028,8 @@ export default{
             this.saveState(true);
         },
 
-        openObjectEdit(item, input, keyItem, key, cb = null){
-            this.objectEdit = { item, input, keyItem, key, cb, open: true };
+        openObjectEdit(item, input, keyItem, key, cb = null, explicitedValues){
+            this.objectEdit = { item, input, keyItem, key, cb, open: true, explicitedValues };
         },
 
         async openComponent(item){
@@ -1069,10 +1091,12 @@ export default{
             if(this.selectedLayer == "Backend"){
                 this.itemsShow = this.items;
                 this.connectionsShow = this.connections;
+                this.position = this.positionBackend;
             }
             else{
                 this.itemsShow = this.itemsClient;
                 this.connectionsShow = this.connectionsClient;
+                this.position = this.positionFrontend;
             }
 
             this.$forceUpdate();
@@ -1082,6 +1106,10 @@ export default{
             });
 
             this.saveState(true);
+        },
+
+        openWindow(url){
+            window.open(url, '_blank');
         },
 
         saveState(emit = false){
@@ -1094,7 +1122,9 @@ export default{
                 scale: this.scale,
                 position: this.position,
                 scrollOffset: this.scrollOffset,
-                metadata: this.metadata
+                metadata: this.metadata,
+                positionBackend: this.positionBackend,
+                positionFrontend: this.positionFrontend
             }));
 
             if(emit)

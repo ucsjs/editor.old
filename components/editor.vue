@@ -244,8 +244,6 @@ export default {
 
             if(layout){
                 const container = await this.$refs.layout?.getContainer("files");
-                console.log(container)
-
             }
         },
 
