@@ -1,51 +1,60 @@
 <template>
-    <div
-        :class="[
-            (fixed) ? 'w-full relative' : 'w-96 rounded-md absolute z-50 shadow-md shadow-neutral-800',
-            ' bg-neutral-800 p-2 text-slate-50'
-        ]" 
-        :style="{ 
-            top: `${position.top}px`, 
-            left: `${position.left}px`,
-            height: (fixed) ? 'calc(100% - 90px)' : ''
-        }"
-        v-if="opened || fixed"
-    >
-        <div class="p-1 pb-2" v-if="showTitle">
-            {{ $t("All Blueprints") }}
-        </div>
+    <span>
+        <div 
+            class="bg-transparent absolute top-0 bottom-0 left-0 right-0 z-50" 
+            v-if="!fixed && opened"
+            @click.left="opened = false"
+            @contextmenu="reposition"
+        ></div>
 
-        <div>
-            <input v-model="search" class="w-full p-1 bg-neutral-900 rounded-md" :placeholder="$t('Search')" />
-        </div>
-
-        <div :class="[
-            (fixed) ? 'h-full' : 'h-72 ',
-            'bg-neutral-900 mt-2 p-2 rounded-md overflow-auto relative'
-        ]">
-            <div class="bg-black/80 w-full h-full absolute top-0 left-0 bottom-0 right-0 z-50 m-auto text-center" v-if="loading">
-                <div class="align-middle content-between inline-block bg-white text-black p-4 rounded-lg mt-10">
-                    <div class="flex">
-                        <div class="mr-2">
-                            <div class="spinner"></div>
-                        </div>
-                        <div>{{ $t('Loading...') }}</div>                    
-                    </div>
-                </div>
+        <div
+            :class="[
+                (fixed) ? 'w-full relative' : 'w-72 rounded-md absolute border border-neutral-900 shadow-sm shadow-neutral-800 z-50',
+                ' bg-neutral-800 p-2 text-slate-50'
+            ]" 
+            :style="{ 
+                top: `${position.top}px`, 
+                left: `${position.left}px`,
+                height: (fixed) ? `calc(100% - ${(showTitle) ? '90px' : '40px'} )` : ''
+            }"
+            v-if="opened || fixed"
+            @click.stop=""
+        >
+            <div class="p-1 pb-2" v-if="showTitle">
+                {{ $t("All Blueprints") }}
             </div>
 
-            <blueprint-navbar-item 
-                :items="bluepritsCategories" 
-                :itemsFiltred="bluepritsFiltred" 
-                :dragItem="dragItem"
-                :fixed="fixed"
-                @addComponent="addComponent" 
-                @createGhost="createGhost"
-            />
-        </div>   
-        
-        
-    </div>
+            <div>
+                <input v-model="search" class="w-full p-1 bg-neutral-900 rounded-md" :placeholder="$t('Search')" />
+            </div>
+
+            <div :class="[
+                (fixed) ? 'h-full' : 'h-72 ',
+                'bg-neutral-900 mt-2 p-2 rounded-md overflow-auto relative'
+            ]">
+                <div class="bg-black/80 w-full h-full absolute top-0 left-0 bottom-0 right-0 z-50 m-auto text-center" v-if="loading">
+                    <div class="align-middle content-between inline-block bg-white text-black p-4 rounded-lg mt-10">
+                        <div class="flex">
+                            <div class="mr-2">
+                                <div class="spinner"></div>
+                            </div>
+                            <div>{{ $t('Loading...') }}</div>                    
+                        </div>
+                    </div>
+                </div>
+
+                <contextmenu-item 
+                    :items="bluepritsCategories" 
+                    :itemsFiltred="bluepritsFiltred" 
+                    :dragItem="dragItem"
+                    :fixed="fixed"
+                    :addOnClick="addOnClick"
+                    @addComponent="addComponent" 
+                    @createGhost="createGhost"
+                />
+            </div>   
+        </div>
+    </span>
 </template>
 
 <style scoped>
@@ -70,6 +79,8 @@
 <script>
 export default{
     props: {
+        mouseHandler: { type: Object },
+
         fixed: {
             type: Boolean,
             default: false
@@ -87,6 +98,21 @@ export default{
 
         layer: {
             type: String
+        },
+
+        components: {
+            type: Array,
+            default: []
+        },
+
+        url: {
+            type: String,
+            default: ''
+        },
+
+        addOnClick: {
+            type: Boolean,
+            default: false
         }
     },
 
@@ -97,6 +123,7 @@ export default{
             bluepritsFiltred: [],
             bluepritsCategories: {},
             position: { top: 0, left: 0 },
+            offset: { top: 0, left: 0 },
             search: null,
             loading: true,
         }
@@ -114,16 +141,25 @@ export default{
 
     mounted(){
         this.loadBlueprints();
+
+        if(this.components?.length > 0){
+            this.blueprits = this.components;
+            this.sortBlueprintsCategories();
+            this.loading = false;
+        }
+        else if(this.url){
+            this.loadBlueprints(this.url);
+        }
     },
 
     methods: {
-        async loadBlueprints() {
+        async loadBlueprints(url = null) {
             this.loading = true;
             this.blueprits = [];
             this.bluepritsCategories = {};
 
-            if(this.layer){
-                this.blueprits = await useApi(`blueprints/${this.layer.toLocaleLowerCase()}`, { method: "GET" });
+            if(this.layer || url){
+                this.blueprits = await useApi((url) ? url : `blueprints/${this.layer.toLocaleLowerCase()}`, { method: "GET" });
 
                 if(this.blueprits)
                     this.sortBlueprintsCategories();
@@ -161,9 +197,10 @@ export default{
         },
 
         addComponent(item) {
-            if(!this.fixed){
-                this.$emit("addComponent", item, this.transform);
+            console.log("addComponent");
+            if(!this.fixed || this.addOnClick){
                 this.close();
+                this.$emit("addComponent", item, this.position);
             }
         },
 
@@ -180,6 +217,13 @@ export default{
 
         close(){
             this.opened = false;
+        },
+
+        reposition(){
+            this.position = { 
+                top: this.mouseHandler.top, 
+                left: this.mouseHandler.left
+            };
         },
 
         saveState(){

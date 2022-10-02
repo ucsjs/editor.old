@@ -28,10 +28,12 @@
                         @click="openedState[key] = !openedState[key]"
                         @mousedown.stop="createGhost(subitem)"
                     >
-                        <div>
-                            <client-only v-if="!subitem.metadata.headerIcon?.includes('data:')">
-                                <font-awesome-icon :icon="(subitem.metadata.headerIcon) ? subitem.metadata.headerIcon : headerIcon(subitem.metadata.group)"/>
-                            </client-only>                                        
+                        <div class="w-5 text-center">
+                            <client-only v-if="typeof subitem.metadata.headerIcon == 'string' && !subitem.metadata.headerIcon?.includes('data:')">
+                                <font-awesome-icon :icon="subitem.metadata.icon" v-if="subitem.metadata.icon" />
+                                <font-awesome-icon v-else :icon="(subitem.metadata.headerIcon) ? subitem.metadata.headerIcon : headerIcon(subitem.metadata.group)"/>
+                            </client-only>      
+                            <font-awesome-icon :icon="subitem.icon" v-else-if="subitem.icon" />                          
                             <img v-else :src="subitem.metadata.headerIcon" class="w-4 h-4 mt-1"/>
                         </div>
 
@@ -77,6 +79,11 @@ export default{
             type: Boolean,
             default: false
         },
+
+        addOnClick: {
+            type: Boolean,
+            default: false
+        }
     },
 
     data() {
@@ -108,7 +115,7 @@ export default{
         },
 
         addComponent(item){
-            if(!this.fixed)
+            if(!this.fixed || this.addOnClick)
                 this.$emit("addComponent", item);
         },
 

@@ -1,5 +1,10 @@
 <template>
     <div class="relative w-full h-full select-none">
+        <visual-frontend-blueprints 
+            v-model="frontendBlueprints"
+            @updateValue="updateFrontendBlueprints" 
+        />
+
         <div 
             class="bg-neutral-700 w-full h-full grid-background"
             ref="editor"
@@ -15,7 +20,8 @@
             ></div>
 
             <div 
-                class="grid-contents block relative" 
+                class="grid-contents block relative overflow-auto shadow-black shadow-inner"  
+                style="height: calc(100% - 80px)"
                 @mousedown.left="move"
             > 
                 <div class="justify-center items-center flex h-full relative z-40">
@@ -31,7 +37,6 @@
                         ref="canvas"
                         @mousedown.left.stop="() => { selectItem(state.componentOver) }"
                         @contextmenu.prevent="contextmenu" 
-                        @mouseup.left="closeContextmenu"
                         @click.left.stop="selectItem(state.componentOver)"
                     >
                         <visual-component 
@@ -47,7 +52,6 @@
                             @changeState="saveState"
                             @click.left.stop="() => {}"
                         ></visual-component>
-
                     </div> 
 
                     <div class="absolute h-11 bg-black/50 bottom-3 rounded-md flex z-40">
@@ -98,7 +102,12 @@
                         </Tooltip>
                     </div>
 
-                    <visual-context-menu :components="components" ref="navbar" @addComponent="addComponent" />
+                    <contextmenu 
+                        :mouseHandler="mouseHandler"
+                        :components="components" 
+                        ref="navbar" 
+                        @addComponent="addComponent" 
+                    />
                 </div>
 
                 <div id="grid-margin" class="w-full h-full top-0 left-0 absolute z-10">
@@ -121,7 +130,6 @@
 
 .grid-contents{
     display: block;
-    overflow: hidden;
     touch-action: none;
     outline: 0;
     background-color: transparent;
@@ -190,7 +198,8 @@ export default {
             },
             hierarchy: [],
             body: {},
-            style: {}
+            style: {},
+            frontendBlueprints: []
         }
     },
 
@@ -362,11 +371,14 @@ export default {
             this.$refs.navbar.open(this.mouseHandler);
         },
 
-        closeContextmenu(){
-            this.$refs.navbar.close();
-        },
-
         async addComponent(item, position){
+            if(!position){
+                position = { 
+                    top: this.mouseHandler.top,
+                    left: this.mouseHandler.left 
+                }
+            }
+
             let defaultPosition = {}
 
             for(let componentsDafault of item.componentsDefaults) {
@@ -531,7 +543,6 @@ export default {
         },
 
         unselectItem(){
-            this.closeContextmenu();
             this.$emit("unselectItem");
         },
 
@@ -543,7 +554,8 @@ export default {
                 viewport: this.viewport,
                 body: this.body,
                 hierarchy: this.hierarchy.filter((item) => item),
-                componentIndex: this.componentIndex
+                componentIndex: this.componentIndex,
+                frontendBlueprints: this.frontendBlueprints
             }
         },
 
@@ -657,6 +669,11 @@ export default {
         dropComponent(){            
             this.state.hierarchy.ghost = null;
         }, 
+
+        updateFrontendBlueprints(componentList){
+            this.frontendBlueprints = componentList;
+            this.saveState(true);
+        },
 
         saveState(emit = false){
             localStorage.setItem(`page-${this.tab.name.replace(/\./, "-")}`, JSON.stringify(this.getValue()));

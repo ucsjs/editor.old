@@ -25,7 +25,7 @@
             <div 
                 :style="{width: `calc(100% - ${(widthLeftbar)}px) !important`}"
                 :class="[
-                    (overCanvas) ? 'border-yellow-300' : 'border-transparent',
+                    (overCanvas) ? 'border-neutral-700' : 'border-transparent',
                     'grid-background select-none border overflow-scroll absolute right-0 top-0'
                 ]" 
                 style="bottom: 45px;"
@@ -41,7 +41,7 @@
                 ></div>
 
                 <div 
-                    class="grid-contents block" 
+                    class="grid-contents block shadow-black shadow-inner" 
                     style="width: 5000px; height: 5000px" 
                     ref="contents"  
                     @click="selectComponent(null)"
@@ -52,7 +52,7 @@
                     <div                     
                         class="relative block w-full h-full" 
                         @contextmenu.prevent="contextmenu" 
-                        @mousedown.left="closeContextmenu"
+                        @mousedown.left="unselectLine"
                     >
                         <div 
                             class="absolute z-40" 
@@ -67,7 +67,7 @@
                                     (selectedComponent?.componentKey === item?.componentKey) ? 'border-red-700 hover:border-red-800' : 'border-black hover:border-neutral-800',
                                     'rounded-xl absolute  border-2 shadow-neutral-800 shadow-md bg-neutral-900 bg-opacity-80  z-40'
                                 ]"
-                                @mousedown.left.stop="closeContextmenu"
+                                @mousedown.left.stop="unselectLine"
                                 @click.stop="selectComponent(item)"
                                 @dblclick.left="openComponent(item)"
                             >
@@ -337,9 +337,10 @@
                     </div>
                 </div>
 
-                <blueprint-navbar 
+                <contextmenu
                     ref="navbar"
                     :layer="selectedLayer"
+                    :mouseHandler="mouseHandler"
                     @addComponent="addComponent" 
                     @onPointer="onPointer" 
                 />  
@@ -370,12 +371,12 @@
 
                 <!-- Components -->
                 <div 
-                    class="absolute top-[300px] left-0 w-full bg-neutral-800 border-r border-t border-black" 
+                    class="absolute top-[300px] left-0 w-full bg-neutral-800 border-r border-black" 
                     :style="{ height: 'calc(100% - 300px)'}"
                 >
                     <div class="p-2 bg-neutral-900 border-b border-black">{{ $t("Blueprints") }}</div>
 
-                    <blueprint-navbar 
+                    <contextmenu 
                         :fixed="true" 
                         :showTitle="false" 
                         :dragItem="true" 
@@ -387,8 +388,8 @@
 
                 <div 
                     :class="[
-                        (startDragLeft) ? 'bg-blue-500' : '',
-                        'resizeRight w-1 hover:bg-blue-500 h-full absolute right-0 z-40'
+                        (startDragLeft) ? 'bg-[#444444]' : '',
+                        'resizeRight w-1 hover:bg-[#444444] h-full absolute right-0 z-40'
                     ]"
                     @mouseup.stop="handleDragEndLeft"
                     @mousedown="handleDragStartLeft"
@@ -486,6 +487,7 @@ export default{
             },
             mouseHandler: { top: 200, left: 200 }, 
             mouseHandlerFull: { top: 200, left: 200 }, 
+            offset: { top: 0, left: 0 },
             items:[],
             connections: [],
             itemsClient: [],
@@ -966,12 +968,11 @@ export default{
             this.$refs.navbar.open(this.mouseHandler);
         },
 
-        closeContextmenu(){
+        unselectLine(){
             if(this.$refs.navbar.opened && this.tmpLine)
                 this.tmpLine = null;
             
             this.lineSelected = -1;
-            this.$refs.navbar.close();
         },
 
         getValue(){

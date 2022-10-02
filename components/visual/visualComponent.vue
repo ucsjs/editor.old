@@ -1,11 +1,11 @@
 <template>
     <div :class="[
-        (settings.visibility) ? 'visible' : 'invisible',
-        (!settings.smView && viewport?.type == 'mobile') ? 'opacity-50' : '',
-        (!settings.mdView && viewport?.type == 'tablet') ? 'opacity-50' : '',
-        (!settings.lgView && viewport?.type == 'desktop') ? 'opacity-50' : '',
+        (settings?.visibility) ? 'visible' : 'invisible',
+        (!settings?.smView && viewport?.type == 'mobile') ? 'opacity-50' : '',
+        (!settings?.mdView && viewport?.type == 'tablet') ? 'opacity-50' : '',
+        (!settings?.lgView && viewport?.type == 'desktop') ? 'opacity-50' : '',
         'cursor-default'
-    ]">
+    ]" v-if="settings">
         <client-only>
             <!-- eslint-disable -->
             <vue-drag-resize  
@@ -223,7 +223,7 @@ export default {
                     width: (this.transform.widthAuto) ? 'auto' : `${this.transform.width}px`, 
                     height: (this.transform.heightAuto) ? 'auto' : `${this.transform.height}px`,
                     transform: `scale(${this.transform.scale}) rotate(${this.transform.rotate}deg)`,
-                    visibility: this.settings.visibility ? 'visible' : 'hidden',
+                    visibility: this.settings?.visibility ? 'visible' : 'hidden',
                     zIndex: this.transform.zIndex
                 };
 

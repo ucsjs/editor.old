@@ -41,16 +41,38 @@
                         @mouseover="mouseInCanvas = true"
                         @mouseleave="mouseInCanvas = false"
                     >
-                        <visual-editor-hierarchy 
-                            :tab="tab" 
-                            :canvas="canvas"
-                            :components="components" 
-                            v-if="canvas && tab" 
-                            @changeState="changeState"
-                            @selectComponent="selectComponent"
-                            @addComponent="addComponent"
-                            @mouseover="context = 'hierarchy'"
-                        />
+                        
+                        <div class="top-0 w-full h-[400px] bg-neutral-800 border-b border-black">
+                            <div class="p-2 bg-neutral-900 border-b border-black">{{ $t("Hierarchy") }}</div>
+
+                            <visual-editor-hierarchy 
+                                :tab="tab" 
+                                :canvas="canvas"
+                                :components="components" 
+                                v-if="tab" 
+                                @changeState="changeState"
+                                @selectComponent="selectComponent"
+                                @addComponent="addComponent"
+                                @mouseover="context = 'hierarchy'"
+                            />
+                        </div>
+
+                        <!-- Components -->
+                        <div 
+                            class="absolute top-[440px] left-0 w-full bg-neutral-800 border-r border-black overflow-hidden" 
+                            :style="{ height: 'calc(100% - 440px)'}"
+                            v-if="$refs.canvas?.components"
+                        >
+                            <div class="p-2 bg-neutral-900 border-b border-black h-[41px]" >{{ $t("Components") }}</div>
+
+                            <contextmenu
+                                :fixed="true" 
+                                :dragItem="true" 
+                                :showTitle="false"
+                                :components="$refs.canvas.components"
+                                @createGhost="createGhost"
+                            />
+                        </div>
 
                         <div 
                             :class="['resizeRight hover:bg-[#444444] w-1 h-full absolute right-0 z-40']"
@@ -90,12 +112,11 @@
                     </div>
 
                     <div 
-                        :class="[
-                            (state.hierarchy.ghost) ? 'cursor-not-allowed' : '',
-                            'relative flex'
-                        ]"
+                        :class="[(state.hierarchy.ghost) ? 'cursor-not-allowed' : '', 'relative ']"
                         :style="{width: `${widthRightbar}px !important`}"
                     >
+                        <div class="p-2 bg-neutral-900 border-b border-l border-black">{{ $t("Properties") }}</div>
+
                         <visual-editor-inspector          
                             ref="inspector"    
                             :componentsDefaults="components"               

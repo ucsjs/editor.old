@@ -5,25 +5,17 @@
         @contextmenu.prevent="() => {}"
     >
         <Top />
+        
+        <div class="select-none w-screen absolute" style="height: calc(100% - 32px)">
+            <layout
+                ref="layout"
+                path="../"
+                style="width: 100%; height: 100%"
+            ></layout>
 
-        <div ref="move" class="fixed w-screen h-screen bg-transparent z-50" @mousemove="handleDrag" @mouseup="handleDragEnd" v-if="startDrag"></div>
-
-        <div ref="move" class="fixed w-screen h-screen bg-transparent z-50" @mousemove="handleDragTop" @mouseup="handleDragEndTop" v-if="startDragTop"></div>
-
-        <div class="flex flex-col select-none h-full absolute">
-            <div class="flex flex-row w-full" style="height: calc(100% - 72px)">
-                <!--<LeftNavbar @leftbar="leftbar" />-->
-
-                <layout
-                    ref="layout"
-                    path="../"
-                    style="width: 100%; height: 100%"
-                ></layout>
-            </div>
-
-            <div class="flex flex-row w-full">
+            <!--<div class="flex flex-row w-full">
                 <Footer />
-            </div>
+            </div>-->
         </div>
 
         <context-menu />

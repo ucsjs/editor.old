@@ -1,6 +1,6 @@
 <template>
     <div 
-        class="bg-neutral-900 h-full w-full py-4 relative z-30 border-r-2 border-black overflow-auto" 
+        class="bg-neutral-800 h-full w-full py-4 pt-2 border-r border-black relative z-30 overflow-auto" 
         v-if="canvas"
         ref="hierarchy"
         @contextmenu.prevent="openContextmenu" 

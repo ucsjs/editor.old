@@ -1,10 +1,12 @@
 <template>
     <div 
-        class="bg-neutral-800/80 h-full w-full overflow-hidden overflow-y-auto border-l-2 relative border-black" 
+        ref="inspector"
+        class="bg-neutral-800/80 w-full overflow-hidden overflow-y-auto border-l relative border-black" 
+        style="height:calc(100% - 50px);"
         @click="closeAllWindowOpened"
         @mouseup="dropComponent(null)"
     >
-        <div v-if="component" class="relative min-h-screen">
+        <div v-if="component" class="relative min-h-screen bg-neutral-900">
             <div class="bg-neutral-900 border-b border-black text-lg font-bold p-2 uppercase text-center" v-if="eventSelectedLabel && event">
                 {{ eventSelectedLabel }}
             </div>
@@ -302,7 +304,7 @@
             </div>
 
             <!-- Add Component -->
-            <div class="m-auto mt-2 w-full text-center text-sm text-neutral-400 mb-16" v-if="!eventSelectedVariation && !event">
+            <div class="m-auto mt-2 w-full text-center text-sm text-neutral-400 pb-10" v-if="!eventSelectedVariation && !event">
                 <button
                     class="bg-neutral-800 hover:bg-neutral-700 p-1 px-6 border border-black rounded-sm"
                     @click="toggleAddComponent"
@@ -310,15 +312,13 @@
                     {{ $t("Add Component") }}
                 </button>
 
-                <div class="border bg-neutral-800 border-black m-2 mb-10 h-96 flex flex-col" v-if="openedAddComponent">
+                <div class="border bg-neutral-800 border-black m-2  h-96 flex flex-col" v-if="openedAddComponent">
                     <div class="border-b p-2 border-black w-full">
                         <input v-model="search" class="bg-neutral-900 w-full p-0 pl-2 text-sm rounded-md border border-neutral-700 focus:border-blue-600" type="text" :placeholder="$t('Search...')" />
                     </div>
 
-                    <div class="bg-neutral-700 py-1 align-middle text-center">{{ $t("Component") }}</div>
-
                     <div class="overflow-y-scroll w-full h-full flex flex-1 p-1">
-                        <visual-context-item 
+                        <contextmenu-item 
                             :items="componentsCategories" 
                             :itemsFiltred="componentsFiltred" 
                             @addComponent="addComponent" 
@@ -359,7 +359,6 @@
                     />
                 </div>
             </div>
-            
         </div>
     </div>
 </template>
@@ -481,6 +480,7 @@ export default {
     methods: {
         async loadComponents(){
             this.components = await useApi(`visual/subcomponents`, { method: "GET" });
+            
             this.sortComponentsCategories();
             this.$forceUpdate();
         },
@@ -500,6 +500,7 @@ export default {
                     return obj;
                 }, {}
             );
+            console.log(this.componentsCategories);
 
             this.$forceUpdate();
             this.$nextTick();
@@ -557,6 +558,10 @@ export default {
 
         toggleAddComponent(){
             this.openedAddComponent = !this.openedAddComponent;
+            
+            setTimeout(() => {
+                this.$refs.inspector.scrollTop = this.$refs.inspector.scrollHeight;
+            }, 100);
         },
 
         changeProperty(){
