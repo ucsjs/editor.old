@@ -4,6 +4,14 @@
         @mousemove="handleDrag" 
         ref="blueprintEditor"
     >
+        <div 
+            ref="moveLeft" 
+            class="fixed w-screen h-screen bg-transparent z-50" 
+            @mousemove="handleDragLeft" 
+            @mouseup="handleDragEndLeft" 
+            v-if="startDragLeft"
+        ></div>
+
         <div class="bg-black/80 fixed h-full w-full z-50 m-auto text-center" style="z-index: 1000" v-if="loading">
             <div class="align-middle content-between inline-block bg-white text-black p-4 rounded-lg mt-56">
                 <div class="flex">
@@ -26,10 +34,9 @@
             <div 
                 :style="{width: `calc(100% - ${(widthLeftbar)}px) !important`}"
                 :class="[
-                    (overCanvas) ? 'border-neutral-700' : 'border-transparent',
-                    'grid-background select-none border overflow-scroll absolute right-0 top-0'
+                    'grid-background select-none overflow-scroll absolute right-0 top-0'
                 ]" 
-                style="bottom: 45px;"
+                style="bottom: 35px;"
                 @mousemove="handleDrag" 
                 @mouseup="handleDragEnd" 
                 @scroll="refreshLines"
@@ -55,6 +62,7 @@
                         @contextmenu.prevent="contextmenu" 
                         @mousedown.left="unselectLine"
                     >
+                        <!-- Components -->
                         <div 
                             class="absolute z-40" 
                             :style="{ transform: `translate(${position.x}px, ${position.y}px) scale(${scale})` }" 
@@ -65,15 +73,15 @@
                                 :key="keyItem"
                                 :style="{ top: `${item.position.top}px`, left: `${item.position.left}px` }"
                                 :class="[
-                                    (selectedComponent?.componentKey === item?.componentKey) ? 'border-red-700 hover:border-red-800' : 'border-black hover:border-neutral-800',
-                                    'rounded-xl absolute  border-2 shadow-neutral-800 shadow-md bg-neutral-900 bg-opacity-80  z-40'
+                                    (selectedComponent?.componentKey === item?.componentKey) ? 'border-red-700 hover:border-red-800' : 'border-black hover:border-black',
+                                    'rounded-lg absolute border-2 shadow-sm bg-neutral-900 bg-opacity-80 z-40'
                                 ]"
                                 @mousedown.left.stop="unselectLine"
                                 @click.stop="selectComponent(item)"
                                 @dblclick.left="openComponent(item)"
                             >
                                 <div 
-                                    :class="['p-1 rounded-t-lg border-b border-black text-gray-50 font-bold cursor-move flex min-w-[230px]']"
+                                    :class="['p-1 rounded-t-md border-b border-black text-gray-50 font-bold cursor-move flex min-w-[230px]']"
                                     :style="{backgroundColor: (item.metadata.headerColor) ? item.metadata.headerColor : headerColor(item.metadata.group)}"
                                     @mousedown.left.stop="handleDragStart(keyItem, $event)"
                                     @dragstart="handleDragStart(keyItem, $event)"
@@ -282,6 +290,7 @@
                             </div>
                         </div>
 
+                        <!-- Lines -->
                         <blueprint-line-connector 
                             v-for="(line, key) in lines" 
                             :selected="lineSelected == key" 
@@ -308,6 +317,7 @@
                             ref="tmpLine"
                         ></blueprint-line-connector>
 
+                        <!-- Aux navbar -->
                         <div class="fixed h-11 bg-black/50 rounded-md flex m-4">
                             <Tooltip :tooltipText="$t('Zoom in')" position="top" class="flex" @click="scaleIn">
                                 <button class="text-white px-3">
@@ -344,11 +354,11 @@
                                     </button> 
                                 </div>
                             </div>
-                            
                         </div>
                     </div>
                 </div>
 
+                <!-- Context -->
                 <contextmenu
                     ref="navbar"
                     :layer="selectedLayer"
@@ -372,6 +382,7 @@
                 <blueprint-item-ghost :item="componentGhost" :position="componentGhostPosition" />
             </div>
 
+            <!-- Leftbar -->
             <div class="relative flex" :style="{width: `${widthLeftbar}px !important`}">
                 <div class="top-0 w-full h-[300px] bg-neutral-800 border-b border-black">
                     <blueprint-metadata 
@@ -381,7 +392,6 @@
                     />
                 </div>
 
-                <!-- Components -->
                 <div 
                     class="absolute top-[300px] left-0 w-full bg-neutral-800 border-r border-black" 
                     :style="{ height: 'calc(100% - 390px)'}"
@@ -410,7 +420,6 @@
                 ></div>
             </div>
         </div>
-        
     </div>
 </template>
 
@@ -484,6 +493,7 @@ export default{
             tmpLine: null,
             tmpComponentHover: null,
             startDragLeft: false,
+            startDragLeftEvent: null,
             lineOptions: {
                 color: 'white',
                 size: 2,
@@ -498,7 +508,7 @@ export default{
                 position: { top: 200, left: 700 } 
             },
             mouseHandler: { top: 200, left: 200 }, 
-            mouseHandlerFull: { top: 200, left: 200 }, 
+            mouseHandlerFull: { top: 200, left: 200 },            
             offset: { top: 0, left: 0 },
             items:[],
             connections: [],
@@ -594,6 +604,9 @@ export default{
 
             if(cacheParse.selectedLayer)
                 this.selectedLayer = cacheParse.selectedLayer;
+
+            if(cacheParse.widthLeftbar)
+                this.widthLeftbar = cacheParse.widthLeftbar;
         }
 
         this.selectLayer(this.selectedLayer);
@@ -1140,9 +1153,31 @@ export default{
             window.open(url, '_blank');
         },
 
+        handleDragStartLeft(event){
+            this.startDragLeft = true;
+            this.startDragLeftEvent = { event, width: this.widthLeftbar };
+        },
+
+        handleDragLeft(event){
+            if(this.startDragLeft){
+                const diffX = event.clientX - this.startDragLeftEvent.event.clientX;
+                const newWidth = this.startDragLeftEvent.width + diffX;
+
+                if(newWidth > 300  && newWidth <= 1000)
+                    this.widthLeftbar = newWidth;
+            }
+        },
+
+        handleDragEndLeft(event){
+            this.startDragLeftEvent = null;
+            this.startDragLeft = false;
+            this.saveState();
+        },
+
         saveState(emit = false){
             localStorage.setItem(`blueprint-${this.tab.name.replace(/\./, "-")}`, JSON.stringify({
                 selectedLayer: this.selectedLayer,
+                widthLeftbar: this.widthLeftbar,
                 items: this.items,
                 itemsClient: this.itemsClient,
                 connections: this.connections,

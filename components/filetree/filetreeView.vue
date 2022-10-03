@@ -1,6 +1,6 @@
 <template>
     <div 
-        :class="[state.darktheme ? 'bg-neutral-900 border-black' : 'bg-neutral-100', 'h-full border-r w-full select-none relative overflow-auto']"
+        :class="[state.darktheme ? 'bg-neutral-800 border-black' : 'bg-neutral-100', 'h-full border-r w-full select-none relative overflow-auto']"
         @contextmenu.prevent="openContextmenu" 
     >   
         <filetree-item 

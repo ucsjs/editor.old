@@ -25,12 +25,16 @@
             </div>
 
             <div>
-                <input v-model="search" class="w-full p-1 bg-neutral-900 rounded-md" :placeholder="$t('Search')" />
+                <input 
+                    v-model="search" 
+                    class="w-full p-1 bg-neutral-900 border border-black rounded-md" 
+                    :placeholder="$t('Search')" 
+                />
             </div>
 
             <div :class="[
-                (fixed) ? 'h-full' : 'h-72 ',
-                'bg-neutral-900 mt-2 p-2 rounded-md overflow-auto relative'
+                (fixed) ? 'h-full' : 'h-72',
+                'bg-neutral-900 border border-black mt-2 p-2 rounded-md overflow-auto relative'
             ]">
                 <div class="bg-black/80 w-full h-full absolute top-0 left-0 bottom-0 right-0 z-50 m-auto text-center" v-if="loading">
                     <div class="align-middle content-between inline-block bg-white text-black p-4 rounded-lg mt-10">
@@ -198,8 +202,8 @@ export default{
 
         addComponent(item) {
             if(!this.fixed || this.addOnClick){
-                this.close();
                 this.$emit("addComponent", item, this.position);
+                this.close();
             }
         },
 

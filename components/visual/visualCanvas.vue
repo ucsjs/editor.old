@@ -22,23 +22,25 @@
             ></div>
 
             <div 
-                class="grid-contents block relative overflow-auto shadow-black shadow-inner"  
+                class="grid-contents block relative overflow-auto bg-white shadow-black shadow-inner"  
                 style="height: calc(100% - 80px)"
                 @mousedown.left="move"
             > 
                 <div class="justify-center items-center flex h-full relative z-40">
                     <div 
-                        class="m-auto overflow-hidden z-40" 
+                        class="m-auto z-40 border border-black" 
                         :style="{
-                            backgroundColor: settings.backgroundColor,
+                            backgroundColor: settings.backgroundColor.trim() || '#FFFFFF', 
                             width: `${viewport.width}px`, 
                             minHeight: `${viewport.height}px`, 
                             transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+                            'box-shadow': '2px 2px 5px 1px black',
                             ...style
                         }"
                         ref="canvas"
                         @mousedown.left.stop="() => { selectItem(state.componentOver) }"
-                        @contextmenu.prevent="contextmenu" 
+                        @mouseenter="() => { state.componentOver = null }"
+                        @contextmenu.prevent="contextmenu"                         
                         @click.left.stop="selectItem(state.componentOver)"
                     >
                         <visual-component 
@@ -56,7 +58,7 @@
                         ></visual-component>
                     </div> 
 
-                    <div class="absolute h-11 bg-black/50 bottom-3 rounded-md flex z-40">
+                    <div class="absolute h-11 bg-black/50 bottom-3 right-3 rounded-md flex z-40">
                         <Tooltip :tooltipText="$t('Desktop')" position="top" class="flex" @click="viewportDesktop">
                             <button class="text-white px-3">
                                 <client-only><font-awesome-icon icon="fa-solid fa-desktop" /></client-only>
@@ -104,6 +106,21 @@
                         </Tooltip>
                     </div>
 
+                    <div class="absolute h-10 bg-black/50 text-sm bottom-3 left-3 rounded-md flex z-40 p-2 px-4 mt-0.5" v-show="this.state.componentOver">
+                        <div class="flex text-white text-sm">
+                            {{ this.state.componentOver?.id }} [{{ this.state.componentOver?.namespace }}] :: 
+                        </div>
+
+                        <div class="flex text-white text-sm ml-1">
+                            {{ this.state.componentOver?.Transform.left }}X {{ this.state.componentOver?.Transform.top }}Y ::
+                        </div>
+
+                        <div class="flex text-white text-sm ml-1">
+                            {{ this.state.componentOver?.Transform.width }}W {{ this.state.componentOver?.Transform.height }}H
+                        </div>
+
+                    </div>
+
                     <contextmenu 
                         :mouseHandler="mouseHandler"
                         :components="components" 
@@ -112,13 +129,13 @@
                     />
                 </div>
 
-                <div id="grid-margin" class="w-full h-full top-0 left-0 absolute z-10">
+                <!--<div id="grid-margin" class="w-full h-full top-0 left-0 absolute z-10">
                     <div class="border border-dashed border-sky-500/50 h-full w-[1px] absolute z-30" :style="{ left: `${canvasOffset.x - editorOffset.x}px`}"></div>
                     <div class="border border-dashed border-sky-500/50 h-full w-[1px] absolute z-30" :style="{ left: `${(canvasOffset.x - editorOffset.x) + viewport.width}px`}"></div>
                 
                     <div class="border border-dashed border-sky-500/50 h-[1px] w-full absolute z-30" :style="{ top: `${canvasOffset.y - editorOffset.y}px`}"></div>
                     <div class="border border-dashed border-sky-500/50 h-[1px] w-full absolute z-30" :style="{ top: `${(canvasOffset.y - editorOffset.y)+ viewport.height}px`}"></div>
-                </div>
+                </div>-->
             </div>
         </div>
     </div>
@@ -126,8 +143,8 @@
 
 <style scoped>
 .grid-background{
-    background-color: #434343;
-    background-image:linear-gradient(#434343, #282828);
+    background-color: #232323;
+    background-image:linear-gradient(#232323, #282828);
 }
 
 .grid-contents{
@@ -163,8 +180,11 @@
 
 <script>
 import { useStateStore } from "~~/store/state.store";
+import componentsMixins from "@/mixins/components";
 
 export default {
+    mixins: [componentsMixins],
+
     props:{
         tab: {
             type: Object,
@@ -207,8 +227,8 @@ export default {
     },
 
     async mounted(){
-        if(this.tab.content){
-            const metadata = JSON.parse(this.tab.content);
+        if(this.tab?.content){
+            const metadata = JSON.parse(this.tab?.content);
 
             for(let key in metadata)
                 this[key] = metadata[key];
@@ -278,13 +298,13 @@ export default {
                 if(componentDefault.sign === component.sign){
                     component.metadata = { ...componentDefault.metadata, ...component.metadata };
 
-                    if(componentDefault.template != component.template)
+                    if(componentDefault?.template != component?.template)
                         component.template = componentDefault.template;
 
-                    if(componentDefault.content != component.content)
-                        component.content = componentDefault.content;
+                    if(componentDefault?.content != component?.content)
+                        component.content = componentDefault?.content;
 
-                    if(componentDefault.editor != component.editor)
+                    if(componentDefault?.editor != component?.editor)
                         component.editor = componentDefault.editor;
 
                     for(let subComponentDefault of componentDefault.components){
@@ -397,11 +417,14 @@ export default {
 
             let defaultPosition = {}
 
-            for(let componentsDafault of item.componentsDefaults) {
-                if(componentsDafault.property == "left" || componentsDafault.property == "top") {
-                    defaultPosition[componentsDafault.property] = parseInt(componentsDafault.value);
+            if(item?.componentsDefaults){
+                for(let componentsDafault of item?.componentsDefaults) {
+                    if(componentsDafault.property == "left" || componentsDafault.property == "top") {
+                        defaultPosition[componentsDafault.property] = parseInt(componentsDafault.value);
+                    }
                 }
             }
+            
 
             this.componentIndex++;
             const offsetX = this.editorOffset.x - this.canvasOffset.x;
@@ -455,28 +478,31 @@ export default {
                 positionY: this.position.y 
             };
 
+            this.state.componentOver = null;
             this.moveEvent = true;
         },
 
         handleDrag(event){
-            const { clientX, clientY } = event;
-            const editorOffset = this.$refs.editor?.getBoundingClientRect();
-            
-            this.mouseHandler.top = clientY - editorOffset.y - 10;
-            this.mouseHandler.left = clientX - editorOffset.x - 10;                
-            
-            if(this.moveEvent){      
-                const { clientX, clientY, positionX, positionY } = this.moveStartPosition;
-                const diffY = this.mouseHandler.top - clientY;
-                const diffX = this.mouseHandler.left - clientX;       
-                this.position = { x: positionX + diffX, y: positionY + diffY };
+            if(this.$refs && this.$refs.editor){
+                const { clientX, clientY } = event;
+                const editorOffset = this.$refs.editor?.getBoundingClientRect();
+                
+                this.mouseHandler.top = clientY - editorOffset.y - 10;
+                this.mouseHandler.left = clientX - editorOffset.x - 10;                
+                
+                if(this.moveEvent){      
+                    const { clientX, clientY, positionX, positionY } = this.moveStartPosition;
+                    const diffY = this.mouseHandler.top - clientY;
+                    const diffX = this.mouseHandler.left - clientX;       
+                    this.position = { x: positionX + diffX, y: positionY + diffY };
+                }
+
+                if(this.$refs.editor && this.$refs.editor.getBoundingClientRect)
+                    this.editorOffset = this.$refs.editor.getBoundingClientRect();
+
+                if(this.$refs.canvas && this.$refs.canvas.getBoundingClientRect)
+                    this.canvasOffset = this.$refs.canvas.getBoundingClientRect();
             }
-
-            if(this.$refs.editor && this.$refs.editor.getBoundingClientRect)
-                this.editorOffset = this.$refs.editor.getBoundingClientRect();
-
-            if(this.$refs.canvas && this.$refs.canvas.getBoundingClientRect)
-                this.canvasOffset = this.$refs.canvas.getBoundingClientRect();
         },
 
         async addSubcomponent(elementId, component, root){

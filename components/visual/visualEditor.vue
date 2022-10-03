@@ -36,46 +36,49 @@
             {{ state.hierarchy.ghost.id }}
         </div>
 
-        <div class="grid-background select-none absolute left-0 right-0 top-0 bottom-11">
+        <div class="grid-background select-none absolute left-0 right-0 top-0 bottom-8">
             <div class="flex flex-col h-full">                
                 <div class="flex flex-row h-full relative">
                     <div 
-                        class="relative flex" 
+                        class="relative flex flex-col" 
                         :style="{width: `${widthLeftbar}px !important`}"
                         @mouseover="mouseInCanvas = true"
                         @mouseleave="mouseInCanvas = false"
                     >
                         
-                        <div class="top-0 w-full h-[400px] bg-neutral-800 border-b border-black">
-                            <div class="p-2 bg-neutral-900 border-b border-black">{{ $t("Hierarchy") }}</div>
+                        <div class="top-0 w-full  bg-neutral-800 border-b border-black flex flex-1 flex-col">
+                            <div class="p-2 bg-neutral-900 border-b border-black border-r flex h-11">{{ $t("Hierarchy") }}</div>
 
-                            <visual-editor-hierarchy 
-                                :tab="tab" 
-                                :canvas="canvas"
-                                :components="components" 
-                                v-if="tab" 
-                                @changeState="changeState"
-                                @selectComponent="selectComponent"
-                                @addComponent="addComponent"
-                                @mouseover="context = 'hierarchy'"
-                            />
+                            <div class="flex flex-col h-full">
+                                <visual-editor-hierarchy 
+                                    :tab="tab" 
+                                    :canvas="canvas"
+                                    :components="components" 
+                                    v-if="tab" 
+                                    @changeState="changeState"
+                                    @selectComponent="selectComponent"
+                                    @addComponent="addComponent"
+                                    @mouseover="context = 'hierarchy'"
+                                />
+                            </div>
                         </div>
 
                         <!-- Components -->
                         <div 
-                            class="absolute top-[440px] left-0 w-full bg-neutral-800 border-r border-black overflow-hidden" 
-                            :style="{ height: 'calc(100% - 440px)'}"
+                            class=" bg-neutral-800 border-r border-black overflow-hidden flex flex-1 flex-col" 
                             v-if="$refs.canvas?.components"
                         >
-                            <div class="p-2 bg-neutral-900 border-b border-black h-[41px]" >{{ $t("Components") }}</div>
+                            <div class="p-2 bg-neutral-900 border-b border-black flex h-11">{{ $t("Components") }}</div>
 
-                            <contextmenu
-                                :fixed="true" 
-                                :dragItem="true" 
-                                :showTitle="false"
-                                :components="$refs.canvas.components"
-                                @createGhost="createGhost"
-                            />
+                            <div class="overflow-hidden w-full h-[600px] mb-4">
+                                <contextmenu
+                                    :fixed="true" 
+                                    :dragItem="true" 
+                                    :showTitle="false"
+                                    :components="$refs.canvas.components"
+                                    @createGhost="createGhost"
+                                />
+                            </div>
                         </div>
 
                         <div 

@@ -39,7 +39,7 @@
                         'border w-full h-full overflow-hidden'
                     ]"
                     :title="settings.id"
-                    @mouseenter="() => { state.componentOver  = settings }"
+                    @mouseenter.stop="() => { state.componentOver  = settings }"
                     @mouseleave="() => { state.componentOver = null }"
                     @click="$emit('selectItem', settings?.id)"
                 >     

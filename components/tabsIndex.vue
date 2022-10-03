@@ -3,7 +3,7 @@
         <nav 
             :class="[
                 state.darktheme ? 'text-white bg-neutral-800 border-black' : 'text-gray-800 bg-neutral-200 border-neutral-100', 
-                'flex border-b select-none overflow-auto h-11 z-30 shadow-lg w-full'
+                'flex border-b select-none overflow-auto h-8 z-30 shadow-lg w-full'
             ]" 
             aria-label="Tabs"
             v-if="state.tabs.length > 0"
@@ -26,25 +26,28 @@
                     <div class="flex">
                         <a 
                             @click="state.selectTab(index)" 
-                            :class="[state.selectedTab === index ? (state.darktheme ? 'bg-neutral-900 border-black' : 'bg-neutral-300') : (state.darktheme ? 'text-gray-500 border-black' : 'text-gray-500') , 'py-1 px-4 font-medium text-sm pointer cursor-pointer select-none flex border-r']" 
+                            :class="[state.selectedTab === index ? (state.darktheme ? 'bg-neutral-900 border-black' : 'bg-neutral-300') : (state.darktheme ? 'text-gray-500 border-black' : 'text-gray-500') , 'py-1 px-2 pr-1 font-medium text-sm pointer cursor-pointer select-none flex border-r']" 
                             :aria-current="element.current ? 'page' : undefined"
                             :title="element.filename"
                         >
-                            <div class="p-2 flex">
+                            <div class="flex">
                                 <div :style="{color: iconFromExt(element.filename).color}">
                                     <client-only><font-awesome-icon :icon="iconFromExt(element.filename).icon" class="mr-3" v-if="iconFromExt(element.filename)" /></client-only>
                                 </div>
                                 
                                 {{ element.name }}
-                            </div>                     
+                            </div>         
+                            
+                            <div class="flex">
 
-                            <button class="px-2 h-7 mt-1 hover:bg-neutral-700 hover:text-white rounded-lg" @click.stop="closeFile(index)" v-if="!element.change">
-                                <client-only><font-awesome-icon icon="fa-solid fa-xmark" /></client-only>
-                            </button>
+                                <button class="-mt-1 mx-2 mr-0 px-2 h-7 hover:bg-neutral-700 hover:text-white rounded-lg" @click.stop="closeFile(index)" v-if="!element.change">
+                                    <client-only><font-awesome-icon icon="fa-solid fa-xmark" /></client-only>
+                                </button>
 
-                            <button class="p-2 h-7" @click.stop="closeFile(index)" v-if="element.change">
-                                <client-only><font-awesome-icon icon="fa-solid fa-circle" /></client-only>
-                            </button>
+                                <button class="-mt-1 mx-2 h-7" @click.stop="closeFile(index)" v-if="element.change">
+                                    <client-only><font-awesome-icon icon="fa-solid fa-circle" /></client-only>
+                                </button>
+                            </div>
                         </a> 
                     </div>
                 </template>
