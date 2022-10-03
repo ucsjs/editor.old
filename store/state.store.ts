@@ -118,6 +118,11 @@ export const useStateStore = defineStore({
             }
         },
 
+        async closeTabByItem(item){
+            if(this.hasTab(item))
+                this.closeTab(this.getTabIndex(item));
+        },
+
         selectTab(index){
             this.selectedTab = index;
         },

@@ -61,11 +61,11 @@
                         </Tooltip>
                     </div>
                 </div>
-            </div>
+            </div>            
             <div v-else-if="input.default" class="pl-1">
                 {{ input.default }}
             </div>
-
+            
             <div v-if="item.metadata[`${input.name}Help`]" class="cursor-pointer ml-2 mt-0.5 text-sm">
                 <Tooltip :tooltipText="$t('Help')" position="top">
                     <a :href="item.metadata[`${input.name}Help`]" target="_blank">

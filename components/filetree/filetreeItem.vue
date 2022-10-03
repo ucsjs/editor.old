@@ -1,5 +1,5 @@
 <template>
-    <div ref="itemTree" :id="item.pathHash">
+    <div ref="itemTree" :id="item.pathHash" :title="item.path">
         <div 
             :class="[
                 (state.fileTree.selectedItem?.pathHash === item.pathHash) ? 'border border-[#007fd4] bg-[#04395e] text-white' : 'border border-transparent',

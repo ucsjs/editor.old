@@ -24,7 +24,7 @@
     </div>
 </template>
 
-<style>
+<style scoped>
 input{
     text-shadow: 1px 1px 2px black;
 }

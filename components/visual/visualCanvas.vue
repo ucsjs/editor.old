@@ -1,8 +1,10 @@
 <template>
     <div class="relative w-full h-full select-none">
         <visual-frontend-blueprints 
+            ref="frontendBlueprints"
             v-model="frontendBlueprints"
             @updateValue="updateFrontendBlueprints" 
+            @selectComponent="selectComponentFrontend"
         />
 
         <div 
@@ -421,7 +423,7 @@ export default {
             if(this.state.componentOver){
                 await this.addSubcomponent(this.state.componentOver.id, {
                     id: `${item.namespace}_${this.componentIndex}`,
-                    ...tmpComponent,
+                    ...JSON.parse(JSON.stringify(tmpComponent)),
                     position: { left: 0, top: 0 },
                     hierarchy: []
                 }, this);
@@ -429,7 +431,7 @@ export default {
             else{
                 this.hierarchy.push({
                     id: `${item.namespace}_${this.componentIndex}`,
-                    ...tmpComponent,
+                    ...JSON.parse(JSON.stringify(tmpComponent)),
                     position: {
                         left: (typeof defaultPosition.left == "number") ? defaultPosition.left : (position.left + offsetX),
                         top: (typeof defaultPosition.top == "number") ? defaultPosition.top : (position.top + offsetY)
@@ -687,6 +689,25 @@ export default {
 
         updateFrontendBlueprints(componentList){
             this.frontendBlueprints = componentList;
+            this.saveState(true);
+        },
+
+        selectComponentFrontend(component){
+            this.$emit("selectComponentFrontend", component)
+        },
+
+        unselectComponentFrontend(component){
+            this.$emit("unselectComponentFrontend");
+        },
+
+        updateLinkFrontend(component){
+            for(let key in this.frontendBlueprints){
+                if(this.frontendBlueprints[key].blueprint.id == component.blueprint.id){
+                    this.frontendBlueprints[key] = component;
+                    break;
+                }
+            }
+
             this.saveState(true);
         },
 

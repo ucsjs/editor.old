@@ -37,16 +37,23 @@
             <div :class="[
                 'flex flex-row-reverse flex-1 p-2 rounded-b-lg pb-3 pt-3'
             ]">
-                <button 
-                    class="px-2 py-1 rounded-md ml-2 bg-red-700 hover:bg-red-500 text-white"
-                    @click="confirm"
-                >
-                    {{ $t('Confirm') }}
-                </button>
+                <div v-if="type == 'confirm'">
+                    <button 
+                        class="px-2 py-1 rounded-md ml-2 bg-red-700 hover:bg-red-500 text-white"
+                        @click="confirm"
+                    >
+                        {{ $t('Confirm') }}
+                    </button>
 
-                <button class="px-2 py-1 rounded-md" @click="open = false">
-                    {{ $t('Cancel') }}
-                </button>
+                    <button class="px-2 py-1 rounded-md" @click="open = false">
+                        {{ $t('Cancel') }}
+                    </button>
+                </div>
+                <div v-if="type == 'alert'">
+                    <button class="px-2 py-1 rounded-md" @click="open = false">
+                        {{ $t('Ok') }}
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -56,6 +63,13 @@
 import { useStateStore } from "~/store/state.store";
 
 export default {
+    props: {
+        type: {
+            type: String,
+            default: 'confirm'
+        }
+    },
+
     data(){
         return {
             open: false,

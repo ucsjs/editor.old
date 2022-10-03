@@ -200,6 +200,8 @@ export default {
 
         async deleteFile(confirm = false){
             if(confirm === true){
+                this.state.closeTabByItem(this.state.fileTree.items[this.state.fileTree.selectedItem.pathHash]);
+                
                 await useApi(`files?filename=${encodeURIComponent(this.state.fileTree.items[this.state.fileTree.selectedItem.pathHash].filename)}`, {
                     method: "DELETE"
                 });

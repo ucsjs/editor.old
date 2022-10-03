@@ -174,10 +174,16 @@
                                         </div>
 
                                         <div v-if="!item.collaped">
-                                            <div class="flex" v-for="(input, key) in item.publicVars" :key="key" :id="`${input.id}-${keyItem}`" ref="inputs">
+                                            <div 
+                                                class="flex" 
+                                                v-for="(publicVar, key) in item.publicVars" 
+                                                :key="`${item.componentKey}-publicvars-${keyItem}-${key}`" 
+                                                :id="`pv-${item.componentKey}-${publicVar.id}-${keyItem}`" 
+                                                ref="inputs"
+                                            >
                                                 <blueprint-component-input 
-                                                    :keyItem="keyItem" 
-                                                    :input="input" 
+                                                    :keyItem="key" 
+                                                    :input="publicVar" 
                                                     :item="item" 
                                                     :isInput="false" 
                                                     :collaped="item.collaped"
@@ -195,7 +201,7 @@
                                         <div 
                                             class="text-right w-full items-end h-6 py-1" 
                                             v-for="(output, key) in item.outputs" 
-                                            :key="key"
+                                            :key="`${item.componentKey}-output-${key}`"
                                             :id="`${output.id}-${keyItem}`" 
                                             ref="inputs"
                                         >
@@ -222,7 +228,7 @@
                                         </div> 
                                         
                                         <!-- Events -->
-                                        <div class="text-right w-full items-end h-6 py-1" v-for="(event, key) in item?.events" :key="key">
+                                        <div class="text-right w-full items-end h-6 py-1" v-for="(event, key) in item?.events" :key="`${item.componentKey}-events-${key}`">
                                             <div class="flex flex-row-reverse">                       
                                                 <div :style="{color: '#FF0000'}" title="Event" :id="`${event.name}-${keyItem}`" ref="inputs">
                                                     <client-only>
@@ -243,22 +249,22 @@
                                         </div>
 
                                         <!-- Public Vars -->                                        
-                                        <div class="text-right" v-for="(publicVar, key) in item.publicVars" :key="key">
+                                        <div class="text-right" v-for="(publicVar, key) in item.publicVars" :key="`${item.componentKey}-publicvars-${key}`">
                                             <div  v-if="publicVar.type == 'object' && publicVar.default && publicVar.default.createOutputs">
                                                 <div class="w-full items-end"> 
-                                                    <div v-for="(publicVaritem, key) in publicVar.value" :key="key" class="flex flex-row-reverse h-6"> 
+                                                    <div v-for="(publicVaritem, keyPublicVar) in publicVar.value" :key="`${item.componentKey}-publicvars-${key}-${keyPublicVar}`" class="flex flex-row-reverse h-6"> 
                                                         <div 
                                                             :style="{color: (item.metadata[publicVar.default.realType?.replace(/\./, '_')]) ? item.metadata[publicVar.default.realType?.replace(/\./, '_')].color : getColorByType((publicVar.default.realType) ? publicVar.default.realType : 'Any')}" 
-                                                            :id="`pv-${publicVar.id}-${publicVar.name}-${key}`" 
+                                                            :id="`pv-${publicVar.id}-${publicVar.name}-${keyPublicVar}`" 
                                                             :title="(publicVar.default.realType) ? publicVar.default.realType : 'Any'"
                                                             ref="inputs"
                                                         >
                                                             <client-only>
                                                                 <font-awesome-icon                         
                                                                     icon="fa-solid fa-square"
-                                                                    @dragstart="createLine($event, item, publicVar, publicVar.name, `pv-${publicVar.id}-${publicVar.name}-${key}`)" 
-                                                                    @mousedown="createLine($event, item, publicVar, publicVar.name, `pv-${publicVar.id}-${publicVar.name}-${key}`)"
-                                                                    @mouseenter="onPointer($event, item, publicVar, publicVar.name, `pv-${publicVar.id}-${publicVar.name}-${key}`)"
+                                                                    @dragstart="createLine($event, item, publicVar, publicVar.name, `pv-${publicVar.id}-${publicVar.name}-${keyPublicVar}`)" 
+                                                                    @mousedown="createLine($event, item, publicVar, publicVar.name, `pv-${publicVar.id}-${publicVar.name}-${keyPublicVar}`)"
+                                                                    @mouseenter="onPointer($event, item, publicVar, publicVar.name, `pv-${publicVar.id}-${publicVar.name}-${keyPublicVar}`)"
                                                                     @mouseleave="onPointerLeave"
                                                                 />
                                                             </client-only>
@@ -875,11 +881,18 @@ export default{
                 this.moveEvent = false;
 
             if(this.componentGhost){
-                const tmpComponent = this.componentGhost;
+                const tmpComponent = { ...this.componentGhost };
 
                 setTimeout(() => {
-                    if(this.overCanvas && tmpComponent)
-                        this.addComponent(tmpComponent, this.mouseHandler);
+                    if(this.overCanvas && tmpComponent){
+                        const itemsByLayer = (this.selectedLayer == "Backend") ? this.blueprintsBackend : this.blueprintsFrontend;
+
+                        for(let component of itemsByLayer){
+                            if(component.namespace == tmpComponent.namespace){
+                                this.addComponent(component, this.mouseHandler);
+                            }
+                        }
+                    }                        
                 }, 100);
 
                 this.componentGhost = null;
@@ -903,7 +916,7 @@ export default{
             const itemByLayer = (this.selectedLayer == "Backend") ? this.items : this.itemsClient;
             
             itemByLayer.push({ 
-                ...item,
+                ...JSON.parse(JSON.stringify(item)),
                 componentKey: `${item.namespace}::${new Date().getTime()}`,
                 position: { 
                     top: this.mouseHandler.top - this.position.y,
@@ -963,7 +976,7 @@ export default{
         },
 
         createGhost(item){
-            this.componentGhost = item;
+            this.componentGhost = { ...item };
             this.componentGhostPosition = this.mouseHandlerFull;
         },
 

@@ -100,7 +100,7 @@ export default {
                 namespace: "",
                 group: "Custom",
                 headerColor: { hex: "#664aba" },
-                headerIcon: { src: "" },
+                headerIcon: { icon: "fas fa-cube" },
                 publicVars: [],
                 inputs: [],
                 outputs: [],

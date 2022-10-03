@@ -26,7 +26,11 @@
             :class="[
                 'absolute border p-1 z-50 border-[#0968a9] bg-[#0968a9]/50 rounded-lg'
             ]"
-            :style="{ top: `${mouseHandler.top + 5}px`, left: `${mouseHandler.left+20}px`}" 
+            :style="{ 
+                top: `${mouseHandler.top + 5}px`, 
+                left: `${mouseHandler.left+20}px`,
+                'z-index': 100000
+            }" 
             v-if="state.hierarchy.ghost"
         >
             {{ state.hierarchy.ghost.id }}
@@ -106,6 +110,8 @@
                                 @changeState="changeState" 
                                 @selectedItem="selectComponent"
                                 @unselectItem="unselectComponent"
+                                @selectComponentFrontend="selectComponentFrontend"
+                                @unselectComponentFrontend="unselectComponentFrontend"
                                 @mouseover="context = 'canvas'"
                             />
                         </client-only>
@@ -126,6 +132,14 @@
                             @removeComponent="removeSubcomponent"
                             @changeState="saveStateContents"
                             @mouseover="context = 'inspector'"
+                        />
+
+                        <visual-frontend-inspector 
+                            ref="inspectorFrontend"
+                            :component="selectedComponentFrontend"
+                            v-if="selectedComponentFrontend"
+                            @unselectComponent="unselectComponentFrontend"
+                            @updateLink="updateLinkFrontend"
                         />
 
                         <div 
@@ -168,6 +182,7 @@ export default {
             components: [],
             mouseHandler: { top: 200, left: 200 },
             selectedComponent: null,
+            selectedComponentFrontend: null,
             content: {},
             canvas: null,
             widthLeftbar: 300,
@@ -237,6 +252,23 @@ export default {
 
         unselectComponent(){
             this.selectedComponent = this.$refs.canvas.body;
+            this.$forceUpdate();
+        },
+
+        async selectComponentFrontend(component){
+            this.selectedComponentFrontend = component;
+            this.$forceUpdate();
+        },
+
+        unselectComponentFrontend(){
+            this.selectedComponentFrontend = null;
+            this.$refs.canvas.$refs.frontendBlueprints.unselectComponent();
+            this.$forceUpdate();
+        },
+
+        async updateLinkFrontend(component){
+            this.selectedComponentFrontend = component;
+            this.$refs.canvas.updateLinkFrontend(component);
             this.$forceUpdate();
         },
 

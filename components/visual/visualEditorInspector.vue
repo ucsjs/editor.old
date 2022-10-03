@@ -496,7 +496,6 @@ export default {
                     return obj;
                 }, {}
             );
-            console.log(this.componentsCategories);
 
             this.$forceUpdate();
             this.$nextTick();

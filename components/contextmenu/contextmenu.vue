@@ -197,7 +197,6 @@ export default{
         },
 
         addComponent(item) {
-            console.log("addComponent");
             if(!this.fixed || this.addOnClick){
                 this.close();
                 this.$emit("addComponent", item, this.position);
