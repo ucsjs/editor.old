@@ -23,7 +23,12 @@
                             </Tooltip>
                         </div>
 
-                        <div class="ml-2 text-sm mt-1">{{ property.label.replace('Border ', '') || uppercaseFirstLetter(property.name) }}</div>
+                        <div 
+                            class="ml-2 text-sm mt-1 text-ellipsis overflow-hidden whitespace-nowrap w-[100px]"
+                            :title="uppercaseFirstLetter(property.name)"
+                        >
+                            {{ property.label.replace('Border ', '') || uppercaseFirstLetter(property.name) }}
+                        </div>
                     </div>
 
                     <div class="h-7 pr-2 w-3/6">
@@ -125,7 +130,11 @@
 </template>
 
 <script>
+import globalMixin from "@/mixins/globalMixin";
+
 export default {
+    mixins: [globalMixin],
+    
     props: ["component", "subComponent", "selectInput", "eventSelectedVariation"],
 
     data(){

@@ -19,7 +19,7 @@
                     </div>
                 </div>
 
-                <div class="bg-neutral-800 w-full border-b border-black text-sm text-neutral-400">
+                <div class="bg-neutral-800 w-full border-b border-black text-sm text-neutral-400 py-2">
                     <div 
                         v-for="(blueprint, key) in component.blueprint.items" 
                         :key="key"
@@ -28,7 +28,13 @@
                         <div class="flex flex-1" v-if="blueprint.extends == 'Blueprint' && blueprint.metadata.group == 'Visual Objects' && blueprint.metadata.componentLink">
                             <div class="flex-1 flex p-0.5">
                                 <div class="w-3/6 h-7 flex ml-1 z-10">                                  
-                                    <div class="ml-2 text-sm mt-1">{{ uppercaseFirstLetter(blueprint.metadata.namespace) }} <span v-if="blueprint.name">[{{blueprint.name}}]</span></div>
+                                    <div 
+                                        class="ml-2 text-sm mt-1 text-sm mt-1 text-ellipsis overflow-hidden whitespace-nowrap w-[100px]"
+                                        :title="`${uppercaseFirstLetter(blueprint.metadata.namespace)} ${(blueprint.name) ? '['+ blueprint.name +']' : ''}`"
+                                    >
+                                        {{ uppercaseFirstLetter(blueprint.metadata.namespace) }} 
+                                        <span v-if="blueprint.name">[{{blueprint.name}}]</span>
+                                    </div>
                                 </div>
 
                                 <div class="h-7 pr-2 w-3/6">

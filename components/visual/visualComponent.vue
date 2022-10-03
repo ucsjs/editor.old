@@ -329,14 +329,7 @@ export default {
                     for(let key in this.settings.components){
                         const component = this.settings.components[key];
 
-                        if((
-                            component.component === "Class" ||
-                            component.component === "Transform" ||
-                            component.component === "Border" || 
-                            component.component === "Background" ||
-                            component.component === "Font") && 
-                            !component.open && component.open !== true
-                        )
+                        if(!component.open && component.open !== true)
                             component.open = false;
 
                         if(this.settings.componentsDefaults?.length > 0){

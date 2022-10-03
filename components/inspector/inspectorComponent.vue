@@ -4,7 +4,8 @@
             (selectInput?.property.id === id && modelValue) ? 'border-blue-700': '',
             (state.hierarchy.ghost) ? 'hover:border-blue-700 hover:cursor-copy' : '',
             'border border-black bg-neutral-900 h-full flex justify-end relative text-sm rounded-sm '
-        ]"                                                                                   
+        ]" 
+        :title="modelValue?.id"                                                                                  
     >
         <div 
             :class="[

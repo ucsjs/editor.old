@@ -2,7 +2,7 @@
     <div 
         ref="inspector"
         class="bg-neutral-800/80 w-full overflow-hidden overflow-y-auto border-l relative border-black" 
-        style="height:calc(100% - 50px);"
+        style="height:calc(100% - 42px);"
         @click="closeAllWindowOpened"
         @mouseup="dropComponent(null)"
     >
@@ -516,19 +516,9 @@ export default {
             if(this.component){
                 for(let key in this.component.components){
                     try{
-                        if(!this.component.components[key].open && this.component.components[key].open !== false){
-                            if(
-                                this.component.components[key].namespace === "Class" ||
-                                this.component.components[key].namespace === "Border" ||
-                                this.component.components[key].namespace === "Background" ||
-                                this.component.components[key].namespace === "Margin" ||
-                                this.component.components[key].namespace === "Transform"
-                            )
-                                this.component.components[key].open = false;
-                            else
-                                this.component.components[key].open = true;
-                        }
-
+                        if(!this.component.components[key].open && this.component.components[key].open !== true)
+                            this.component.components[key].open = false;
+                        
                         if(this.component.components[key] && this.component.components[key]?.value){
                             if(this.component.components[key]?.default)
                                 this.component.components[key].value = { ...this.component.components[key]?.default, ...this.component.components[key]?.value };
