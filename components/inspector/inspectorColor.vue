@@ -24,6 +24,12 @@
     </div>
 </template>
 
+<style>
+input{
+    text-shadow: 1px 1px 2px black;
+}
+</style>
+
 <script>
 import { Chrome } from '@ckpack/vue-color';
 

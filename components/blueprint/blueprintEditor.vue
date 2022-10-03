@@ -2,6 +2,7 @@
     <div 
         class="absolute w-full h-full"
         @mousemove="handleDrag" 
+        ref="blueprintEditor"
     >
         <div class="bg-black/80 fixed h-full w-full z-50 m-auto text-center" style="z-index: 1000" v-if="loading">
             <div class="align-middle content-between inline-block bg-white text-black p-4 rounded-lg mt-56">
@@ -87,7 +88,12 @@
                                             <img v-else :src="item.metadata.headerIcon" class="w-4 h-4 mt-0.5"/>
                                         </div>
 
-                                        <span class="text-sm">{{ uppercaseFirstLetter(item.metadata.namespace) }}</span>   
+                                        <span 
+                                            class="text-sm text-ellipsis overflow-hidden whitespace-nowrap w-[120px]"
+                                            :title="uppercaseFirstLetter(item.metadata.namespace)"
+                                        >
+                                            {{ uppercaseFirstLetter(item.metadata.namespace) }}
+                                        </span>   
                                     </div> 
 
                                     <div class="flex text-sm" @mousedown.left.stop="" :collaped="item.collaped">
@@ -372,7 +378,7 @@
                 <!-- Components -->
                 <div 
                     class="absolute top-[300px] left-0 w-full bg-neutral-800 border-r border-black" 
-                    :style="{ height: 'calc(100% - 300px)'}"
+                    :style="{ height: 'calc(100% - 390px)'}"
                 >
                     <div class="p-2 bg-neutral-900 border-b border-black">{{ $t("Blueprints") }}</div>
 
@@ -520,10 +526,13 @@ export default{
             selectedComponent: null,
             layers: ["Backend", "Frontend"],
             selectedLayer: "Backend",
+            refreshLineInterval: null
         }
     },
 
-    async mounted(){
+    async created(){
+        this.loading = true;
+
         if(this.tab.content){
             const metadata = JSON.parse(this.tab.content);
 
@@ -531,18 +540,6 @@ export default{
                 if(metadata[key])
                     this[key] = metadata[key];
         }   
-
-        //Resize
-        this.ro = new ResizeObserver(this.refreshLines);
-        this.ro.observe(this.$refs.editor);
-        this.linesOffset = this.$refs.editor.getBoundingClientRect();
-
-        //Scroll
-        this.scrollOffset = { x: this.$refs.editor.scrollLeft, y: this.$refs.editor.scrollTop };
-        this.$refs.editor.addEventListener('scroll', (event) => {
-            this.scrollOffset = { x: this.$refs.editor.scrollLeft, y: this.$refs.editor.scrollTop };
-            this.saveState(false);
-        });
 
         //Load blueprints                
         await this.loadBlueprints();
@@ -591,33 +588,50 @@ export default{
 
             if(cacheParse.selectedLayer)
                 this.selectedLayer = cacheParse.selectedLayer;
+        }
+
+        this.selectLayer(this.selectedLayer);
+    },
+
+    async mounted(){
+        const cacheBlueprints = localStorage.getItem(`blueprint-${this.tab.name.replace(/\./, "-")}`);
+
+        if(cacheBlueprints){
+            const cacheParse = JSON.parse(cacheBlueprints);
 
             if(cacheParse.scrollOffset){
                 this.$refs.editor.scrollLeft = cacheParse.scrollOffset.x;
                 this.$refs.editor.scrollTop = cacheParse.scrollOffset.y;
                 this.scrollOffset = cacheParse.scrollOffset;
-            }   
-
-            this.$forceUpdate();
+            } 
         }
 
-        setInterval(() => {
+        //Resize
+        this.ro = new ResizeObserver(this.refreshLines);
+        this.ro.observe(this.$refs.editor);
+        this.linesOffset = this.$refs.editor.getBoundingClientRect();
+
+        //Scroll
+        this.scrollOffset = { x: this.$refs.editor.scrollLeft, y: this.$refs.editor.scrollTop };
+        this.$refs.editor.addEventListener('scroll', (event) => {
+            this.scrollOffset = { x: this.$refs.editor.scrollLeft, y: this.$refs.editor.scrollTop };
+            this.saveState(false);
+        });
+
+        //Refresh Lines
+        this.refreshLineInterval = setInterval(() => {
             this.refreshLines();
 
             if(this.$refs.editor)
                 this.linesOffset = this.$refs.editor.getBoundingClientRect();
         }, 1);
 
-        setInterval(() => {
-            this.saveState(true);
-        }, 1000);
-
-        this.selectLayer(this.selectedLayer);
         this.$forceUpdate();
     },
 
     beforeDestroy () {
-        this.ro.unobserve(this.$refs.editor)
+        clearInterval(this.refreshLineInterval);
+        this.ro.unobserve(this.$refs.blueprintEditor)
     },
 
     updated(){

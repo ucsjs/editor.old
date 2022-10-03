@@ -208,7 +208,7 @@ export default {
                 this.$refs?.notifications.open("File removed successfully!");
             }
             else {
-                this.$refs.modalDialogDeleteFile.openDialog('Delete', `Deseja realmente remove o arquivo '${this.state.fileTree.items[this.state.fileTree.selectedItem.pathHash].filename}' ?`);
+                this.$refs.modalDialogDeleteFile.openDialog('Delete', `Do you really want to remove the file '${this.state.fileTree.items[this.state.fileTree.selectedItem.pathHash].filename}' ?`);
             }
         },
 
@@ -222,7 +222,7 @@ export default {
                 this.$refs?.notifications.open("Directory removed successfully!");
             }
             else {
-                this.$refs.modalDialogDeleteDir.openDialog('Delete', `Deseja realmente remove o diretorio '${this.state.fileTree.items[this.state.fileTree.selectedItem.pathHash].name}' ?`);
+                this.$refs.modalDialogDeleteDir.openDialog('Delete', `Do you really want to remove the directory '${this.state.fileTree.items[this.state.fileTree.selectedItem.pathHash].name}' ?`);
             }
         }
     }

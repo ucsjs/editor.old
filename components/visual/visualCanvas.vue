@@ -198,6 +198,7 @@ export default {
             },
             hierarchy: [],
             body: {},
+            head: {},
             style: {},
             frontendBlueprints: []
         }
@@ -222,17 +223,31 @@ export default {
             }
         }
 
+        if(!this.head.id){
+            for(let component of this.components){
+                if(component.namespace == "Head"){
+                    this.head = component;
+                    break;
+                }
+            }
+        }
+
         for(let key in this.body.components){
             if(!this.body.components[key].value)
                 this.body.components[key].value = this.body.components[key].default;
         }
 
         this.body.label = this.body.id;
+        this.head.label = this.head.id;
         this.style = this.getStyle(this.body);
         this.unselectItem();
         this.editorOffset = this.$refs.editor?.getBoundingClientRect();
         this.canvasOffset = this.$refs.canvas?.getBoundingClientRect();
         this.$emit("loadedCanvas", this.getValue());
+    },
+
+    beforeDestroy(){
+        clearInterval(this.refreshLineInterval);
     },
 
     methods: {
@@ -361,9 +376,8 @@ export default {
 
         update(){
             if(this.$refs.components){
-                for(let component of this.$refs.components){
+                for(let component of this.$refs.components)
                     component.update(true);
-                }
             }
         },
 
@@ -553,6 +567,7 @@ export default {
                 position: this.position,
                 viewport: this.viewport,
                 body: this.body,
+                head: this.head,
                 hierarchy: this.hierarchy.filter((item) => item),
                 componentIndex: this.componentIndex,
                 frontendBlueprints: this.frontendBlueprints

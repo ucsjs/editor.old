@@ -125,7 +125,7 @@ export default{
             position: { top: 0, left: 0 },
             offset: { top: 0, left: 0 },
             search: null,
-            loading: true,
+            loading: false,
         }
     },
 
@@ -154,21 +154,21 @@ export default{
 
     methods: {
         async loadBlueprints(url = null) {
-            this.loading = true;
-            this.blueprits = [];
-            this.bluepritsCategories = {};
+            if((this.layer || url) && !this.loading){
+                this.blueprits = [];
+                this.bluepritsCategories = {};
+                this.loading = true;
 
-            if(this.layer || url){
                 this.blueprits = await useApi((url) ? url : `blueprints/${this.layer.toLocaleLowerCase()}`, { method: "GET" });
 
                 if(this.blueprits)
-                    this.sortBlueprintsCategories();
-            }
+                    await this.sortBlueprintsCategories();
 
-            this.loading = false;
+                this.loading = false;
+            }
         },
 
-        sortBlueprintsCategories() {
+        async sortBlueprintsCategories() {
             for(let item of this.blueprits){
                 if(!this.bluepritsCategories[item.metadata.group])
                     this.bluepritsCategories[item.metadata.group] = [];

@@ -1,4 +1,4 @@
-export default {
+export default {    
     methods:{
         getColorByType(type){
             switch(type){

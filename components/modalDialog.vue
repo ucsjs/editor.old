@@ -53,7 +53,7 @@
 </template>
 
 <script>
-import { useStateStore } from "~~/store/state.store";
+import { useStateStore } from "~/store/state.store";
 
 export default {
     data(){
@@ -61,7 +61,8 @@ export default {
             open: false,
             title: 'Title',
             contents: "",
-            state: useStateStore()
+            state: useStateStore(),
+            opts: {},
         };
     },
 
@@ -72,6 +73,7 @@ export default {
                     this[key] = opts[key];
             }
 
+            this.opts = opts;
             this.title = title;
             this.contents = contents;
             this.open = true;
@@ -79,7 +81,7 @@ export default {
 
         confirm(){
             this.open = false;
-            this.$emit('confirm');
+            this.$emit('confirm', this.opts);
         }
     }
 }

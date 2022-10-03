@@ -33,7 +33,9 @@
                                 <font-awesome-icon :icon="subitem.metadata.icon" v-if="subitem.metadata.icon" />
                                 <font-awesome-icon v-else :icon="(subitem.metadata.headerIcon) ? subitem.metadata.headerIcon : headerIcon(subitem.metadata.group)"/>
                             </client-only>      
-                            <font-awesome-icon :icon="subitem.icon" v-else-if="subitem.icon" />                          
+                            <font-awesome-icon :icon="subitem.icon" v-else-if="subitem.icon" />        
+                            <font-awesome-icon :icon="subitem.metadata.icon" v-else-if="subitem?.metadata.icon" />
+                            <font-awesome-icon v-else-if="!subitem.metadata.headerIcon?.includes('data:')" :icon="(subitem.metadata.headerIcon) ? subitem.metadata.headerIcon : headerIcon(subitem.metadata.group)"/>                  
                             <img v-else :src="subitem.metadata.headerIcon" class="w-4 h-4 mt-1"/>
                         </div>
 

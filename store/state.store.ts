@@ -135,7 +135,7 @@ export const useStateStore = defineStore({
 
         closeTab(index){
             this.tabs.splice(index, 1);
-            this.selectedTab = (this.tabs.length > index) ? index : 0;
+            this.selectedTab = (this.tabs.length > index) ? index : index -1;
             this.saveState();
         },
 

@@ -384,10 +384,6 @@
     border: 3px solid #383838;
     border-radius: 30px;
 }
-
-input{
-    text-shadow: 1px 1px 2px black;
-}
 </style>
 
 <script>

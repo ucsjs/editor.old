@@ -51,7 +51,7 @@
             </draggable>
         </nav>
 
-        <div v-for="(tab, key) in state.tabs" :key="key" class="text-white">
+        <div v-for="(tab, key) in state.tabs" :key="key" class="text-white" ref="tabs">
             <div 
                 v-if="key === state.selectedTab" 
                 ref="activeTab" 
@@ -104,22 +104,21 @@
         </div>
   
         <notifications ref="notifications" :closeTimeout="2000" />
+
+        <ModalDialog ref="modalDialogClose" @confirm="(args) => closeFile(args.key, true)" />
     </div>
 </template>
 
-<script setup>
-import { useStateStore } from "~~/store/state.store";
-const state = useStateStore();
-</script>
-
 <script>
 import globalMixin from "@/mixins/globalMixin";
+import { useStateStore } from "~~/store/state.store";
 
 export default {
     mixins: [globalMixin],
 
     data(){
         return {
+            state: useStateStore(),
             monaco: null,
             editorElements: [],
             dragOptions: {
@@ -178,9 +177,17 @@ export default {
             this.state.saveFile(this.state.tabs[this.state.selectedTab]);
         },
 
-        closeFile(key){
-            this.state.closeTab(key);
-            this.saveState();
+        closeFile(key, confirm = false){
+            if(confirm === true){
+                this.state.closeTab(key);
+                this.saveState();
+            }
+            else{
+                if(this.state.tabs[key].change)
+                    this.$refs.modalDialogClose.openDialog('Close', `The file you want to close contains changes, if you choose to close without saving all changes will be lost, do you want to proceed?`, { key });
+                else
+                    this.closeFile(key, true);
+            }            
         },
 
         saveState(){
