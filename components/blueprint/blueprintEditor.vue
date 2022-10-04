@@ -57,6 +57,38 @@
                     @mouseleave="overCanvas = false"
                     @mousedown.left="move"
                 >
+                    <div class="text-white/20 fixed right-6 bottom-3 font-bold uppercase" style="font-size: 50px" v-if="expEditor">Expression</div>
+                    <div class="text-white/20 fixed right-6 bottom-3 font-bold uppercase" style="font-size: 50px" v-if="!expEditor">Blueprint</div>
+                    
+                    <div class="fixed w-[500px] h-80 top-28 right-8 rounded-lg z-50 bg-black/50 border-black border" v-if="expEditor">
+                        <div class="flex border-b border-black rounded-t-lg text-sm"> 
+                            <div class="p-2 flex flex-1">
+                                <div class="flex mt-0.5 mr-1"><font-awesome-icon icon="fa-solid fa-bug " /></div>
+                                <div class="flex">Debug</div>
+                            </div>
+
+                            <div class="justify-end flex mr-2">
+                                <button :title="$t('Play')" @click="debug">
+                                    <font-awesome-icon icon="fa-solid fa-play" />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="overflow-auto h-72 w-full p-2 rounded-b-lg bg-black/30 text-sm">
+                            <div class="text-blue-500" 
+                                v-for="(value, key) in debugResult.valuesScope" 
+                                :key="key"
+                            >{{key}}: <span class="text-green-500">{{ value }}</span></div>
+
+                            <div class="text-yellow-500" 
+                                v-for="(value, key) in debugResult.connectionValues" 
+                                :key="key"
+                            >{{key}}: <span class="text-green-500">{{ value }}</span></div>
+                            
+                            <span class="text-neutral-200">Result:</span> <span class="text-green-500">{{ debugResult.result }}</span>
+                        </div>
+                    </div>
+
                     <div                     
                         class="relative block w-full h-full" 
                         @contextmenu.prevent="contextmenu" 
@@ -337,9 +369,9 @@
                                 </button>
                             </Tooltip>
 
-                            <div class="p-2 text-neutral-600 font-bold">::</div>
+                            <div class="p-2 text-neutral-600 font-bold" v-if="!expEditor">::</div>
 
-                            <div class="ml-2 mr-2 mt-0.5 flex">
+                            <div class="ml-2 mr-2 mt-0.5 flex" v-if="!expEditor">
                                 <div v-for="(layer, index) in layers">
                                     <button 
                                         @click="selectLayer(layer)"
@@ -384,7 +416,7 @@
 
             <!-- Leftbar -->
             <div class="relative flex" :style="{width: `${widthLeftbar}px !important`}">
-                <div class="top-0 w-full h-[300px] bg-neutral-800 border-b border-black">
+                <div class="top-0 w-full h-[300px] bg-neutral-800 border-b border-black" v-if="!expEditor">
                     <blueprint-metadata 
                         :metadata="metadata"
                         @changeMetadata="changeMetadata" 
@@ -393,8 +425,11 @@
                 </div>
 
                 <div 
-                    class="absolute top-[300px] left-0 w-full bg-neutral-800 border-r border-black" 
-                    :style="{ height: 'calc(100% - 390px)'}"
+                    :class="[
+                        (expEditor) ? '' : 'top-[300px]',
+                        'absolute left-0 w-full bg-neutral-800 border-r border-black'
+                    ]" 
+                    :style="{ height: (expEditor) ? 'calc(100% - 90px)' : 'calc(100% - 390px)'}"
                 >
                     <div class="p-2 bg-neutral-900 border-b border-black">{{ $t("Blueprints") }}</div>
 
@@ -477,6 +512,15 @@ export default{
         tab: {
             type: Object,
             required: true
+        },
+
+        expEditor: {
+            type: Boolean,
+            default: false
+        },
+
+        expContents: {
+            type: Object
         }
     },
 
@@ -514,12 +558,15 @@ export default{
             connections: [],
             itemsClient: [],
             itemsShow: [],
+            itemsExp: [],
             connectionsShow: [],
             connectionsClient: [],
             blueprintsBackend: [],
             blueprintsFrontend: [],
+            blueprintsExp: [],
             blueprintsBackendCategories: {},
             blueprintsFrontendCategories: {},
+            blueprintsExpCategories: {},
             inputs: {},
             lines: [],
             lineUpdateCounter: 0,
@@ -542,14 +589,20 @@ export default{
             selectedComponent: null,
             layers: ["Backend", "Frontend"],
             selectedLayer: "Backend",
-            refreshLineInterval: null
+            refreshLineInterval: null,
+            debugResult: ""
         }
     },
 
     async created(){
         this.loading = true;
 
-        if(this.tab.content){
+        if(this.expEditor){
+            const data = JSON.parse(this.tab.content);
+            this.items = data.value || [];
+            this.metadata = data.metadata;
+        }
+        else if(this.tab.content){
             const metadata = JSON.parse(this.tab.content);
 
             for(let key in metadata)
@@ -563,28 +616,44 @@ export default{
 
         if(cacheBlueprints){
             const cacheParse = JSON.parse(cacheBlueprints);
-        
-            if(cacheParse?.items){
-                for(const key in cacheParse.items){
-                    const item = cacheParse.items[key];
 
-                    for(const blueprint of this.blueprintsBackend){
-                        if((blueprint.namespace === item.namespace)){
-                            this.items[key] = { ...{ collaped: false }, ...blueprint, ...item };
-                            this.items[key].metadata = blueprint.metadata
+            if(this.expEditor){
+                if(cacheParse?.items){
+                    for(const key in cacheParse.items){
+                        const item = cacheParse.items[key];
+
+                        for(const blueprint of this.blueprintsExp){
+                            if((blueprint.namespace === item.namespace)){
+                                this.items[key] = { ...{ collaped: false }, ...blueprint, ...item };
+                                this.items[key].metadata = blueprint.metadata
+                            }
                         }
                     }
                 }
             }
+            else{
+                if(cacheParse?.items){
+                    for(const key in cacheParse.items){
+                        const item = cacheParse.items[key];
 
-            if(cacheParse?.itemsClient){
-                for(const key in cacheParse?.itemsClient){
-                    const itemsClient = cacheParse.itemsClient[key];
+                        for(const blueprint of this.blueprintsBackend){
+                            if((blueprint.namespace === item.namespace)){
+                                this.items[key] = { ...{ collaped: false }, ...blueprint, ...item };
+                                this.items[key].metadata = blueprint.metadata
+                            }
+                        }
+                    }
+                }
 
-                    for(const blueprint of this.blueprintsFrontend){
-                        if((blueprint.namespace === itemsClient.namespace)){
-                            this.itemsClient[key] = { ...{ collaped: false }, ...blueprint, ...itemsClient };
-                            this.itemsClient[key].metadata = blueprint.metadata
+                if(cacheParse?.itemsClient){
+                    for(const key in cacheParse?.itemsClient){
+                        const itemsClient = cacheParse.itemsClient[key];
+
+                        for(const blueprint of this.blueprintsFrontend){
+                            if((blueprint.namespace === itemsClient.namespace)){
+                                this.itemsClient[key] = { ...{ collaped: false }, ...blueprint, ...itemsClient };
+                                this.itemsClient[key].metadata = blueprint.metadata
+                            }
                         }
                     }
                 }
@@ -599,7 +668,7 @@ export default{
             if(cacheParse.position)
                 this.position = cacheParse.position;
 
-            if(cacheParse.metadata)
+            if(cacheParse?.metadata)
                 this.metadata = cacheParse.metadata;
 
             if(cacheParse.selectedLayer)
@@ -671,6 +740,7 @@ export default{
         async loadBlueprints(){
             this.blueprintsBackend = await useApi(`blueprints/backend`, { method: "GET" });
             this.blueprintsFrontend = await useApi(`blueprints/frontend`, { method: "GET" });
+            this.blueprintsExp = await useApi(`blueprints/expression`, { method: "GET" });
             this.sortBlueprintsCategories();
         },
 
@@ -796,7 +866,7 @@ export default{
                 const diffX = this.mouseHandler.left - clientX;       
                 this.position = { x: positionX + diffX, y: positionY + diffY };
 
-                if(this.selectedLayer == "Backend")
+                if(this.selectedLayer == "Backend" || this.expEditor)
                     this.positionBackend = this.position;
                 else
                     this.positionFrontend = this.position;
@@ -841,7 +911,7 @@ export default{
                             }
                         });
 
-                        if(this.selectedLayer == "Backend")
+                        if(this.selectedLayer == "Backend" || this.expEditor)
                             this.connections = this.connectionsShow;
                         else
                             this.connectionsFrontend = this.connectionsShow;
@@ -852,7 +922,8 @@ export default{
                         if(
                             (this.createLineElem.input.type === this.tmpComponentHover.input.type) ||
                             (this.createLineElem.input.default?.realType === this.tmpComponentHover.input.type) ||
-                            (this.createLineElem.input.type === "Any" || this.tmpComponentHover.input.type === "Any")
+                            (this.createLineElem.input.type === "Any" || this.tmpComponentHover.input.type === "Any") ||
+                            (this.createLineElem.input.type === "Int" || this.tmpComponentHover.input.type === "Float")
                         ){
                             this.connectionsShow.push({
                                 from: { 
@@ -869,7 +940,7 @@ export default{
                                 }
                             });
 
-                            if(this.selectedLayer == "Backend")
+                            if(this.selectedLayer == "Backend" || this.expEditor)
                                 this.connections = this.connectionsShow;
                             else
                                 this.connectionsFrontend = this.connectionsShow;
@@ -898,11 +969,20 @@ export default{
 
                 setTimeout(() => {
                     if(this.overCanvas && tmpComponent){
-                        const itemsByLayer = (this.selectedLayer == "Backend") ? this.blueprintsBackend : this.blueprintsFrontend;
+                        if(this.expEditor){
+                            for(let component of this.blueprintsExp){
+                                if(component.namespace == tmpComponent.namespace){
+                                    this.addComponent(component, this.mouseHandler);
+                                }
+                            }
+                        }
+                        else{
+                            const itemsByLayer = (this.selectedLayer == "Backend" || this.expEditor) ? this.blueprintsBackend : this.blueprintsFrontend;
 
-                        for(let component of itemsByLayer){
-                            if(component.namespace == tmpComponent.namespace){
-                                this.addComponent(component, this.mouseHandler);
+                            for(let component of itemsByLayer){
+                                if(component.namespace == tmpComponent.namespace){
+                                    this.addComponent(component, this.mouseHandler);
+                                }
                             }
                         }
                     }                        
@@ -926,7 +1006,7 @@ export default{
             if(this.tmpLine)
                 this.tmpLine = null;
 
-            const itemByLayer = (this.selectedLayer == "Backend") ? this.items : this.itemsClient;
+            const itemByLayer = (this.selectedLayer == "Backend" || this.expEditor) ? this.items : this.itemsClient;
             
             itemByLayer.push({ 
                 ...JSON.parse(JSON.stringify(item)),
@@ -944,7 +1024,7 @@ export default{
         removeComponent(key){
             this.clearLines(); 
             let newConnections = [];
-            const itemByLayer = (this.selectedLayer == "Backend") ? this.items : this.itemsClient;
+            const itemByLayer = (this.selectedLayer == "Backend" || this.expEditor) ? this.items : this.itemsClient;
 
             for(let keyConnect in this.connectionsShow){
                 const indexInput = parseInt(this.connectionsShow[keyConnect].from.input.split("-")[1]);
@@ -976,7 +1056,7 @@ export default{
                 }
             }
 
-            if(this.selectedLayer == "Backend")
+            if(this.selectedLayer == "Backend" || this.expEditor)
                 this.connections = this.connectionsShow;
             else
                 this.connectionsClient = this.connectionsShow;
@@ -1026,6 +1106,7 @@ export default{
                 position: this.position,
                 scrollOffset: this.scrollOffset,
                 metadata: this.metadata,
+                position: this.position,
                 positionBackend: this.positionBackend,
                 positionFrontend: this.positionFrontend
             };
@@ -1074,16 +1155,33 @@ export default{
         },
 
         async openComponent(item){
-            const content = await useApi(`files/open?filename=${encodeURIComponent(item.filename)}`, {
-                method: "GET"
-            });
+            if(item.metadata.expression){
+                this.state.openTab({ 
+                    name: item.componentKey,
+                    ext: "ts",
+                    language: "blueprint",
+                    content: (item.value) ? JSON.stringify(item.value) : JSON.stringify({
+                        metadata: { namespace: item.componentKey },
+                        value: []
+                    }),
+                    hasMetadata: true,
+                    change: false,
+                    recent: true,
+                    expression: true
+                });
+            }
+            else{
+                const content = await useApi(`files/open?filename=${encodeURIComponent(item.filename)}`, {
+                    method: "GET"
+                });
 
-            this.state.openTab({ ...content, recent: true });
+                this.state.openTab({ ...content, recent: true });
+            }
         },
 
         onDelete(){
             if(this.lineSelected != -1){
-                if(this.selectedLayer == "Backend")
+                if(this.selectedLayer == "Backend" || this.expEditor)
                     this.connections.splice(this.lineSelected, 1);                    
                 else
                     this.connectionsClient.splice(this.lineSelected, 1);
@@ -1127,26 +1225,42 @@ export default{
         },
 
         selectLayer(layer){
-            this.selectedLayer = layer;
+            if(this.expEditor){
+                this.selectedLayer = "Expression";
 
-            if(this.selectedLayer == "Backend"){
                 this.itemsShow = this.items;
                 this.connectionsShow = this.connections;
-                this.position = this.positionBackend;
+
+                this.$forceUpdate();
+                this.$nextTick(() => {
+                    this.createLines(); 
+                    this.refreshLines();
+                });
+
+                this.saveState(true);
             }
             else{
-                this.itemsShow = this.itemsClient;
-                this.connectionsShow = this.connectionsClient;
-                this.position = this.positionFrontend;
+                this.selectedLayer = layer;
+
+                if(this.selectedLayer == "Backend"){
+                    this.itemsShow = this.items;
+                    this.connectionsShow = this.connections;
+                    this.position = this.positionBackend;
+                }
+                else{
+                    this.itemsShow = this.itemsClient;
+                    this.connectionsShow = this.connectionsClient;
+                    this.position = this.positionFrontend;
+                }
+
+                this.$forceUpdate();
+                this.$nextTick(() => {
+                    this.createLines(); 
+                    this.refreshLines();
+                });
+
+                this.saveState(true);
             }
-
-            this.$forceUpdate();
-            this.$nextTick(() => {
-                this.createLines(); 
-                this.refreshLines();
-            });
-
-            this.saveState(true);
         },
 
         openWindow(url){
@@ -1172,6 +1286,25 @@ export default{
             this.startDragLeftEvent = null;
             this.startDragLeft = false;
             this.saveState();
+        },
+
+        async debug(){
+            this.debugResult = "Loading...";
+
+            try{
+                const result = await useApi(`blueprints/expression`, { 
+                    method: "POST",
+                    body: JSON.stringify({ 
+                        blueprints: this.items,
+                        connections: this.connections,
+                    } )
+                });
+
+                this.debugResult = (result) ? result : "Invalid result =/";
+            }
+            catch(e){
+                this.debugResult = `<span style="color:red">${e.message}</span>`;
+            }
         },
 
         saveState(emit = false){

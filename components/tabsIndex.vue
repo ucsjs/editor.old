@@ -72,6 +72,8 @@
                     <blueprint-editor 
                         ref="editor"
                         :tab="tab" 
+                        :expEditor="tab.expression"
+                        :expContents="tab.content"
                         @changeState="(contents) => change(key, contents)"
                     />
                 </div>

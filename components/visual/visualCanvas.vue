@@ -118,7 +118,6 @@
                         <div class="flex text-white text-sm ml-1">
                             {{ this.state.componentOver?.Transform.width }}W {{ this.state.componentOver?.Transform.height }}H
                         </div>
-
                     </div>
 
                     <contextmenu 

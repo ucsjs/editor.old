@@ -179,21 +179,26 @@ export const useStateStore = defineStore({
         saveFile(tab){
             this.loading = true;
 
-            useApi(`files/save`, {
-                method: "PUT", 
-                body: tab
-            }).then((res) => {
-                if(res.sha256 && res.lastModified){
-                    tab.change = false;
-                    tab.lastModified = res.lastModified;
-                    tab.sha256 = res.sha256;
-                    this.loading = false;
-                }
-
-                this.inSaveProcess = false;
-            }).catch(() => {
-                this.inSaveProcess = false;
-            });
+            if(tab.expression){
+                tab.value = tab.content;
+            }
+            else{
+                useApi(`files/save`, {
+                    method: "PUT", 
+                    body: tab
+                }).then((res) => {
+                    if(res.sha256 && res.lastModified){
+                        tab.change = false;
+                        tab.lastModified = res.lastModified;
+                        tab.sha256 = res.sha256;
+                        this.loading = false;
+                    }
+    
+                    this.inSaveProcess = false;
+                }).catch(() => {
+                    this.inSaveProcess = false;
+                });
+            }
         },
 
         async newTerminal(){
