@@ -12,10 +12,6 @@
                 path="../"
                 style="width: 100%; height: 100%"
             ></layout>
-
-            <!--<div class="flex flex-row w-full">
-                <Footer />
-            </div>-->
         </div>
 
         <context-menu />
@@ -128,7 +124,7 @@ export default {
 
         setTimeout(() => {
             this.state.layout = this.$refs.layout;
-        }, 100)
+        }, 100);
 
         setInterval(() => {
             if(this.$refs.layout && this.$refs.layout?.getLayoutConfig){
@@ -138,6 +134,7 @@ export default {
                     localStorage.setItem("editor_layout", JSON.stringify(config));
             }                
         }, 10000);
+
 
         this.widthLeftbar = this.state.leftbar.width;
         this.withMiddle = (this.state.leftbar.open) ? `calc(100% - ${this.widthLeftbar.value}px)` : '';

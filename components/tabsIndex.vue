@@ -66,7 +66,7 @@
                         :tab="tab" 
                         :tabKey="key"
                         @changeState="(contents) => change(key, contents)"  
-                    /> 
+                    />
                 </div>
 
                 <div v-else-if="tab.language == 'blueprint' && tab.hasMetadata">
@@ -94,8 +94,7 @@
                         :init="tinymceSettings"
                         @saveContent="(contents) => change(key, contents.target.getContent(), true)"
                         @change="(contents) => change(key, contents.target.getContent(), true)"
-                    >
-                    </tinymce>
+                    />
                 </div>
 
                 <div v-else>

@@ -69,11 +69,6 @@
 <script>
 export default {
     props: {
-        offset: {
-            type: Object,
-            default: () => ({ x: 0, y: 0 })
-        },
-
         viewport: {
             type: Object,
             default: () => ({ width: 0, height: 0 })     
@@ -184,6 +179,8 @@ export default {
                             const tmpY = this.getDiffY(componentPosition, outerComponentposition)
                             
                             if(tmpY > 0){
+                                const lineWidth = outerComponentposition.x - (componentPosition.x + componentPosition.w);
+
                                 this.lines.push({
                                     x: (componentPosition.x + componentPosition.w),
                                     y: tmpY,
@@ -194,9 +191,9 @@ export default {
                                 });
 
                                 this.legends.push({
-                                    x: (componentPosition.x + componentPosition.w),
+                                    x: (componentPosition.x + componentPosition.w) + ((lineWidth / 2) - 20),
                                     y: tmpY,
-                                    h: outerComponentposition.x - (componentPosition.x + componentPosition.w),
+                                    h: outerComponentposition.y - (componentPosition.y + componentPosition.h),
                                     diff: outerComponentposition.x - (componentPosition.x + componentPosition.w),
                                     color: "#ff7f50"
                                 });
@@ -208,6 +205,8 @@ export default {
                             const tmpY = this.getDiffY(componentPosition, outerComponentposition)
                             
                             if(tmpY > 0){
+                                const lineWidth = componentPosition.x - (outerComponentposition.x + outerComponentposition.w);
+
                                 this.lines.push({
                                     x: componentPosition.x - (componentPosition.x - (outerComponentposition.x + outerComponentposition.w)),
                                     y: tmpY,
@@ -218,9 +217,9 @@ export default {
                                 });
 
                                 this.legends.push({
-                                    x: componentPosition.x - (componentPosition.x - (outerComponentposition.x + outerComponentposition.w)),
+                                    x: componentPosition.x - ((lineWidth / 2) + 25),
                                     y: tmpY,
-                                    h: componentPosition.x - (outerComponentposition.x + outerComponentposition.w),
+                                    h: componentPosition.y - (outerComponentposition.y + outerComponentposition.h),
                                     diff: componentPosition.x - (outerComponentposition.x + outerComponentposition.w),
                                     color: "#ff7f50"
                                 });

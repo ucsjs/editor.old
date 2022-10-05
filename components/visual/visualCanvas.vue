@@ -39,7 +39,6 @@
                         }"
                         ref="canvas"
                         :viewport="viewport"
-                        :offset="this.$refs.editor?.getBoundingClientRect()"
                         @mousedown.left.stop="() => { selectItem(state.componentOver) }"
                         @mouseenter="() => { state.componentOver = null }"
                         @contextmenu.prevent="contextmenu"                         
@@ -56,11 +55,14 @@
                             :viewport="viewport"
                             ref="components"
                             @changeState="saveState"
-                            @mouseUp="$refs.canvas?.mouseUp()"
-                            @resizeOrMove="$refs.canvas?.moveDetect(component, $refs.components)"
+                            @mouseUp="() => {
+                                $refs.canvas?.mouseUp();
+                                selectItem(component.id);
+                            }"
+                            @resizeOrMove="$refs.canvas.moveDetect(component, $refs.components)"
                             @click.left.stop="() => {}"
                         ></visual-component>
-                    </dragbox-container> 
+                    </dragbox-container>
 
                     <div class="absolute h-11 bg-black/50 bottom-3 right-3 rounded-md flex z-40">
                         <Tooltip :tooltipText="$t('Desktop')" position="top" class="flex" @click="viewportDesktop">
@@ -266,8 +268,13 @@ export default {
         this.head.label = this.head.id;
         this.style = this.getStyle(this.body);
         this.unselectItem();
-        this.editorOffset = this.$refs.editor?.getBoundingClientRect();
-        this.canvasOffset = this.$refs.canvas?.getBoundingClientRect();
+
+        if(this.$refs.editor && this.$refs.editor?.getBoundingClientRect)
+            this.editorOffset = this.$refs.editor?.getBoundingClientRect();
+
+        if(this.$refs.canvas && this.$refs.canvas?.getBoundingClientRect)
+            this.canvasOffset = this.$refs.canvas?.getBoundingClientRect();
+
         this.$emit("loadedCanvas", this.getValue());
     },
 
@@ -500,11 +507,11 @@ export default {
                     this.position = { x: positionX + diffX, y: positionY + diffY };
                 }
 
-                if(this.$refs.editor && this.$refs.editor.getBoundingClientRect)
-                    this.editorOffset = this.$refs.editor.getBoundingClientRect();
+                if(this.$refs.editor && this.$refs.editor?.getBoundingClientRect)
+                    this.editorOffset = this.$refs.editor?.getBoundingClientRect();
 
-                if(this.$refs.canvas && this.$refs.canvas.getBoundingClientRect)
-                    this.canvasOffset = this.$refs.canvas.getBoundingClientRect();
+                if(this.$refs.canvas && this.$refs.canvas?.getBoundingClientRect)
+                    this.canvasOffset = this.$refs.canvas?.getBoundingClientRect();
             }
         },
 

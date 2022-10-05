@@ -5,64 +5,67 @@
         (!settings?.mdView && viewport?.type == 'tablet') ? 'opacity-50' : '',
         (!settings?.lgView && viewport?.type == 'desktop') ? 'opacity-50' : '',
         'cursor-default'
-    ]" v-if="settings">
-        <client-only>            
-            <dragbox-item 
-                :style="{
-                    position: (transform.position) ? transform.position : '' ,
-                    width: (this.settings.metadata.removeTransform) ? '100%' : returnValueWithSuffix('width', transform),
-                    height: (this.settings.metadata.removeTransform) ? '100%': returnValueWithSuffix('height', transform)
-                }"            
-                :class="[
-                    (selectedComponent?.id == settings.id) ? 'outline-2 outline-blue-500' : 'outline-transparent hover:outline-blue-300',
-                    (settings.metadata.moveble && !settings.static) ? 'cursor-move' : '',
-                    'w-full h-full cursor-default outline outline-1'
-                ]"
-                :title="settings.id"
-                :selected="selectedComponent?.id == settings.id"
-                :top="(this.settings.metadata.removeTransform) ? '0' : transform.top"
-                :left="(this.settings.metadata.removeTransform) ? '0' : transform.left"
-                :resizable="!settings.static && !this.settings.metadata.removeTransform && transform.position !== '' && (transform.widthSufix !== 'auto' || transform.widthSufix !== '%')"
-                @resize="resizeOrMove"
-                @mouseUp="$emit('mouseUp')"
-                @mouseenter="() => { state.componentOver  = settings }"
-                @mouseleave="() => { state.componentOver = null }"
-                @click="$emit('selectItem', settings?.id)"
+    ]" v-if="settings">   
+        <dragbox-item 
+            :style="{
+                position: (transform.position) ? transform.position : '' ,
+                width: (this.settings.metadata.removeTransform) ? '100%' : returnValueWithSuffix('width', transform),
+                height: (this.settings.metadata.removeTransform) ? '100%': returnValueWithSuffix('height', transform)
+            }"            
+            :class="[
+                (selectedComponent?.id == settings.id) ? 'outline-2 outline-blue-500' : 'outline-transparent hover:outline-blue-300',
+                (settings.metadata.moveble && !settings.static) ? 'cursor-move' : '',
+                'w-full h-full cursor-default outline outline-1'
+            ]"
+            :title="settings.id"
+            :selected="selectedComponent?.id == settings.id"
+            :top="(this.settings.metadata.removeTransform) ? '0' : transform.top"
+            :left="(this.settings.metadata.removeTransform) ? '0' : transform.left"
+            :resizable="!settings.static && !this.settings.metadata.removeTransform && transform.position !== '' && (transform.widthSufix !== 'auto' || transform.widthSufix !== '%')"
+            @resize="(state) => { 
+                resizeOrMove(state, true);
+                $emit('saveState') 
+            }"
+            @selectItem="(id) => $emit('selectItem', id)"
+            @mouseUp="$emit('mouseUp')"
+            @mouseenter="() => { state.componentOver  = settings }"
+            @mouseleave="() => { state.componentOver = null }"
+            @click="$emit('selectItem', settings?.id)"
+            v-if="transform"
+        >
+            <div 
+                ref="component" 
+                class="w-full h-full"
             >
-                <div 
-                    ref="component" 
-                    class="w-full h-full"
-                >
-                    <client-only placeholder="Loading...">
-                        <dynamic-renderer 
-                            v-if="settings && style" 
-                            class="w-full h-full"
-                            :style="style"
-                            :component="settings"
-                        >
-                            <template v-if="settings?.hierarchy">  
-                                <div>                     
-                                    <visual-component 
-                                        v-for="(subcomponent, key) in settings?.hierarchy" 
-                                        :key="key" 
-                                        :componentIndex="key"
-                                        :settings="subcomponent"
-                                        :editorOffset="editorOffset"
-                                        :selectedComponent="selectedComponent"
-                                        :tab="tab"
-                                        :viewport="viewport"
-                                        class="cursor-default"
-                                        @selectItem="$emit('selectItem', subcomponent?.id)"
-                                        @saveState="$emit('saveState')"
-                                        @click.stop="$emit('selectItem', subcomponent?.id)"
-                                    ></visual-component>
-                                </div>  
-                            </template>
-                        </dynamic-renderer>
-                    </client-only>
-                </div>
-            </dragbox-item>
-        </client-only>
+                <client-only placeholder="Loading...">
+                    <dynamic-renderer 
+                        v-if="settings && style" 
+                        class="w-full h-full"
+                        :style="style"
+                        :component="settings"
+                    >
+                        <template v-if="settings?.hierarchy">  
+                            <div>                     
+                                <visual-component 
+                                    v-for="(subcomponent, key) in settings?.hierarchy" 
+                                    :key="key" 
+                                    :componentIndex="key"
+                                    :settings="subcomponent"
+                                    :editorOffset="editorOffset"
+                                    :selectedComponent="selectedComponent"
+                                    :tab="tab"
+                                    :viewport="viewport"
+                                    class="cursor-default"
+                                    @selectItem="$emit('selectItem', subcomponent?.id)"
+                                    @saveState="$emit('saveState')"
+                                    @click.stop="$emit('selectItem', subcomponent?.id)"
+                                ></visual-component>
+                            </div>  
+                        </template>
+                    </dynamic-renderer>
+                </client-only>
+            </div>
+        </dragbox-item>
     </div>
 </template>
 
@@ -73,32 +76,16 @@
 </style>
 
 <script>
-import { transform } from "esbuild";
 import { useStateStore } from "~~/store/state.store";
 
 export default {
-    name: 'Component',
-
     props: {
         tab: { type: Object },
         viewport: { type: Object },
-        selectedComponent: { 
-            type: Object,
-            default: null 
-        },
-        editorOffset: {
-            type: Object,
-            required: true
-        },  
-        componentIndex: {
-            type: Number,
-            required: true,
-            default: 0
-        },
-        settings: {
-            type: Object,
-            default: {}
-        }
+        selectedComponent: { type: Object, default: null },
+        editorOffset: { type: Object },  
+        componentIndex: { type: Number, default: 0 },
+        settings: { type: Object, default: {} }
     },
 
     data(){
