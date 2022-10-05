@@ -6,104 +6,25 @@
         (!settings?.lgView && viewport?.type == 'desktop') ? 'opacity-50' : '',
         'cursor-default'
     ]" v-if="settings">
-        <client-only>
-            <!-- eslint-disable -->
-            <vue-drag-resize  
-                :style="{ 
-                    position: (transform.position) ? transform.position : '' ,
-                    width: returnValueWithSuffix('width', transform),
-                    margin: style?.margin,
-                    padding: style?.padding,
-                }"
-                :initH="parseInt(transform.height)"
-                :minW="16"
-                :minH="16"
-                v-model:x="resizeData.x"
-                v-model:y="resizeData.y"
-                v-model:w="resizeData.w"
-                v-model:h="resizeData.h"
-                v-model:active="resizeData.active"                  
-                :draggable="!settings.static && selectedComponent?.id == settings.id"
-                :resizable="!settings.static && selectedComponent?.id == settings.id"
-                @dragging="(d) => resizeOrMove(d, false)"
-                @resizing="(d) =>resizeOrMove(d, false)"
-                @resize-end="(d) =>resizeOrMove(d, true)"
-                @drag-end="(d) => resizeOrMove(d, true)"            
-                v-if="!settings.static && settings && resizeData && style?.margin !== 'auto' && selectedComponent?.id == settings.id"
-            > 
-                <div             
-                    v-if="resizeData"
-                    :class="[
-                        (selectedComponent?.id == settings.id) ? 'border-red-300' : 'border-purple-200 hover:border-purple-500 border-dashed',
-                        (settings.metadata.moveble && !settings.static) ? 'cursor-move' : '',
-                        'border w-full h-full overflow-hidden'
-                    ]"
-                    :title="settings.id"
-                    @mouseenter.stop="() => { state.componentOver  = settings }"
-                    @mouseleave="() => { state.componentOver = null }"
-                    @click="$emit('selectItem', settings?.id)"
-                >     
-                    <div 
-                        :class="[
-                            (settings.metadata.moveble && !settings.static) ? 'cursor-move' : '',
-                            'bg-transparent absolute w-full h-full top-0 left-0 bottom-0 right-0 z-50'
-                        ]" 
-                        v-if="settings.hierarchy.length <= 0"
-                    ></div>
-
-                    <div 
-                        ref="component" 
-                        class="w-full h-full"
-                    >
-                        <client-only placeholder="Loading...">
-                            <dynamic-renderer 
-                                v-if="settings && style" 
-                                class="w-full h-full"
-                                :style="style"
-                                :component="settings"
-                            >
-                                <template v-if="settings?.hierarchy">  
-                                    <div>                     
-                                        <visual-component 
-                                            v-for="(subcomponent, key) in settings?.hierarchy" 
-                                            :key="key" 
-                                            :componentIndex="key"
-                                            :settings="subcomponent"
-                                            :editorOffset="editorOffset"
-                                            :selectedComponent="selectedComponent"
-                                            :tab="tab"
-                                            :viewport="viewport"
-                                            @selectItem="$emit('selectItem', subcomponent?.id)"
-                                            @saveState="$emit('saveState')"
-                                            @click.stop="$emit('selectItem', subcomponent?.id)"
-                                            class="cursor-default"
-                                        ></visual-component>
-                                    </div>  
-                                </template>
-                            </dynamic-renderer>
-                        </client-only>
-                    </div>
-                </div>
-            </vue-drag-resize>
-            <div 
-                v-else
+        <client-only>            
+            <dragbox-item 
                 :style="{
                     position: (transform.position) ? transform.position : '' ,
                     width: (this.settings.metadata.removeTransform) ? '100%' : returnValueWithSuffix('width', transform),
-                    height: (this.settings.metadata.removeTransform) ? '100%': returnValueWithSuffix('height', transform),
-                    top: (this.settings.metadata.removeTransform) ? '0px' : returnValueWithSuffix('top', transform),
-                    left: (this.settings.metadata.removeTransform) ? '0px' : returnValueWithSuffix('left', transform),
-                    bottom: returnValueWithSuffix('bottom', transform),
-                    right: returnValueWithSuffix('right', transform),
-                    margin: style?.margin,
-                    padding: style?.padding,
+                    height: (this.settings.metadata.removeTransform) ? '100%': returnValueWithSuffix('height', transform)
                 }"            
                 :class="[
-                    (selectedComponent?.id == settings.id) ? 'border-purple-800 outline-dotted outline-2 outline-purple-800' : 'outline-purple-200 hover:outline-purple-500 border-dashed',
+                    (selectedComponent?.id == settings.id) ? 'outline-2 outline-blue-500' : 'outline-transparent hover:outline-blue-300',
                     (settings.metadata.moveble && !settings.static) ? 'cursor-move' : '',
-                    'w-full h-full overflow-hidden cursor-default outline-dotted outline-1'
+                    'w-full h-full cursor-default outline outline-1'
                 ]"
                 :title="settings.id"
+                :selected="selectedComponent?.id == settings.id"
+                :top="(this.settings.metadata.removeTransform) ? '0' : transform.top"
+                :left="(this.settings.metadata.removeTransform) ? '0' : transform.left"
+                :resizable="!settings.static && !this.settings.metadata.removeTransform && transform.position !== '' && (transform.widthSufix !== 'auto' || transform.widthSufix !== '%')"
+                @resize="resizeOrMove"
+                @mouseUp="$emit('mouseUp')"
                 @mouseenter="() => { state.componentOver  = settings }"
                 @mouseleave="() => { state.componentOver = null }"
                 @click="$emit('selectItem', settings?.id)"
@@ -130,6 +51,7 @@
                                         :selectedComponent="selectedComponent"
                                         :tab="tab"
                                         :viewport="viewport"
+                                        class="cursor-default"
                                         @selectItem="$emit('selectItem', subcomponent?.id)"
                                         @saveState="$emit('saveState')"
                                         @click.stop="$emit('selectItem', subcomponent?.id)"
@@ -139,7 +61,7 @@
                         </dynamic-renderer>
                     </client-only>
                 </div>
-            </div>
+            </dragbox-item>
         </client-only>
     </div>
 </template>
@@ -151,6 +73,7 @@
 </style>
 
 <script>
+import { transform } from "esbuild";
 import { useStateStore } from "~~/store/state.store";
 
 export default {
@@ -452,6 +375,7 @@ export default {
             }    
            
             this.$emit('selectItem', this.settings.id);
+            this.$emit('resizeOrMove', this.settings.id);
         }
     }
 }

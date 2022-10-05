@@ -27,7 +27,7 @@
                 @mousedown.left="move"
             > 
                 <div class="justify-center items-center flex h-full relative z-40">
-                    <div 
+                    <dragbox-container 
                         class="m-auto z-40 border border-black" 
                         :style="{
                             backgroundColor: settings.backgroundColor.trim() || '#FFFFFF', 
@@ -38,6 +38,8 @@
                             ...style
                         }"
                         ref="canvas"
+                        :viewport="viewport"
+                        :offset="this.$refs.editor?.getBoundingClientRect()"
                         @mousedown.left.stop="() => { selectItem(state.componentOver) }"
                         @mouseenter="() => { state.componentOver = null }"
                         @contextmenu.prevent="contextmenu"                         
@@ -54,9 +56,11 @@
                             :viewport="viewport"
                             ref="components"
                             @changeState="saveState"
+                            @mouseUp="$refs.canvas?.mouseUp()"
+                            @resizeOrMove="$refs.canvas?.moveDetect(component, $refs.components)"
                             @click.left.stop="() => {}"
                         ></visual-component>
-                    </div> 
+                    </dragbox-container> 
 
                     <div class="absolute h-11 bg-black/50 bottom-3 right-3 rounded-md flex z-40">
                         <Tooltip :tooltipText="$t('Desktop')" position="top" class="flex" @click="viewportDesktop">

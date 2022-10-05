@@ -64,6 +64,7 @@
                     <visual-editor 
                         ref="editor"
                         :tab="tab" 
+                        :tabKey="key"
                         @changeState="(contents) => change(key, contents)"  
                     /> 
                 </div>
@@ -72,6 +73,7 @@
                     <blueprint-editor 
                         ref="editor"
                         :tab="tab" 
+                        :tabKey="key"
                         :expEditor="tab.expression"
                         :expContents="tab.content"
                         @changeState="(contents) => change(key, contents)"

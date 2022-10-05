@@ -3,14 +3,18 @@
         <div class="fixed bg-transparent w-full h-full top-0 left-0 right-0 bottom-0 z-50" v-if="open" @click.stop="open = false"></div>
 
         <div 
-            class="border border-black h-full flex justify-end relative text-sm" 
-            :style="{ backgroundColor: colors.hex || defaultValue }"                                                                                             
+            class="border border-black h-full flex justify-end relative text-sm bg-neutral-900"                                                                                             
         >
+            <div 
+                class="absolute left-0 top-0 h-4 w-4 m-1 rounded-sm border border-black" 
+                :style="{ backgroundColor: (colors.hex || defaultValue) }">
+            </div>
+
             <input 
-                class="border-0 w-full text-sm" 
+                class="border-0 text-sm pr-0 bg-neutral-900 h-5 mt-0.5" 
+                :style="{width: 'calc(100% - 25px)'}"
                 type="text" 
-                v-model="colors.hex"                                                 
-                :style="{ backgroundColor: (colors.hex || defaultValue) }"
+                v-model="colors.hex"                                                
                 @keyup="changeValue"
                 @change="changeValue"
                 @input="changeValue"

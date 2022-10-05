@@ -476,8 +476,8 @@
 }
 
 .grid-background{
-    background-color: #434343;
-    background-image:linear-gradient(#434343, #282828);
+    background-color: #232323;
+    background-image:linear-gradient(#232323, #282828);
 }
 
 .grid-contents{
@@ -509,6 +509,8 @@ export default{
     },
 
     props:{
+        tabKey: { type: Number },
+
         tab: {
             type: Object,
             required: true
@@ -1167,7 +1169,14 @@ export default{
                     hasMetadata: true,
                     change: false,
                     recent: true,
-                    expression: true
+                    expression: true,
+                    blueprint: {
+                        tab: {
+                            filename: this.tab.filename,
+                            sha256: this.tab.sha256,
+                        },
+                        component: item.componentKey
+                    }
                 });
             }
             else{

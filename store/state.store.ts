@@ -178,9 +178,9 @@ export const useStateStore = defineStore({
 
         saveFile(tab){
             this.loading = true;
-
+            
             if(tab.expression){
-                tab.value = tab.content;
+                //tab.value = tab.content;
             }
             else{
                 useApi(`files/save`, {
