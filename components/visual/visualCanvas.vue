@@ -57,7 +57,7 @@
                             @changeState="saveState"
                             @mouseUp="() => {
                                 $refs.canvas?.mouseUp();
-                                selectItem(component.id);
+                                selectItem(state.componentOver);
                             }"
                             @resizeOrMove="$refs.canvas.moveDetect(component, $refs.components)"
                             @click.left.stop="() => {}"

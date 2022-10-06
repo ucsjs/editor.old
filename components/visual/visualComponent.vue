@@ -13,7 +13,7 @@
                 height: (this.settings.metadata.removeTransform) ? '100%': returnValueWithSuffix('height', transform)
             }"            
             :class="[
-                (selectedComponent?.id == settings.id) ? 'outline-2 outline-blue-500' : 'outline-transparent hover:outline-blue-300',
+                (selectedComponent?.id == settings.id) ? 'outline-2 outline-blue-500' : 'outline-blue-300 outline-dotted hover:outline-blue-300',
                 (settings.metadata.moveble && !settings.static) ? 'cursor-move' : '',
                 'w-full h-full cursor-default outline outline-1'
             ]"
@@ -27,15 +27,18 @@
                 $emit('saveState') 
             }"
             @selectItem="(id) => $emit('selectItem', id)"
-            @mouseUp="$emit('mouseUp')"
+            @mouseUp="() => {
+                if(state.componentOver.id == settings?.id)
+                    $emit('mouseUp')
+            }"
             @mouseenter="() => { state.componentOver  = settings }"
             @mouseleave="() => { state.componentOver = null }"
-            @click="$emit('selectItem', settings?.id)"
+            @click.stop="$emit('selectItem', settings?.id)"
             v-if="transform"
         >
             <div 
                 ref="component" 
-                class="w-full h-full"
+                class="w-full h-full relative"
             >
                 <client-only placeholder="Loading...">
                     <dynamic-renderer 
