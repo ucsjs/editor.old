@@ -8,8 +8,8 @@ export default {
                 case "Any": return "#C98904";
                 case "JSON": return "#9603c6";
                 case "Boolean": return "#1941d3";
+                case "Byte": return "#444444";
                 default: return "white";
-                true
             }
         },
 
