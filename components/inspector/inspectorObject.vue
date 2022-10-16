@@ -1,5 +1,5 @@
 <template>
-    <div >
+    <div>
         <div class="flex flex-row">
             <div>
                 <button class="ml-2 hover:text-neutral-500" @click="$emit('openObjectEdit')">

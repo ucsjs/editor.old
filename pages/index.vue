@@ -58,61 +58,29 @@ export default {
 
     methods: {
         save(tab){
-            if(tab.expression){
-                const content = JSON.parse(tab.content);
+            useApi(`files/save`, {
+                method: "PUT", 
+                body: tab
+            }).then((res) => {
+                if(res.sha256 && res.lastModified){
+                    const file = tab;
+                    file.change = false;
+                    file.lastModified = res.lastModified;
+                    file.sha256 = res.sha256;
 
-                for(let tabState of this.state.tabs){
-                    if(tabState.filename === tab.blueprint.tab.filename){
-                        const content = JSON.parse(tabState.content);
-
-                        for(let keyItem in content.items){
-                            if(content.items[keyItem].componentKey == tab.blueprint.component){
-                                content.items[keyItem].value = tab.blueprint;
-                                console.log("break");
-                                break;
-                            }
-                        }
-
-                        for(let keyItem in content.itemsClient){
-                            if(content.itemsClient[keyItem].componentKey == tab.blueprint.component){
-                                content.itemsClient[keyItem].value = tab.blueprint;
-                                console.log("break");
-                                break;
-                            }
-                        }
-                    }
-                }  
-                
-                tab.content = JSON.stringify(content);
-                tab.change = false;
-                
-                this.state.inSaveProcess = false;
-            }
-            else{
-                useApi(`files/save`, {
-                    method: "PUT", 
-                    body: tab
-                }).then((res) => {
-                    if(res.sha256 && res.lastModified){
-                        const file = tab;
-                        file.change = false;
-                        file.lastModified = res.lastModified;
-                        file.sha256 = res.sha256;
-
-                        if(this.$refs?.notifications)
-                            this.$refs?.notifications.open("File saved");
-
-                        this.state.loading = false;
-                    }
-
-                    this.state.inSaveProcess = false;
-                }).catch(() => {
                     if(this.$refs?.notifications)
-                        this.$refs?.notifications.open("Error to save file");
+                        this.$refs?.notifications.open("File saved");
 
-                    this.state.inSaveProcess = false;
-                });
-            }
+                    this.state.loading = false;
+                }
+
+                this.state.inSaveProcess = false;
+            }).catch(() => {
+                if(this.$refs?.notifications)
+                    this.$refs?.notifications.open("Error to save file");
+
+                this.state.inSaveProcess = false;
+            });
         }
     }
 }

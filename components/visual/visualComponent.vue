@@ -145,7 +145,9 @@ export default {
                         for(let property of component.properties){ 
                             
                             if(property.changeStyle){
-                                if(component.value[property.name]?.hex)
+                                if(component.value[property.name]?.multi)
+                                    defaultStyle[property.changeStyle.styleVue] = component.value[property.name].value;                                                                
+                                else if(component.value[property.name]?.hex)
                                     defaultStyle[property.changeStyle.styleVue] = component.value[property.name].hex;
                                 else if(component.value[property.name]?.src)
                                     defaultStyle[property.changeStyle.styleVue] = component.value[property.name].src;

@@ -372,7 +372,7 @@
                             <div class="p-2 text-neutral-600 font-bold" v-if="!expEditor">::</div>
 
                             <div class="ml-2 mr-2 mt-0.5 flex" v-if="!expEditor">
-                                <div v-for="(layer, index) in layers">
+                                <div v-for="(layer, index) in layers" :key="index">
                                     <button 
                                         @click="selectLayer(layer)"
                                         :class="[
@@ -511,6 +511,8 @@ export default{
     props:{
         tabKey: { type: Number },
 
+        expContents: { type: Object },
+
         tab: {
             type: Object,
             required: true
@@ -519,10 +521,6 @@ export default{
         expEditor: {
             type: Boolean,
             default: false
-        },
-
-        expContents: {
-            type: Object
         }
     },
 
@@ -680,6 +678,7 @@ export default{
                 this.widthLeftbar = cacheParse.widthLeftbar;
         }
 
+        this.$emit(`update:expEditor`, this.metadata.expression);
         this.selectLayer(this.selectedLayer);
     },
 
@@ -719,7 +718,7 @@ export default{
         this.$forceUpdate();
     },
 
-    beforeDestroy () {
+    beforeDestroy(){
         clearInterval(this.refreshLineInterval);
         this.ro.unobserve(this.$refs.blueprintEditor)
     },
@@ -1158,26 +1157,40 @@ export default{
 
         async openComponent(item){
             if(item.metadata.expression){
-                this.state.openTab({ 
-                    name: item.componentKey,
-                    ext: "ts",
-                    language: "blueprint",
-                    content: (item.value) ? JSON.stringify(item.value) : JSON.stringify({
-                        metadata: { namespace: item.componentKey },
-                        value: []
-                    }),
-                    hasMetadata: true,
-                    change: false,
-                    recent: true,
-                    expression: true,
-                    blueprint: {
-                        tab: {
-                            filename: this.tab.filename,
-                            sha256: this.tab.sha256,
-                        },
-                        component: item.componentKey
-                    }
+                let filenameExpression = "";
+
+                if(!item.expressionFile){
+                    const tmpFilename = this.basename(this.tab.filename);
+                    const expressionFilename = this.tab.filename.replace(`${tmpFilename}.ts`, `exp${new Date().getTime()}.blueprint.ts`);
+                    
+                    await useApi(`files/save`, { method: "PUT", 
+                        body: {
+                            filename: expressionFilename,
+                            content: JSON.stringify({
+                                metadata: {
+                                    expression: true
+                                }
+                            }),
+                            ext: "ts",
+                            language: "blueprint",
+                            hasMetadata: true,
+                            isFile: true,
+                            isDirectory: false
+                        }
+                    });
+
+                    filenameExpression = expressionFilename;
+                }
+                else{
+                    filenameExpression = item.expressionFile;
+                }
+
+                const content = await useApi(`files/open?filename=${encodeURIComponent(filenameExpression)}`, {
+                    method: "GET"
                 });
+
+                if(content)
+                    this.state.openTab({ ...content, ...{ expression: true }, recent: true });
             }
             else{
                 const content = await useApi(`files/open?filename=${encodeURIComponent(item.filename)}`, {

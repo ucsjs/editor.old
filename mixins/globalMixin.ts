@@ -71,6 +71,15 @@ export default {
 
         fixedLabel(value) {
             return (value) ? this.uppercaseFirstLetter(value === null || value === void 0 ? void 0 : value.replace(/([A-Z])/g, " $1")) : '';
+        },
+
+        basename(str){
+            let base = new String(str).substring(str.lastIndexOf('/') + 1); 
+
+            if(base.lastIndexOf(".") != -1)       
+                base = base.substring(0, base.lastIndexOf("."));
+
+            return base;
         }
     }
 }

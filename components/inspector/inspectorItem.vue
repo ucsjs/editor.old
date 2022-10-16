@@ -13,6 +13,13 @@
                         @changeValue="changeProperty"
                     />
                 </div>
+                <inspector-object-multi
+                    v-else-if="(property.type == 'object' || property.type == 'Object' || property.type == 'JSON') && property.default?.multi === true"
+                    v-model="subComponent.value[property.name]" 
+                    :subComponent="subComponent"
+                    :property="property"
+                    @changeValue="changeProperty"
+                />
                 <div v-else class="flex-1 flex p-0.5">
                     <div class="w-3/6 h-7 flex ml-1 z-10">
                         <div class="mt-1" v-if="subComponent && subComponent.metadata && subComponent.metadata[`${property.name}Help`]">
@@ -27,7 +34,7 @@
                             class="ml-2 text-sm mt-1 text-ellipsis overflow-hidden whitespace-nowrap w-[100px]"
                             :title="uppercaseFirstLetter(property.name)"
                         >
-                            {{ property.label.replace('Border ', '') || uppercaseFirstLetter(property.name) }}
+                            {{ property.label?.replace('Border ', '') || uppercaseFirstLetter(property.name) }}
                         </div>
                     </div>
 
@@ -94,9 +101,9 @@
                             @changeValue="changeProperty"
                         />                                
                         <inspector-object
-                            v-else-if="property.type == 'object' || property.type == 'Object' || property.type == 'JSON'"
+                            v-else-if="(property.type == 'object' || property.type == 'Object' || property.type == 'JSON') && property.default?.multi !== true"
                             @openObjectEdit="$emit('openObjectEdit', subComponent, property, keyItem)"
-                        />
+                        />                        
                         <inspector-color
                             v-else-if="property.type == 'color' || property.type == 'Color'"
                             v-model="subComponent.value[property.name]"
